@@ -183,7 +183,6 @@ public class KeyShortcut {
             return Optional.empty();
         }
     }
-
     public static KeyStroke from( String str ){
         if( str==null )throw new IllegalArgumentException( "str==null" );
 
