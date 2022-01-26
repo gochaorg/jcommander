@@ -22,55 +22,19 @@ import java.util.*;
  */
 public class Table<A> extends Widget<Table<A>> {
     /**
-     * Колонки таблицы
-     */
-    public class Columns implements Iterable<Column<A,?>> {
-        /**
-         * Возвращает список колонок в таблице
-         * @return список колонок в таблице
-         */
-        public EventList<Column<A,?>> list(){
-            return columns_list;
-        }
-
-        /**
-         * Добавление колонки в таблицу
-         * @param valueMapper функция сопоставления объекта и его значения
-         * @param builder конструктор колонки
-         * @param <C> тип данных в колонке
-         * @return Созданная колонка
-         */
-        @SuppressWarnings("UnusedReturnValue")
-        public <C> Column<A,C> append( Fn1<A,C> valueMapper, Consumer1<Column.Builder<A,C>> builder ){
-            if( builder==null )throw new IllegalArgumentException( "builder==null" );
-            if( valueMapper==null )throw new IllegalArgumentException( "valueMapper==null" );
-            Column.Builder<A,C> bld = new Column.Builder<>();
-            bld.value(valueMapper);
-            builder.accept(bld);
-            var col = bld.build();
-            if( col!=null ){
-                columns_list.add(col);
-            }
-            return col;
-        }
-
-        /**
-         * Возвращает итератор по колонкам
-         * @return итератор
-         */
-        @Override
-        public Iterator<Column<A, ?>> iterator(){
-            return columns_list.iterator();
-        }
-    }
-
-    /** Колонки таблицы */
-    private EventList<Column<A,?>> columns_list = new BasicEventList<>();
-
-    /**
      * колонки таблицы
      */
-    public Columns columns = new Columns();
+    private TableColumns<A> columns;
+
+    /**
+     * Колонки таблицы
+     * @return колонки
+     */
+    public TableColumns<A> columns(){
+        if( columns!=null )return columns;
+        columns = new TableColumns<>();
+        return columns;
+    }
 
     /**
      * список значений / данные таблицы
@@ -100,6 +64,13 @@ public class Table<A> extends Widget<Table<A>> {
                 setSelected(old,false);
             }
         });
+    }
+
+    /**
+     * Конструктор таблицы
+     */
+    public Table() {
+        this( new BasicEventList<>() );
     }
 
     private int scroll_y = 0;
@@ -304,8 +275,8 @@ public class Table<A> extends Widget<Table<A>> {
         var cl = contentLoc.get();
 
         var x_out = cl.left();
-        for( var col_idx = 0; col_idx < columns_list.size(); col_idx++ ){
-            var col = columns_list.get(col_idx);
+        for( var col_idx = 0; col_idx < columns().size(); col_idx++ ){
+            var col = columns().get(col_idx);
             int colSize = col.getColumnWidth().getSize();
 
             int x0 = x_out;
@@ -396,7 +367,7 @@ public class Table<A> extends Widget<Table<A>> {
 
         for( int i=0;i<lines.length;i++ ){
             var line = lines[i];
-            int s0 = line.length();
+            //int s0 = line.length();
 
             if( trimLine ){
                 line = line.trim();
@@ -554,30 +525,35 @@ public class Table<A> extends Widget<Table<A>> {
         }
     }
 
+    private Map<KeyStroke, Runnable> keyStokes;
+
+    /**
+     * Комбинации клавиш
+     * @return Комбинации клавиш / действие
+     */
+    public Map<KeyStroke, Runnable> getKeyStokes(){
+        if( keyStokes!=null )return keyStokes;
+
+        Map<KeyStroke, Runnable> ks = new HashMap<>();
+        ks.put( KeyShortcut.from("down"), this::focusNext );
+        ks.put( KeyShortcut.from("up"), this::focusPrevious );
+        ks.put( KeyShortcut.from("pagedown"), this::focusPageNext );
+        ks.put( KeyShortcut.from("pageup"), this::focusPagePrevious );
+        ks.put( KeyShortcut.from("space"), this::invertSelectionOfFocused );
+
+        keyStokes = ks;
+        return keyStokes;
+    }
+
     @Override
     public void input( KeyStroke ks ){
         if( ks==null )throw new IllegalArgumentException( "ks==null" );
 
-        boolean processed = false;
-        switch( ks.getKeyType() ){
-            case ArrowDown: focusNext(); processed=true; break;
-            case ArrowUp: focusPrevious(); processed=true; break;
-            case PageDown: focusPageNext(); processed=true; break;
-            case PageUp: focusPagePrevious(); processed=true; break;
+        var action = getKeyStokes().get(ks);
+        if( action!=null ){
+            action.run();
+            return;
         }
-        if( processed )return;
-
-        if( !ks.isCtrlDown() && !ks.isAltDown() && !ks.isShiftDown() ){
-            if( ks.getCharacter()!=null ){
-                switch( ks.getCharacter() ){
-                    case ' ':
-                        invertSelectionOfFocused();
-                        processed = true;
-                        break;
-                }
-            }
-        }
-        if( processed )return;
 
         if( ks instanceof MouseAction ){
             var ma = (MouseAction)ks;
@@ -588,11 +564,6 @@ public class Table<A> extends Widget<Table<A>> {
                             if( values==null || values.isEmpty() )return;
                             if( idx>=values.size() )idx = values.size()-1;
                             setFocused(values.get(idx));
-                        });
-                    }
-                    if( ma.getButton()==1 && ma.isCtrlDown() && !ma.isAltDown() && !ma.isShiftDown() ){
-                        itemOf(ma.getPosition()).ifPresent( itm -> {
-                            setSelected(itm, !isSelected(itm));
                         });
                     }
                     break;

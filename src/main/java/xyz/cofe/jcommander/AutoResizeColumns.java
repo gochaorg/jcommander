@@ -50,7 +50,7 @@ public enum AutoResizeColumns {
         int totalMaxWidth = 0;
 
         int colIdx = -1;
-        for( var col : table.columns ){
+        for( var col : table.columns() ){
             colIdx++;
             if( colIdx>0 ){
                 totalWidth += columnDelimWidth;
@@ -74,7 +74,7 @@ public enum AutoResizeColumns {
 
     private static void sequence_extends(Table<?> table, Rect cntLoc, int currentWidth) {
         int extds_size = Math.abs(currentWidth-cntLoc.width());
-        for( var col : table.columns ){
+        for( var col : table.columns() ){
             if( extds_size<=0 )return;
             if( col.getColumnWidth().isFixed() )continue;
 
@@ -89,7 +89,7 @@ public enum AutoResizeColumns {
 
     private static void sequence_reduce(Table<?> table, Rect cntLoc, int currentWidth) {
         int reduce_size = Math.abs(currentWidth-cntLoc.width());
-        for( var col : table.columns ){
+        for( var col : table.columns() ){
             if( reduce_size<=0 )break;
             if( col.getColumnWidth().isFixed() )continue;
 
