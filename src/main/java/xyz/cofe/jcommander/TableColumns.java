@@ -256,4 +256,22 @@ public class TableColumns<A> implements EventList<Column<A,?>> {
         }
         return col;
     }
+
+    /**
+     * Создание колонки
+     * @param valueMapper функция сопоставления объекта и его значения
+     * @param builder конструктор колонки
+     * @param <C> тип данных в колонке
+     * @return Созданная колонка
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public <C> Column<A,C> build( Fn1<A,C> valueMapper, Consumer1<Column.Builder<A,C>> builder ){
+        if( builder==null )throw new IllegalArgumentException( "builder==null" );
+        if( valueMapper==null )throw new IllegalArgumentException( "valueMapper==null" );
+        Column.Builder<A,C> bld = new Column.Builder<>();
+        bld.value(valueMapper);
+        builder.accept(bld);
+        var col = bld.build();
+        return col;
+    }
 }

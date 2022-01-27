@@ -8,7 +8,6 @@ import com.googlecode.lanterna.input.MouseAction;
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.EventList;
 import xyz.cofe.fn.Consumer1;
-import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Tuple2;
 import xyz.cofe.text.Align;
 import xyz.cofe.text.Text;
@@ -30,7 +29,7 @@ public class Table<A> extends Widget<Table<A>> {
      * Колонки таблицы
      * @return колонки
      */
-    public TableColumns<A> columns(){
+    public TableColumns<A> getColumns(){
         if( columns!=null )return columns;
         columns = new TableColumns<>();
         return columns;
@@ -275,8 +274,8 @@ public class Table<A> extends Widget<Table<A>> {
         var cl = contentLoc.get();
 
         var x_out = cl.left();
-        for( var col_idx = 0; col_idx < columns().size(); col_idx++ ){
-            var col = columns().get(col_idx);
+        for( var col_idx = 0; col_idx < getColumns().size(); col_idx++ ){
+            var col = getColumns().get(col_idx);
             int colSize = col.getColumnWidth().getSize();
 
             int x0 = x_out;
