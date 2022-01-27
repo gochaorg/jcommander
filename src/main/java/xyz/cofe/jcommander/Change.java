@@ -1,5 +1,6 @@
 package xyz.cofe.jcommander;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.fn.Tuple2;
 
 /**
@@ -12,13 +13,13 @@ public interface Change<A,B> extends Tuple2<A,B> {
      * Возвращает предыдущее значение
      * @return предыдущее значение
      */
-    public default A previous(){ return a(); }
+    public default @Nullable A previous(){ return a(); }
 
     /**
      * Возвращает текущее значение
      * @return текущее значение
      */
-    public default B current(){ return b(); }
+    public default @Nullable B current(){ return b(); }
 
     /**
      * Конструктор
@@ -28,15 +29,15 @@ public interface Change<A,B> extends Tuple2<A,B> {
      * @param <B> текущее значение
      * @return экземпляр
      */
-    public static <A,B> Change<A,B> fromTo( A from, B to ){
+    public static <@Nullable A,@Nullable B> Change<A,B> fromTo( @Nullable A from, @Nullable B to ){
         return new Change<A,B>() {
             @Override
-            public A a(){
+            public @Nullable A a(){
                 return from;
             }
 
             @Override
-            public B b(){
+            public @Nullable B b(){
                 return to;
             }
         };

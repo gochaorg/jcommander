@@ -1,5 +1,9 @@
 package xyz.cofe.jcommander;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.fn.Fn1;
 
 import java.lang.reflect.Type;
@@ -12,12 +16,13 @@ import java.util.function.Supplier;
  */
 public class Column<R,V> {
     //region name : String - имя колонки
-    private Supplier<String> name;
+    private @Nullable Supplier<String> name;
 
     /**
      * Указывает название колонки
      * @param newName название
      */
+    //@EnsuresNonNull("name")
     private void setName(Supplier<String> newName){
         this.name = newName;
     }
@@ -26,7 +31,7 @@ public class Column<R,V> {
      * Возвращает название колонки
      * @return название колонки, не возвращает null
      */
-    public String getName(){
+    public @NonNull String getName(){
         var n = name;
         if( n!=null ){
             var r = n.get();
@@ -36,7 +41,7 @@ public class Column<R,V> {
     }
     //endregion
     //region value : Fn1<R,V> - вычисление значение колонки для указанной строки таблицы
-    private Fn1<R,V> value;
+    private @Nullable Fn1<R,V> value;
 
     private void setValue( Fn1<R,V> value ) {
         this.value = value;
@@ -47,7 +52,7 @@ public class Column<R,V> {
      * @param row строка таблицы
      * @return данные
      */
-    public V value(R row){
+    public @Nullable V value(R row){
         if( row==null )throw new IllegalArgumentException( "row==null" );
         var v_fn = value;
         if( v_fn==null )return null;
@@ -61,7 +66,7 @@ public class Column<R,V> {
      * @param row строка таблицы
      * @return текстовое представление
      */
-    public String text(R row){
+    public @NonNull String text(@NonNull R row){
         if( row==null )throw new IllegalArgumentException( "row==null" );
         var value = value(row);
         if( value==null ){
@@ -97,14 +102,14 @@ public class Column<R,V> {
      * @param <C> тип значения колонки
      */
     public static class Builder<T,C> {
-        private Supplier<String> name;
+        private Supplier<String> name = () -> "?";
 
         /**
          * Возвращает имя колонки
          * @return имя колонки
          */
         public String name(){
-            return name!=null ? name.get() : null;
+            return name!=null ? name.get() : "?";
         }
 
         /**
@@ -113,18 +118,19 @@ public class Column<R,V> {
          * @return SELF ссылка
          */
         @SuppressWarnings("UnusedReturnValue")
-        public Builder<T,C> name( String name ){
-            this.name = name!=null ? ()->name : null;
+        @EnsuresNonNull("this.name")
+        public Builder<T,C> name( @NonNull String name ){
+            this.name = ()->name;
             return this;
         }
 
-        private Fn1<T,C> value;
+        private @MonotonicNonNull Fn1<T,C> value;
 
         /**
          * Возвращает функцию получения значения колонки
          * @return функция или null
          */
-        public Fn1<T,C> value(){ return value; }
+        public @Nullable Fn1<T,C> value(){ return value; }
 
         /**
          * Указывает функцию получения значения колонки
@@ -132,6 +138,7 @@ public class Column<R,V> {
          * @return SELF ссылка
          */
         @SuppressWarnings("UnusedReturnValue")
+        @EnsuresNonNull("this.value")
         public Builder<T,C> value( Fn1<T,C> value ){
             this.value = value;
             return this;
@@ -185,7 +192,9 @@ public class Column<R,V> {
         public Column<T,C> build(){
             var col = new Column<T,C>();
             col.setName(name);
-            col.setValue(value);
+            if( value!=null ){
+                col.setValue(value);
+            }
             col.setColumnWidth(new ColumnWidth(minWidth, maxWidth, width, fixed));
             return col;
         }

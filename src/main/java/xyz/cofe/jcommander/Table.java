@@ -5,6 +5,10 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.MouseAction;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.BasicEventSet;
 import xyz.cofe.collection.EventList;
@@ -27,17 +31,19 @@ import java.util.*;
  * </ul>
  * @param <A> тип строк в таблице
  */
+@SuppressWarnings("ConstantConditions")
 public class Table<A> extends Widget<Table<A>> {
     /**
      * колонки таблицы
      */
-    private TableColumns<A> columns;
+    private @MonotonicNonNull TableColumns<A> columns;
 
     /**
      * Колонки таблицы
      * @return колонки
      */
-    public TableColumns<A> getColumns(){
+    @EnsuresNonNull("this.columns")
+    public @NonNull TableColumns<A> getColumns(){
         if( columns!=null )return columns;
         columns = new TableColumns<>();
         return columns;
@@ -46,19 +52,25 @@ public class Table<A> extends Widget<Table<A>> {
     /**
      * список значений / данные таблицы
      */
-    private EventList<A> values;
+    @MonotonicNonNull
+    private EventList<@NonNull A> values;
 
     /**
      * Возвращает Данные таблицы (строки)
      * @return Данные таблицы (строки)
      */
-    public EventList<A> getValues(){ return values; }
+    public @NonNull EventList<@NonNull A> getValues(){
+        if( values==null )throw new IllegalStateException("values==null");
+        return values;
+    }
 
     /**
      * Конструктор таблицы
      * @param values начальные значения таблицы
      */
-    public Table( EventList<A> values ){
+    @EnsuresNonNull("this.values")
+    @SuppressWarnings("nullness")
+    public Table( @NonNull EventList<@NonNull A> values ){
         if( values==null )throw new IllegalArgumentException( "values==null" );
         this.values = values;
 
@@ -99,13 +111,13 @@ public class Table<A> extends Widget<Table<A>> {
      * Событие смены сфокусированного элемента
      */
     public final Observer2<Table<A>, Change<A,A>> focusedChanged = new Observer2<>();
-    private A focused;
+    private @Nullable A focused;
 
     /**
      * Возвращает элемент, который содержит фокус
      * @return элемент или null
      */
-    public A getFocused(){ return focused; }
+    public @Nullable A getFocused(){ return focused; }
 
     /**
      * Возвращает элемент, который содержит фокус
@@ -120,7 +132,8 @@ public class Table<A> extends Widget<Table<A>> {
      * Указывает элемент, который должен содержать фокус
      * @param focused элемент или null
      */
-    public void setFocused( A focused ){
+    @SuppressWarnings("nullness")
+    public void setFocused( @Nullable A focused ){
         var old = this.focused;
         this.focused = focused;
         focusedChanged.fire(this, Change.fromTo(old,focused));
@@ -345,6 +358,7 @@ public class Table<A> extends Widget<Table<A>> {
         }
     }
 
+    @SuppressWarnings("nullness")
     private String[] cellText( String rawString, int cellWidth, int cellHeight, boolean trimRaw, boolean trimLine, Align halign ){
         if( rawString==null )throw new IllegalArgumentException( "rawString==null" );
         if( cellHeight<0 )throw new IllegalArgumentException( "cellHeight<0" );
@@ -361,6 +375,7 @@ public class Table<A> extends Widget<Table<A>> {
         }
 
         rawString = trimRaw ? rawString.trim() : rawString;
+        @SuppressWarnings("nullness")
         String[] lines = Text.splitNewLines(rawString);
         if( lines.length<cellHeight ){
             int diff = cellHeight-lines.length;
@@ -532,13 +547,14 @@ public class Table<A> extends Widget<Table<A>> {
         }
     }
 
-    private Map<KeyStroke, Runnable> keyStokes;
+    private @MonotonicNonNull Map<KeyStroke, Runnable> keyStokes;
 
     /**
      * Комбинации клавиш
      * @return Комбинации клавиш / действие
      */
-    public Map<KeyStroke, Runnable> getKeyStokes(){
+    @EnsuresNonNull("this.keyStokes")
+    public @NonNull Map<KeyStroke, Runnable> getKeyStokes(){
         if( keyStokes!=null )return keyStokes;
 
         Map<KeyStroke, Runnable> ks = new HashMap<>();
@@ -553,7 +569,7 @@ public class Table<A> extends Widget<Table<A>> {
     }
 
     @Override
-    public void input( KeyStroke ks ){
+    public void input( @NonNull KeyStroke ks ){
         if( ks==null )throw new IllegalArgumentException( "ks==null" );
 
         var action = getKeyStokes().get(ks);
@@ -619,7 +635,8 @@ public class Table<A> extends Widget<Table<A>> {
         if( check_focus_null() )return;
 
         if( values==null )return;
-        int idx = values.indexOf(getFocused());
+        var focs = getFocused();
+        int idx = focs!=null ? values.indexOf(focs) : -1;
         if( idx<0 ){
             if( values.isEmpty() )return;
             idx = scroll_y;
@@ -644,7 +661,9 @@ public class Table<A> extends Widget<Table<A>> {
     public void focusPrevious(){
         if( check_focus_null() )return;
         if( values==null )return;
-        int idx = values.indexOf(getFocused());
+
+        var focs = getFocused();
+        int idx = focs!=null ? values.indexOf(focs) : -1;
 
         if( idx<0 ){
             if( values.isEmpty() )return;
@@ -671,7 +690,8 @@ public class Table<A> extends Widget<Table<A>> {
         if( check_focus_null() )return;
         if( values==null || values.isEmpty() )return;
 
-        int idx = values.indexOf(getFocused());
+        var focs = getFocused();
+        int idx = focs!=null ? values.indexOf(focs) : -1;
 
         var scrl = contentLocation();
         if( scrl.isEmpty() || scrl.get().height()<1 )return;
@@ -690,7 +710,8 @@ public class Table<A> extends Widget<Table<A>> {
         if( check_focus_null() )return;
         if( values==null || values.isEmpty() )return;
 
-        int idx = values.indexOf(getFocused());
+        var focs = getFocused();
+        int idx = focs!=null ? values.indexOf(focs) : -1;
 
         var scrl = contentLocation();
         if( scrl.isEmpty() || scrl.get().height()<1 )return;
@@ -707,18 +728,19 @@ public class Table<A> extends Widget<Table<A>> {
      * @param item строка таблицы
      * @return true - выделена
      */
-    public boolean isSelected(A item){
+    public boolean isSelected(@NonNull A item){
         return getSelection().contains(item);
     }
 
-    private EventSet<A> _selection;
+    private @MonotonicNonNull EventSet<A> _selection;
 
     /**
      * Возвращает выделенные строки.
      * Использовать с вниманием! Не допускать null значения
      * @return выделенные строки
      */
-    public EventSet<A> getSelection(){
+    @EnsuresNonNull("this._selection")
+    public @NonNull EventSet<A> getSelection(){
         if( _selection!=null )return _selection;
         _selection = new BasicEventSet<>();
         return _selection;
@@ -729,7 +751,7 @@ public class Table<A> extends Widget<Table<A>> {
      * @param item строка таблицы
      * @param selected true - выделить или снять выделение
      */
-    public void setSelected(A item, boolean selected){
+    public void setSelected( @NonNull A item, boolean selected ){
         if( item==null )throw new IllegalArgumentException( "item==null" );
         if( selected ){
             getSelection().add(item);

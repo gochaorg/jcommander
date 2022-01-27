@@ -1,5 +1,7 @@
 package xyz.cofe.jcommander;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.CollectionEvent;
 import xyz.cofe.collection.EventList;
@@ -125,6 +127,7 @@ public class TableColumns<A> implements EventList<Column<A,?>> {
         return columns_list.toArray();
     }
 
+    @SuppressWarnings("nullness")
     @Override
     public <T> T[] toArray( T[] a ){
         return columns_list.toArray(a);

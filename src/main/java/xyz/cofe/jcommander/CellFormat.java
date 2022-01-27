@@ -1,6 +1,9 @@
 package xyz.cofe.jcommander;
 
 import com.googlecode.lanterna.TextColor;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.text.Align;
 
 /**
@@ -28,15 +31,17 @@ import xyz.cofe.text.Align;
  *
  * @param <A> тип данных в таблице
  */
+@SuppressWarnings("ConstantConditions")
 public class CellFormat<A> {
     //region item - строка данных
-    private A item;
+    private @MonotonicNonNull A item;
 
     /**
      * Возвращает строку данных таблицы
      * @return строка данных
      */
-    public A getItem(){
+    public @NonNull A getItem(){
+        if( item==null )throw new IllegalStateException("item is null");
         return item;
     }
 
@@ -44,7 +49,8 @@ public class CellFormat<A> {
      * Устанавливает строку данных таблицы
      * @param item строка данных
      */
-    public void setItem( A item ){
+    @EnsuresNonNull("this.item")
+    public void setItem( @NonNull A item ){
         if( item==null )throw new IllegalArgumentException( "item==null" );
         this.item = item;
     }
@@ -69,13 +75,14 @@ public class CellFormat<A> {
     }
     //endregion
     //region columnLocation - расположение колонки таблицы на экране
-    private Rect columnLocation;
+    private @MonotonicNonNull Rect columnLocation;
 
     /**
      * Возвращает расположение колонки таблицы на экране
      * @return расположение колонки таблицы на экране
      */
-    public Rect getColumnLocation(){
+    public @NonNull Rect getColumnLocation(){
+        if( columnLocation==null )throw new IllegalStateException("columnLocation==null");
         return columnLocation;
     }
 
@@ -83,19 +90,21 @@ public class CellFormat<A> {
      * Устанавливает расположение колонки таблицы на экране
      * @param columnLocation расположение колонки таблицы на экране
      */
-    public void setColumnLocation( Rect columnLocation ){
+    @EnsuresNonNull("this.columnLocation")
+    public void setColumnLocation( @NonNull Rect columnLocation ){
         if( columnLocation==null )throw new IllegalArgumentException( "columnLocation==null" );
         this.columnLocation = columnLocation;
     }
     //endregion
     //region contentLocation - расположение области данных таблицы на экране
-    private Rect contentLocation;
+    private @MonotonicNonNull Rect contentLocation;
 
     /**
      * Возвращает расположение области данных таблицы на экране
      * @return расположение данных на экране
      */
-    public Rect getContentLocation(){
+    public @NonNull Rect getContentLocation(){
+        if( contentLocation==null )throw new IllegalStateException("contentLocation==null");
         return contentLocation;
     }
 
@@ -103,7 +112,8 @@ public class CellFormat<A> {
      * Устанавливает расположение области данных таблицы на экране
      * @param contentLocation расположение данных на экране
      */
-    public void setContentLocation( Rect contentLocation ){
+    @EnsuresNonNull("this.contentLocation")
+    public void setContentLocation( @NonNull Rect contentLocation ){
         if( contentLocation==null )throw new IllegalArgumentException( "contentLocation==null" );
         this.contentLocation = contentLocation;
     }
@@ -128,13 +138,14 @@ public class CellFormat<A> {
     }
     //endregion
     //region foreground - цвет текста ячейки
-    private TextColor foreground;
+    private @MonotonicNonNull TextColor foreground;
 
     /**
      * Возвращает цвет текста ячейки
      * @return цвет текста ячейки
      */
-    public TextColor getForeground(){
+    public @NonNull TextColor getForeground(){
+        if( foreground==null )throw new IllegalStateException("foreground==null");
         return foreground;
     }
 
@@ -142,19 +153,21 @@ public class CellFormat<A> {
      * Устанавливает цвет текста ячейки
      * @param foreground цвет текста ячейки
      */
-    public void setForeground( TextColor foreground ){
+    @EnsuresNonNull("this.foreground")
+    public void setForeground( @NonNull TextColor foreground ){
         if( foreground==null )throw new IllegalArgumentException( "foreground==null" );
         this.foreground = foreground;
     }
     //endregion
     //region background - цвет фона ячейки
-    private TextColor background;
+    private @MonotonicNonNull TextColor background;
 
     /**
      * Возвращает цвет фона ячейки
      * @return цвет фона ячейки
      */
-    public TextColor getBackground(){
+    public @NonNull TextColor getBackground(){
+        if( background==null )throw new IllegalStateException("background==null");
         return background;
     }
 
@@ -162,19 +175,21 @@ public class CellFormat<A> {
      * Устанавливает цвет фона ячейки
      * @param background цвет фона ячейки
      */
-    public void setBackground( TextColor background ){
+    @EnsuresNonNull("this.background")
+    public void setBackground( @NonNull TextColor background ){
         if( background==null )throw new IllegalArgumentException( "background==null" );
         this.background = background;
     }
     //endregion
     //region rawString - сырое текстовое представление данных
-    private String rawString;
+    private @MonotonicNonNull String rawString;
 
     /**
      * Возвращает сырое текстовое представление данных
      * @return текстовое представление данных
      */
-    public String getRawString(){
+    public @NonNull String getRawString(){
+        if( rawString==null )throw new IllegalStateException("rawString==null");
         return rawString;
     }
 
@@ -182,18 +197,20 @@ public class CellFormat<A> {
      * Устанавливает сырое текстовое представление данных
      * @param rawString текстовое представление данных
      */
-    public void setRawString( String rawString ){
+    @EnsuresNonNull("this.rawString")
+    public void setRawString( @NonNull String rawString ){
         this.rawString = rawString;
     }
     //endregion
     //region column - колонка таблицы
-    private Column<A, ?> column;
+    private @MonotonicNonNull Column<A, ?> column;
 
     /**
      * Возвращает колонку таблицы
      * @return колонка
      */
-    public Column<A, ?> getColumn(){
+    public @NonNull Column<A, ?> getColumn(){
+        if( column==null )throw new IllegalStateException("column==null");
         return column;
     }
 
@@ -201,7 +218,8 @@ public class CellFormat<A> {
      * Устанавливает колонку таблицы
      * @param column колонка
      */
-    public void setColumn( Column<A, ?> column ){
+    @EnsuresNonNull("this.column")
+    public void setColumn( @NonNull Column<A, ?> column ){
         if( column==null )throw new IllegalArgumentException( "column==null" );
         this.column = column;
     }
@@ -249,13 +267,14 @@ public class CellFormat<A> {
     }
     //endregion
     //region halign - выравнивание по горизонтали
-    private Align halign;
+    private @MonotonicNonNull Align halign;
 
     /**
      * Возвращает выравнивание по горизонтали
      * @return выравнивание по горизонтали
      */
-    public Align getHalign(){
+    public @NonNull Align getHalign(){
+        if( halign==null )throw new IllegalStateException( "halign==null" );
         return halign;
     }
 
@@ -263,7 +282,8 @@ public class CellFormat<A> {
      * Устанавливает выравнивание по горизонтали
      * @param halign выравнивание по горизонтали
      */
-    public void setHalign( Align halign ){
+    @EnsuresNonNull("this.halign")
+    public void setHalign( @NonNull Align halign ){
         if( halign==null )throw new IllegalArgumentException( "halign==null" );
         this.halign = halign;
     }
@@ -307,13 +327,14 @@ public class CellFormat<A> {
     }
     //endregion
     //region table - таблица
-    private Table<A> table;
+    private @MonotonicNonNull Table<A> table;
 
     /**
      * Возвращает ссылку таблицу
      * @return таблица
      */
-    public Table<A> getTable(){
+    public @NonNull Table<A> getTable(){
+        if( table==null )throw new IllegalStateException("table==null");
         return table;
     }
 
@@ -321,7 +342,8 @@ public class CellFormat<A> {
      * Устанавливает ссылку таблицу
      * @param table таблица
      */
-    public void setTable( Table<A> table ){
+    @EnsuresNonNull("this.table")
+    public void setTable( @NonNull Table<A> table ){
         if( table==null )throw new IllegalArgumentException( "table==null" );
         this.table = table;
     }

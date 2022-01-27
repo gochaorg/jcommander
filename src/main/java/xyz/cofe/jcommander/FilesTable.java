@@ -1,5 +1,9 @@
 package xyz.cofe.jcommander;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.collection.EventList;
 
 import java.io.IOException;
@@ -31,6 +35,8 @@ public class FilesTable extends Table<Path> {
         public Columns(){
             this(false);
         }
+
+        @SuppressWarnings("nullness")
         public Columns(boolean includeDefaultColumns){
             if( includeDefaultColumns ){
                 add(baseName);
@@ -43,6 +49,7 @@ public class FilesTable extends Table<Path> {
         private final static Set<String> specialNames = Set.of(".", "..");
 
         //region baseName : Column
+        @SuppressWarnings("nullness")
         public final Column<Path,String> baseName = build(
             p -> specialNames.contains(getName(p))
                 ? "/"+getName(p)
@@ -55,6 +62,7 @@ public class FilesTable extends Table<Path> {
         );
         //endregion
         //region extension : Column
+        @SuppressWarnings("nullness")
         public final Column<Path,String> extension = build(
             p -> specialNames.contains(getName(p))
                 ? ""
@@ -78,6 +86,7 @@ public class FilesTable extends Table<Path> {
             }
         }
 
+        @SuppressWarnings("nullness")
         public final Column<Path,String> humanSize = build(
             p -> Files.exists(p)
                 ? safeSize(p).map(FilesTable::humanSize).orElse("?")
@@ -109,6 +118,7 @@ public class FilesTable extends Table<Path> {
             }
         }
 
+        @SuppressWarnings("nullness")
         public final Column<Path,String> unixPermissions = build(
             p -> Files.exists(p)
                 ? safeUnixPermissions(p).map(this::perm).orElse("?")
@@ -118,10 +128,12 @@ public class FilesTable extends Table<Path> {
         //endregion
     }
 
-    private Columns columns;
+    private @MonotonicNonNull Columns columns;
 
+    @SuppressWarnings("nullness")
     @Override
-    public Columns getColumns(){
+    @EnsuresNonNull("this.columns")
+    public @NonNull Columns getColumns(){
         if( columns!=null )return columns;
         columns = new Columns(true);
         return columns;
@@ -132,8 +144,9 @@ public class FilesTable extends Table<Path> {
      * Базовое имя файла без расширения
      * @return базовое имя файла
      */
-    private static String getBasename( Path path ){
-        String name = path.getFileName().toString();
+    private static String getBasename( @NonNull Path path ){
+        @SuppressWarnings("nullness")
+        @NonNull String name = path.getFileName().toString();
         int dot = name.lastIndexOf(".");
         if( dot<0 )return name;
         if( dot==0 )return "";
@@ -144,8 +157,9 @@ public class FilesTable extends Table<Path> {
      * Раширение имени файла.
      * @return расширение имени файла без точки
      */
-    private static String getExtension( Path path ){
-        String name = path.getFileName().toString();
+    private static String getExtension( @NonNull Path path ){
+        @SuppressWarnings("nullness")
+        @NonNull String name = path.getFileName().toString();
         int dot = name.lastIndexOf(".");
         if( dot<0 )return "";
         if( dot>=(name.length()-1) )return "";
@@ -156,7 +170,8 @@ public class FilesTable extends Table<Path> {
      * Имя файла
      * @return Имя файла
      */
-    private static String getName( Path path ){
+    @SuppressWarnings("nullness")
+    private static String getName( @NonNull Path path ){
         return path.getFileName().toString();
     }
 

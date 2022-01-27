@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("nullness")
 public class Main {
     public Main(){
         this(new String[]{});

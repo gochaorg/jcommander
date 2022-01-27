@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Random;
 
 
+@SuppressWarnings("nullness")
 public class Tutorial03 {
     public static void main(String[] args) {
         /*
