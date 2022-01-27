@@ -11,15 +11,17 @@ import com.googlecode.lanterna.terminal.ansi.TelnetTerminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminalServer;
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.EventList;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.io.fs.File;
-import xyz.cofe.text.Align;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Main {
     public Main(){
@@ -206,43 +208,27 @@ public class Main {
         return sz;
     }
 
-    private Table<File> filesTable( TerminalSize s ){
+    private FilesTable filesTable( TerminalSize s ){
+
+        var filesTable = new FilesTable();
+
         EventList<File> files = new BasicEventList<>();
-
-        Table<xyz.cofe.io.fs.File> filesTable = new Table<>(files);
-        Set<String> specialNames = Set.of(".", "..");
-        filesTable.columns.append(
-            f -> specialNames.contains(f.getName()) ? f.getName() :
-                 f.getBasename().length()<1 ? f.getName() :
-                     (f.isDir() ? "/" : " ") + f.getBasename(),
-
-            bld -> bld.width(20).minMaxWidth(10,100).name("name")
-        );
-        var extCol = filesTable.columns.append(
-            f -> specialNames.contains(f.getName()) ? "" :
-                 f.getBasename().length()<1 ? "" : f.getExtension(),
-            bld -> bld.width(10).name("ext")
-        );
-        filesTable.columns.append(
-            f -> !f.isExists() ? -1 :
-                humanSize(f.getSize()),
-            bld -> bld.width(6).name("size")
-        );
-
         files.add(new File(".."));
-//        var exts = List.of("txt","pcx","jpg","js","json","java");
-//        for( var i=0;i<200;i++ ){
-//            files.add(new File("file_"+i+"."+exts.get(i%exts.size())));
-//        }
 
         var curDir = new File("/home/uzer/Загрузки");
         if( !curDir.isDir() )curDir = new File(".");
         files.addAll(curDir.dirList());
 
+        filesTable.getValues().addAll(
+            files.stream().map(f -> f.path).collect(Collectors.toList())
+        );
+
         filesTable.setRect( Rect.of(0,0, s.getColumns()/2, s.getRows()) );
-        if( files.size()>0 ) {
-            filesTable.setFocused( files.get(0) );
+        if( filesTable.getValues().size()>0 ) {
+            filesTable.setFocused( filesTable.getValues().get(0) );
         }
+
+        filesTable.getValues().sort(filesTable.defaultSort);
 
 //        filesTable.addFormatter( cf -> {
 //            switch( cf.getItem().getExtension() ){
