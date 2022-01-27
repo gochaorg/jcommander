@@ -6,17 +6,25 @@ import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.MouseAction;
 import xyz.cofe.collection.BasicEventList;
+import xyz.cofe.collection.BasicEventSet;
 import xyz.cofe.collection.EventList;
+import xyz.cofe.collection.EventSet;
 import xyz.cofe.fn.Consumer1;
 import xyz.cofe.fn.Tuple2;
 import xyz.cofe.text.Align;
 import xyz.cofe.text.Text;
 
 import java.lang.ref.WeakReference;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
- * Табличные данные
+ * Табличные данные.
+ *
+ * Есть набо ограничений при использовании:
+ * <ul>
+ *     <li> Не допускается добавлять null значения в {@link #getValues()}
+ * </ul>
  * @param <A> тип строк в таблице
  */
 public class Table<A> extends Widget<Table<A>> {
@@ -694,27 +702,27 @@ public class Table<A> extends Widget<Table<A>> {
         scrollToRow(idx);
     }
 
-    private final Set<A> selection = new HashSet<>();
-
-    /**
-     * Возвращает копию выделенных строк
-     * @return копия выделенных строк
-     */
-    public Set<A> getSelection(){
-        return new HashSet<>(selection);
-    }
-
     /**
      * Проверка, что указанная строка выделена
      * @param item строка таблицы
      * @return true - выделена
      */
     public boolean isSelected(A item){
-        return selection.contains(item);
+        return getSelection().contains(item);
     }
 
-    public final Observer2<Table<A>, A> unselectedItem = new Observer2<>();
-    public final Observer2<Table<A>, A> selectedItem = new Observer2<>();
+    private EventSet<A> _selection;
+
+    /**
+     * Возвращает выделенные строки.
+     * Использовать с вниманием! Не допускать null значения
+     * @return выделенные строки
+     */
+    public EventSet<A> getSelection(){
+        if( _selection!=null )return _selection;
+        _selection = new BasicEventSet<>();
+        return _selection;
+    }
 
     /**
      * Выделение указанной строки
@@ -724,13 +732,9 @@ public class Table<A> extends Widget<Table<A>> {
     public void setSelected(A item, boolean selected){
         if( item==null )throw new IllegalArgumentException( "item==null" );
         if( selected ){
-            if( selection.add(item) ){
-                selectedItem.fire(this,item);
-            }
+            getSelection().add(item);
         }else{
-            if( selection.remove(item) ){
-                unselectedItem.fire(this,item);
-            }
+            getSelection().remove(item);
         }
     }
 
