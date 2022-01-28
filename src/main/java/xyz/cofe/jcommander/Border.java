@@ -10,7 +10,7 @@ import java.util.Optional;
  * Отрисовка рамок
  */
 public class Border {
-    private static final String border_chars =
+    private static final String border_s_chars =
         "\u2500" + // 0  ─
         "\u2502" + // 1  │
         "\u250C" + // 2  ┌ left top
@@ -23,6 +23,63 @@ public class Border {
         "\u2534" + // 9  ┴
         "\u253C" + // 10 ┼
         "";
+
+    private static final String border_w_chars =
+        "\u2550" + // 0  ═
+        "\u2551" + // 1  ║
+        "\u2554" + // 2  ╔ left top
+        "\u2557" + // 3  ╗ right top
+        "\u255a" + // 4  ╚ left bottom
+        "\u255d" + // 5  ╝ right bottom
+        "\u2560" + // 6  ╠
+        "\u2563" + // 7  ╣
+        "\u2566" + // 8  ╦
+        "\u2569" + // 9  ╩
+        "\u256C" + // 10 ╬
+        "";
+
+    private static final String connectors =
+        "\u2552" + //  0  ╒
+        "\u2553" + //  1  ╓
+        "\u2555" + //  2  ╕
+        "\u2556" + //  3  ╖
+        "\u2558" + //  4  ╘
+        "\u2559" + //  5  ╙
+        "\u255b" + //  6  ╛
+        "\u255c" + //  7  ╜
+        "\u255e" + //  8  ╞
+        "\u255f" + //  9  ╟
+        "\u2561" + // 10  ╡
+        "\u2562" + // 11  ╢
+        "\u2564" + // 12  ╤
+        "\u2565" + // 13  ╥
+        "\u2567" + // 14  ╧
+        "\u2568" + // 15  ╨
+        "\u256a" + // 16  ╪
+        "\u256b" + // 17  ╫
+        ""
+        ;
+
+    private String border_chars =
+        "\u2500" + // 0  ─
+            "\u2502" + // 1  │
+            "\u250C" + // 2  ┌ left top
+            "\u2510" + // 3  ┐ right top
+            "\u2514" + // 4  └ left bottom
+            "\u2518" + // 5  ┘ right bottom
+            "\u251C" + // 6  ├
+            "\u2524" + // 7  ┤
+            "\u252C" + // 8  ┬
+            "\u2534" + // 9  ┴
+            "\u253C" + // 10 ┼
+            "";
+
+    public Border(){
+    }
+
+    public Border(boolean single_line_border){
+        border_chars = single_line_border ? border_s_chars : border_w_chars;
+    }
 
     /**
      * Символ рамки
