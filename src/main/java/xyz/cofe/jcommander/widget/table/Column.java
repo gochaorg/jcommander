@@ -1,4 +1,4 @@
-package xyz.cofe.jcommander.table;
+package xyz.cofe.jcommander.widget.table;
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;

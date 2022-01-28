@@ -1,4 +1,4 @@
-package xyz.cofe.jcommander.table;
+package xyz.cofe.jcommander.widget.table;
 
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.CollectionEvent;

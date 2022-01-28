@@ -8,7 +8,9 @@ import xyz.cofe.jcommander.Rect;
 /**
  * Абстрактный компонент (виджет)
  */
-public abstract class Widget<SELF extends Widget<?>> {
+public abstract class Widget<SELF extends Widget<?>>
+implements Render
+{
     //region rect : Rect - Расположение компонента
     /**
      * Событие смены расположения компонента

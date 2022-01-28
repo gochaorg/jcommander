@@ -1,4 +1,4 @@
-package xyz.cofe.jcommander.table;
+package xyz.cofe.jcommander.widget.table;
 
 import com.googlecode.lanterna.TextColor;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;

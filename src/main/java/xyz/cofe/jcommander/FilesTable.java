@@ -4,9 +4,9 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.collection.EventList;
-import xyz.cofe.jcommander.table.Column;
-import xyz.cofe.jcommander.table.Table;
-import xyz.cofe.jcommander.table.TableColumns;
+import xyz.cofe.jcommander.widget.table.Column;
+import xyz.cofe.jcommander.widget.table.Table;
+import xyz.cofe.jcommander.widget.table.TableColumns;
 
 import java.io.IOException;
 import java.nio.file.Files;

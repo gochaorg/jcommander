@@ -1,4 +1,4 @@
-package xyz.cofe.jcommander.table;
+package xyz.cofe.jcommander.widget.table;
 
 /**
  * Ширина колонки

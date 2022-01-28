@@ -73,7 +73,7 @@ public class Main {
     private int telnetPort = 4044;
     private Consumer<KeyStroke> logInput = k -> {};
 
-    private void start( Terminal terminal){
+    private void start( Terminal terminal ){
         TerminalScreen screen = null;
         try{
             screen = new TerminalScreen(terminal);
