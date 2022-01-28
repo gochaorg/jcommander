@@ -1,4 +1,4 @@
-package xyz.cofe.jcommander;
+package xyz.cofe.jcommander.table;
 
 /**
  * Ширина колонки
@@ -67,6 +67,26 @@ public class ColumnWidth {
         this.minSize = minSize;
         this.maxSize = maxSize;
         this.size = curSize;
+    }
+
+    /**
+     * Конструктор копирования
+     * @param sample образец для копирования
+     */
+    public ColumnWidth( ColumnWidth sample ){
+        if( sample==null )throw new IllegalArgumentException( "sample==null" );
+        this.fixed = sample.fixed;
+        this.minSize = sample.minSize;
+        this.maxSize = sample.maxSize;
+        this.size = sample.size;
+    }
+
+    /**
+     * Создание клона
+     * @return клон
+     */
+    public ColumnWidth clone(){
+        return new ColumnWidth(this);
     }
     //endregion
 

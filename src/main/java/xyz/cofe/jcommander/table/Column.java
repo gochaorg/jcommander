@@ -1,4 +1,4 @@
-package xyz.cofe.jcommander;
+package xyz.cofe.jcommander.table;
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -6,7 +6,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.fn.Fn1;
 
-import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
 /**
@@ -194,6 +193,8 @@ public class Column<R,V> {
             col.setName(name);
             if( value!=null ){
                 col.setValue(value);
+            }else {
+                col.setValue((itm)->null);
             }
             col.setColumnWidth(new ColumnWidth(minWidth, maxWidth, width, fixed));
             return col;

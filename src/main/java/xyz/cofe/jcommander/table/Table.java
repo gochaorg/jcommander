@@ -1,4 +1,4 @@
-package xyz.cofe.jcommander;
+package xyz.cofe.jcommander.table;
 
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TextColor;
@@ -15,11 +15,11 @@ import xyz.cofe.collection.EventList;
 import xyz.cofe.collection.EventSet;
 import xyz.cofe.fn.Consumer1;
 import xyz.cofe.fn.Tuple2;
+import xyz.cofe.jcommander.*;
 import xyz.cofe.text.Align;
 import xyz.cofe.text.Text;
 
 import java.lang.ref.WeakReference;
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -143,7 +143,7 @@ public class Table<A> extends Widget<Table<A>> {
      * Указывает элемент, который должен содержать фокус
      * @param itm элемент или null
      */
-    public Table<A> focused( A itm ){
+    public Table<A> focused( @Nullable A itm ){
         setFocused(itm);
         return this;
     }

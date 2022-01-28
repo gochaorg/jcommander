@@ -1,4 +1,6 @@
-package xyz.cofe.jcommander;
+package xyz.cofe.jcommander.table;
+
+import xyz.cofe.jcommander.Rect;
 
 import java.util.function.Consumer;
 
@@ -72,7 +74,7 @@ public enum AutoResizeColumns {
         }
     }
 
-    private static void sequence_extends(Table<?> table, Rect cntLoc, int currentWidth) {
+    private static void sequence_extends( Table<?> table, Rect cntLoc, int currentWidth) {
         int extds_size = Math.abs(currentWidth-cntLoc.width());
         for( var col : table.getColumns() ){
             if( extds_size<=0 )return;

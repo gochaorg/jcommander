@@ -1,9 +1,10 @@
-package xyz.cofe.jcommander;
+package xyz.cofe.jcommander.table;
 
 import com.googlecode.lanterna.TextColor;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import xyz.cofe.jcommander.Rect;
 import xyz.cofe.text.Align;
 
 /**

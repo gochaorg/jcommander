@@ -69,9 +69,9 @@ public class Main {
         new Main(args).start();
     }
 
-    private Runnable starting;
-    private int telnetPort;
-    private Consumer<KeyStroke> logInput;
+    private Runnable starting = this::startDefault;
+    private int telnetPort = 4044;
+    private Consumer<KeyStroke> logInput = k -> {};
 
     private void start( Terminal terminal){
         TerminalScreen screen = null;
@@ -190,66 +190,12 @@ public class Main {
         starting.run();
     }
 
-    private String humanSize( long bytes ){
-        String sz = "";
-        if( bytes>=(1024*1024*1024) ){
-            sz = Long.toString(bytes >> 30)+"g";
-        }else if( bytes>=(1024*1024) ){
-            sz = Long.toString(bytes >> 20)+"m";
-        }else if( bytes>=(1024) ){
-            sz = Long.toString(bytes >> 10)+"k";
-        }else {
-            sz = Long.toString(bytes);
-        }
-
-        if( sz.length()<5 ){
-            sz = " ".repeat(5-sz.length())+sz;
-        }
-
-        return sz;
-    }
-
     private FilesTable filesTable( TerminalSize s ){
-
-        var filesTable = new FilesTable();
-
-        EventList<File> files = new BasicEventList<>();
-        files.add(new File(".."));
-
         var curDir = new File("/home/uzer/Загрузки");
         if( !curDir.isDir() )curDir = new File(".");
-        files.addAll(curDir.dirList());
 
-        filesTable.getValues().addAll(
-            files.stream().map(f -> f.path).collect(Collectors.toList())
-        );
-
+        var filesTable = new DirectoryTable(curDir.path);
         filesTable.setRect( Rect.of(0,0, s.getColumns()/2, s.getRows()) );
-        if( filesTable.getValues().size()>0 ) {
-            filesTable.setFocused( filesTable.getValues().get(0) );
-        }
-
-        filesTable.getValues().sort(filesTable.defaultSort);
-
-//        filesTable.addFormatter( cf -> {
-//            switch( cf.getItem().getExtension() ){
-//                case "txt":
-//                    cf.setForeground(TextColor.ANSI.BLUE_BRIGHT);
-//                    break;
-//                case "js":
-//                    cf.setForeground(TextColor.ANSI.BLACK);
-//                    break;
-//                case "json":
-//                    cf.setForeground(TextColor.ANSI.GREEN_BRIGHT);
-//                    break;
-//                case "pcx":
-//                    if( cf.getColumn() == extCol )cf.setHalign(Align.Center);
-//                    break;
-//                case "java":
-//                    if( cf.getColumn() == extCol )cf.setHalign(Align.End);
-//                    break;
-//            }
-//        });
 
         return filesTable;
     }

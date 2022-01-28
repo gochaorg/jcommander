@@ -3,8 +3,10 @@ package xyz.cofe.jcommander;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.collection.EventList;
+import xyz.cofe.jcommander.table.Column;
+import xyz.cofe.jcommander.table.Table;
+import xyz.cofe.jcommander.table.TableColumns;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,11 +33,22 @@ public class FilesTable extends Table<Path> {
     //endregion
 
     //region columns
+
+    /**
+     * Колонки связанные с файлами, для таблицы
+     */
     public static class Columns extends TableColumns<Path> {
+        /**
+         * Конструктор по умолчанию
+         */
         public Columns(){
             this(false);
         }
 
+        /**
+         * Конструктор
+         * @param includeDefaultColumns true - добавить колонки
+         */
         @SuppressWarnings("nullness")
         public Columns(boolean includeDefaultColumns){
             if( includeDefaultColumns ){
@@ -57,7 +70,9 @@ public class FilesTable extends Table<Path> {
                     ? getName(p)
                     : Files.isDirectory(p)
                         ? "/" + getBasename(p)
-                        : " " + getBasename(p),
+                        : Files.isSymbolicLink(p)
+                            ? "~" + getBasename(p)
+                            : " " + getBasename(p),
             c -> c.width(20).minMaxWidth(5,100).name("name").fixed(false)
         );
         //endregion
@@ -199,6 +214,14 @@ public class FilesTable extends Table<Path> {
         return sz;
     }
 
+    /**
+     * Сортировка по умолчанию:
+     * <ol>
+     *     <li> Не null идут первыми
+     *     <li> Каталоги идут первыми
+     *     <li> Файлы/каталог сравниваются по именам
+     * </ol>
+     */
     public final Comparator<Path> defaultSort = (a,b) -> {
         if( a==null && b==null )return 0;
         if( a!=null && b==null )return -1;

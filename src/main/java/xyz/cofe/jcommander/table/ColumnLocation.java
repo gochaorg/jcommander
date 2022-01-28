@@ -1,4 +1,7 @@
-package xyz.cofe.jcommander;
+package xyz.cofe.jcommander.table;
+
+import xyz.cofe.jcommander.Rect;
+import xyz.cofe.jcommander.table.Column;
 
 /**
  * Расположение данных колонки на экране

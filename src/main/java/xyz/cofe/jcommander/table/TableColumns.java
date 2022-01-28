@@ -1,7 +1,5 @@
-package xyz.cofe.jcommander;
+package xyz.cofe.jcommander.table;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.CollectionEvent;
 import xyz.cofe.collection.EventList;
