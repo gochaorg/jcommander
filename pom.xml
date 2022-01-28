@@ -87,23 +87,23 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>xyz.cofe.jcommander.tutorial.Tutorial01</mainClass>
+                            <mainClass>xyz.cofe.jtfm.tutorial.Tutorial01</mainClass>
                             <id>_tut_01</id>
                         </program>
                         <program>
-                            <mainClass>xyz.cofe.jcommander.tutorial.Tutorial02</mainClass>
+                            <mainClass>xyz.cofe.jtfm.tutorial.Tutorial02</mainClass>
                             <id>_tut_02</id>
                         </program>
                         <program>
-                            <mainClass>xyz.cofe.jcommander.tutorial.Tutorial03</mainClass>
+                            <mainClass>xyz.cofe.jtfm.tutorial.Tutorial03</mainClass>
                             <id>_tut_03</id>
                         </program>
                         <program>
-                            <mainClass>xyz.cofe.jcommander.tutorial.Tutorial04</mainClass>
+                            <mainClass>xyz.cofe.jtfm.tutorial.Tutorial04</mainClass>
                             <id>_tut_04</id>
                         </program>
                         <program>
-                            <mainClass>xyz.cofe.jcommander.tutorial.TryMouse</mainClass>
+                            <mainClass>xyz.cofe.jtfm.tutorial.TryMouse</mainClass>
                             <id>_try_mouse</id>
                         </program>
                     </programs>
