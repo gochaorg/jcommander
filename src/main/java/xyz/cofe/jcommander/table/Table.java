@@ -16,6 +16,7 @@ import xyz.cofe.collection.EventSet;
 import xyz.cofe.fn.Consumer1;
 import xyz.cofe.fn.Tuple2;
 import xyz.cofe.jcommander.*;
+import xyz.cofe.jcommander.widget.Widget;
 import xyz.cofe.text.Align;
 import xyz.cofe.text.Text;
 

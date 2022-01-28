@@ -1,7 +1,9 @@
-package xyz.cofe.jcommander;
+package xyz.cofe.jcommander.widget;
 
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
+import xyz.cofe.jcommander.Observer2;
+import xyz.cofe.jcommander.Rect;
 
 /**
  * Абстрактный компонент (виджет)
