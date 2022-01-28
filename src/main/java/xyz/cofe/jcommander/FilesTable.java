@@ -61,7 +61,10 @@ public class FilesTable extends Table<Path> {
 
         private final static Set<String> specialNames = Set.of(".", "..");
 
-        //region baseName : Column
+        //region baseName : Column - имя файла
+        /**
+         * Колонка - имя файла
+         */
         @SuppressWarnings("nullness")
         public final Column<Path,String> baseName = build(
             p -> specialNames.contains(getName(p))
@@ -76,7 +79,10 @@ public class FilesTable extends Table<Path> {
             c -> c.width(20).minMaxWidth(5,100).name("name").fixed(false)
         );
         //endregion
-        //region extension : Column
+        //region extension : Column - Расширение файла
+        /**
+         * Расширение файла
+         */
         @SuppressWarnings("nullness")
         public final Column<Path,String> extension = build(
             p -> specialNames.contains(getName(p))
@@ -87,7 +93,7 @@ public class FilesTable extends Table<Path> {
             c -> c.name("ext").width(5).minMaxWidth(3,20).fixed(false)
         );
         //endregion
-        //region humanSize : Column
+        //region humanSize : Column - Человеко читабельный размер файла
         private static Optional<Long> safeSize(Path p){
             try{
                 if( Files.exists(p) ){
@@ -101,6 +107,9 @@ public class FilesTable extends Table<Path> {
             }
         }
 
+        /**
+         * Человеко читабельный размер файла
+         */
         @SuppressWarnings("nullness")
         public final Column<Path,String> humanSize = build(
             p -> Files.exists(p)
@@ -133,6 +142,9 @@ public class FilesTable extends Table<Path> {
             }
         }
 
+        /**
+         * UNIX Права (rwx) для файла|каталога
+         */
         @SuppressWarnings("nullness")
         public final Column<Path,String> unixPermissions = build(
             p -> Files.exists(p)

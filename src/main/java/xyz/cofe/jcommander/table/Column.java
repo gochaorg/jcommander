@@ -14,6 +14,28 @@ import java.util.function.Supplier;
  * @param <V> Тип колонки таблицы
  */
 public class Column<R,V> {
+    protected Column(){}
+
+    /**
+     * Конструктор копирования
+     * @param sample образец для копирования
+     */
+    protected Column(@NonNull Column<R,V> sample){
+        //noinspection ConstantConditions
+        if( sample==null )throw new IllegalArgumentException( "sample==null" );
+        this.name = sample.name;
+        this.value = sample.value;
+        this.columnWidth = sample.columnWidth != null ? sample.columnWidth.clone() : new ColumnWidth(0,20);
+    }
+
+    /**
+     * Клонирование
+     * @return клон
+     */
+    public Column<R,V> clone(){
+        return new Column<>(this);
+    }
+
     //region name : String - имя колонки
     private @Nullable Supplier<String> name;
 
@@ -22,7 +44,7 @@ public class Column<R,V> {
      * @param newName название
      */
     //@EnsuresNonNull("name")
-    private void setName(Supplier<String> newName){
+    protected void setName(Supplier<String> newName){
         this.name = newName;
     }
 
@@ -42,7 +64,7 @@ public class Column<R,V> {
     //region value : Fn1<R,V> - вычисление значение колонки для указанной строки таблицы
     private @Nullable Fn1<R,V> value;
 
-    private void setValue( Fn1<R,V> value ) {
+    protected void setValue( Fn1<R,V> value ) {
         this.value = value;
     }
 
@@ -66,6 +88,7 @@ public class Column<R,V> {
      * @return текстовое представление
      */
     public @NonNull String text(@NonNull R row){
+        //noinspection ConstantConditions
         if( row==null )throw new IllegalArgumentException( "row==null" );
         var value = value(row);
         if( value==null ){
@@ -81,7 +104,7 @@ public class Column<R,V> {
      * Возвращает ширину колонки
      * @return ширина колонки
      */
-    public ColumnWidth getColumnWidth(){
+    public @NonNull ColumnWidth getColumnWidth(){
         return columnWidth;
     }
 
@@ -89,7 +112,7 @@ public class Column<R,V> {
      * Указывает ширину колонки
      * @param cw ширина колонки
      */
-    private void setColumnWidth(ColumnWidth cw){
+    protected void setColumnWidth(ColumnWidth cw){
         if( cw==null )throw new IllegalArgumentException( "cw==null" );
         columnWidth = cw;
     }
@@ -191,6 +214,7 @@ public class Column<R,V> {
         public Column<T,C> build(){
             var col = new Column<T,C>();
             col.setName(name);
+            //noinspection ReplaceNullCheck
             if( value!=null ){
                 col.setValue(value);
             }else {
