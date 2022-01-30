@@ -86,7 +86,7 @@ public class Main {
             screen.refresh();
 
             terminal.addResizeListener( (term,size) -> {
-                filesTable.setRect( Rect.of(0,0, size.getColumns()/2, size.getRows()-1) );
+                filesTable.rect().set( Rect.of(0,0, size.getColumns()/2, size.getRows()-1) );
             });
 
             long start_t0 = System.currentTimeMillis();
@@ -189,7 +189,7 @@ public class Main {
         if( !curDir.isDir() )curDir = new File(".");
 
         var filesTable = new DirectoryTable(curDir.path);
-        filesTable.setRect( Rect.of(0,0, s.getColumns()/2, s.getRows()) );
+        filesTable.rect().set( Rect.of(0,0, s.getColumns()/2, s.getRows()) );
 
         return filesTable;
     }
