@@ -62,9 +62,9 @@ public class Column<R,V> {
     }
     //endregion
     //region value : Fn1<R,V> - вычисление значение колонки для указанной строки таблицы
-    private @Nullable Fn1<R,V> value;
+    private @Nullable Fn1<R,@Nullable V> value = (x) -> null;
 
-    protected void setValue( Fn1<R,V> value ) {
+    protected void setValue( Fn1<R,@Nullable V> value ) {
         this.value = value;
     }
 
@@ -75,7 +75,7 @@ public class Column<R,V> {
      */
     public @Nullable V value(R row){
         if( row==null )throw new IllegalArgumentException( "row==null" );
-        var v_fn = value;
+        Fn1<R,@Nullable V> v_fn = value;
         if( v_fn==null )return null;
 
         return v_fn.apply(row);
@@ -146,13 +146,13 @@ public class Column<R,V> {
             return this;
         }
 
-        private @MonotonicNonNull Fn1<T,C> value;
+        private @MonotonicNonNull Fn1<T,@Nullable C> value = (x) -> null;
 
         /**
          * Возвращает функцию получения значения колонки
          * @return функция или null
          */
-        public @Nullable Fn1<T,C> value(){ return value; }
+        public @Nullable Fn1<T,@Nullable C> value(){ return value; }
 
         /**
          * Указывает функцию получения значения колонки
@@ -161,7 +161,7 @@ public class Column<R,V> {
          */
         @SuppressWarnings("UnusedReturnValue")
         @EnsuresNonNull("this.value")
-        public Builder<T,C> value( Fn1<T,C> value ){
+        public Builder<T,C> value( Fn1<T,@Nullable C> value ){
             this.value = value;
             return this;
         }

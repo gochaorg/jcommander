@@ -1,5 +1,6 @@
 package xyz.cofe.jtfm.widget.table;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.CollectionEvent;
 import xyz.cofe.collection.EventList;
@@ -245,7 +246,7 @@ public class TableColumns<A> implements EventList<Column<A,?>> {
      * @return Созданная колонка
      */
     @SuppressWarnings("UnusedReturnValue")
-    public <C> Column<A,C> append( Fn1<A,C> valueMapper, Consumer1<Column.Builder<A,C>> builder ){
+    public <C> Column<A,C> append( Fn1<A,@Nullable  C> valueMapper, Consumer1<Column.Builder<A,C>> builder ){
         if( builder==null )throw new IllegalArgumentException( "builder==null" );
         if( valueMapper==null )throw new IllegalArgumentException( "valueMapper==null" );
         Column.Builder<A,C> bld = new Column.Builder<>();
@@ -266,7 +267,7 @@ public class TableColumns<A> implements EventList<Column<A,?>> {
      * @return Созданная колонка
      */
     @SuppressWarnings("UnusedReturnValue")
-    public <C> Column<A,C> build( Fn1<A,C> valueMapper, Consumer1<Column.Builder<A,C>> builder ){
+    public <C> Column<A,C> build( Fn1<A,@Nullable C> valueMapper, Consumer1<Column.Builder<A,C>> builder ){
         if( builder==null )throw new IllegalArgumentException( "builder==null" );
         if( valueMapper==null )throw new IllegalArgumentException( "valueMapper==null" );
         Column.Builder<A,C> bld = new Column.Builder<>();
