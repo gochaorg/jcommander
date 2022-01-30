@@ -4,7 +4,6 @@ import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import xyz.cofe.jtfm.Observer2;
 import xyz.cofe.jtfm.OwnProperty;
 import xyz.cofe.jtfm.Rect;
 import xyz.cofe.jtfm.SimpleProperty;
@@ -21,7 +20,7 @@ implements IWidget<SELF>, VisibleProperty
         });
     }
 
-    private final OwnProperty<Boolean,SELF> visible_op = new OwnProperty<>( (SELF)this, true );
+    private final OwnProperty<Boolean,SELF> visible_op = new OwnProperty<>(true, (SELF)this);
 
     private final SimpleProperty<Boolean> visible = new SimpleProperty<>(true);
     {
@@ -41,7 +40,7 @@ implements IWidget<SELF>, VisibleProperty
 
     //region rect : Rect - Расположение компонента
     @SuppressWarnings("unchecked")
-    private final OwnProperty<Rect,SELF> o_rect = new OwnProperty<>((SELF) this, Rect.of(0,0,1,1));
+    private final OwnProperty<Rect,SELF> o_rect = new OwnProperty<>(Rect.of(0,0,1,1), (SELF) this);
 
     /**
      * Свойство - расположение объекта

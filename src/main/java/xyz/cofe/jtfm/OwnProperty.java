@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class OwnProperty<VALUE,OWN> implements Property<VALUE,OwnProperty<VALUE,OWN>>, MutableProperty<VALUE, OwnProperty<VALUE,OWN>> {
-    public OwnProperty(OWN owner, VALUE initial){
+    public OwnProperty( VALUE initial, OWN owner ){
         if( owner==null )throw new IllegalArgumentException( "owner==null" );
         if( initial==null )throw new IllegalArgumentException( "initial==null" );
         this.owner = owner;
