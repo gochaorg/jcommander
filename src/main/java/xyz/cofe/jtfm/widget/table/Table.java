@@ -95,9 +95,9 @@ public class Table<A> extends Widget<Table<A>> {
 
     private int scroll_y = 0;
     private int getScrollY(){ return scroll_y; }
-    private int scroll_width() { return getRect().width() - 2;}
+    private int scroll_width() { return rect().get().width() - 2;}
     private int getScrollHeight() {
-        int h = getRect().height() - 2;
+        int h = rect().get().height() - 2;
         if( header_visible ){
             h-=1;
         }
@@ -195,10 +195,10 @@ public class Table<A> extends Widget<Table<A>> {
     private final Border border = new Border();
 
     @Override
-    public void render( TextGraphics g ){
+    public void render( @NonNull TextGraphics g ){
         if( g==null )throw new IllegalArgumentException( "g==null" );
 
-        var r = getRect();
+        var r = rect().get();
         if( r==null )return;
         if( r.width()<=0 || r.height()<=0 )return;
 
@@ -253,7 +253,7 @@ public class Table<A> extends Widget<Table<A>> {
      * @return расположение области данных на экране
      */
     public Optional<Rect> contentLocation(){
-        Rect r = getRect();
+        Rect r = rect().get();
         if( r==null )return Optional.empty();
         if( r.width()<1 || r.height()<1 )return Optional.empty();
 
