@@ -7,6 +7,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.jtfm.Border;
 import xyz.cofe.jtfm.Rect;
 
+import java.util.Optional;
+
 class WTest extends Widget<WTest> implements OnFocusLost, OnFocusGain {
     private boolean hasFocus(){
         return WidgetCycle.tryGet().flatMap( wc -> wc.findFocusOwner().map( fo -> fo==WTest.this ) ).orElse(false);
@@ -42,25 +44,28 @@ class WTest extends Widget<WTest> implements OnFocusLost, OnFocusGain {
     }
 
     @Override
-    public void focusGain(){
+    public void focusGain( Optional<IWidget<?>> last ){
         repaint();
     }
 
     @Override
-    public void focusLost(){
+    public void focusLost( Optional<IWidget<?>> cur ){
         repaint();
     }
 
     @Override
-    public void input( @NonNull KeyStroke ks ){
+    public boolean input( @NonNull KeyStroke ks ){
         System.out.println("accept " + ks);
         if( ks.getKeyType() == KeyType.ArrowLeft ){
             var r = rect().get();
             rect().set(Rect.of(r.left() - 1, r.top(), r.width(), r.height()));
+            return true;
         }
         if( ks.getKeyType() == KeyType.ArrowRight ){
             var r = rect().get();
             rect().set(Rect.of(r.left() + 1, r.top(), r.width(), r.height()));
+            return true;
         }
+        return false;
     }
 }

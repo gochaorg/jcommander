@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Tuple2;
+import xyz.cofe.jtfm.Change;
 import xyz.cofe.jtfm.Rect;
 
 import java.io.IOException;
@@ -107,13 +108,24 @@ public class WidgetCycle {
     //public boolean
 
     private final Queue<Job<?>> jobs = new ConcurrentLinkedQueue<>();
+
+    /**
+     * Добавление задания в очередь
+     * @param job задание
+     */
     public void addJob(@NonNull Job<?> job){
         //noinspection ConstantConditions
         if( job==null )throw new IllegalArgumentException( "job==null" );
         jobs.add(job);
     }
 
+    //region widgets : List<IWidget<?>>
     private final List<IWidget<?>> widgets = new ArrayList<>();
+
+    /**
+     * Добавление виджета
+     * @param widget виджет
+     */
     public void addWidget( @NonNull IWidget<?> widget ){
         //noinspection ConstantConditions
         if( widget==null )throw new IllegalArgumentException( "widget==null" );
@@ -121,13 +133,26 @@ public class WidgetCycle {
         widgets.add(widget);
         addRenderRequest(widget);
     }
+
+    /**
+     * Удаление виджета
+     * @param widget виджет
+     */
     public void removeWidget( @NonNull IWidget<?> widget ){
         //noinspection ConstantConditions
         if( widget==null )throw new IllegalArgumentException( "widget==null" );
         checkThreadMatch("can't remove widget");
         widgets.remove(widget);
-
     }
+
+    /**
+     * Получение списка виджетов
+     * @return список виджетов (readonly)
+     */
+    public List<IWidget<?>> widgets(){
+        return Collections.unmodifiableList(widgets);
+    }
+    //endregion
 
     private long cycleSleep(){ return 1; }
     private boolean cycleYield(){ return true; }
@@ -159,24 +184,60 @@ public class WidgetCycle {
 
     private @Nullable IWidget<?> focusOwner;
     private int focusOwnerPointer = -1;
+    private int focusHistoryMaxSize(){ return 1000; }
 
     private List<WeakReference<IWidget<?>>> focusOwnerHistory = new LinkedList<>();
 
-    private void setFocusOwner(@Nullable IWidget<?> newFocusOwner){
+    /**
+     * Смена фокуса
+     * @param newFocusOwner допускается null, требуется что бы, было <br>
+     *                      newFocusOwner.isFocusable() <br>
+     *                      newFocusOwner.visible().get()
+     * @return
+     */
+    public Optional<Change<IWidget<?>,IWidget<?>>> setFocusOwner( @Nullable IWidget<?> newFocusOwner ){
         var oldFocusOwner = focusOwner;
-        if( newFocusOwner==oldFocusOwner )return;
+        if( newFocusOwner==oldFocusOwner )return Optional.empty();
+
+        if( newFocusOwner!=null ){
+            if( !newFocusOwner.isFocusable() ) throw new IllegalArgumentException("!newFocusOwner.isFocusable()");
+            if( !newFocusOwner.visible().get() ) throw new IllegalArgumentException("!newFocusOwner.visible().get()");
+        }
 
         focusOwner = newFocusOwner;
         if( newFocusOwner!=null ){
             if( focusOwnerPointer<0 ){
                 focusOwnerHistory.add(new WeakReference<>(newFocusOwner));
+                int dropSize = focusOwnerHistory.size() - focusHistoryMaxSize();
+                if( dropSize>0 ){
+                    focusOwnerHistory.subList(0, dropSize).clear();
+                }
             }
         }
 
-        if( oldFocusOwner instanceof OnFocusLost )((OnFocusLost)oldFocusOwner).focusLost();
-        if( newFocusOwner instanceof OnFocusGain )((OnFocusGain)newFocusOwner).focusGain();
+        if( oldFocusOwner instanceof OnFocusLost ){
+            ((OnFocusLost)oldFocusOwner).focusLost(
+                newFocusOwner != null ? Optional.of(newFocusOwner) : Optional.empty()
+            );
+        }
+        if( newFocusOwner instanceof OnFocusGain ){
+            ((OnFocusGain)newFocusOwner).focusGain(
+                oldFocusOwner != null ? Optional.of(oldFocusOwner) : Optional.empty()
+            );
+        }
+
+        return Optional.of(
+            Change.fromTo(
+                oldFocusOwner,
+                newFocusOwner
+            )
+        );
     }
 
+    /**
+     * Получение элемента содержащего фокус ввода
+     * @return фокус ввода
+     */
     public Optional<IWidget<?>> findFocusOwner(){
         if( focusOwner!=null )return Optional.of(focusOwner);
         if( widgets.isEmpty() )return Optional.empty();
@@ -194,6 +255,10 @@ public class WidgetCycle {
         return Optional.empty();
     }
 
+    /**
+     * Переключение фокуса
+     * @return смененный фокус
+     */
     public Optional<IWidget<?>> switchNextFocus(){
         if( focusOwner==null )return findFocusOwner();
         if( widgets.isEmpty() )return Optional.empty();
@@ -240,11 +305,20 @@ public class WidgetCycle {
     protected void processInput( KeyStroke ks ){
         if( ks instanceof MouseAction ){
             var ma = (MouseAction)ks;
+            IWidget<?> found = null;
             for( int i=widgets.size()-1; i>=0; i-- ){
                 var w = widgets.get(i);
                 if( w==null || !w.visible().get() )continue;
                 if( w.rect().get().include( ma.getPosition() ) ){
+                    found = w;
+                    break;
                 }
+            }
+            if( found!=null ){
+                if( found.isFocusable() ){
+                    setFocusOwner(found);
+                }
+                found.input(ma);
             }
         }else {
             try{
@@ -256,7 +330,7 @@ public class WidgetCycle {
     }
 
     @SuppressWarnings("nullness")
-    private void resetCursorPos(TerminalScreen screen){
+    private void resetCursorPos( TerminalScreen screen ){
         screen.setCursorPosition(null);
     }
 

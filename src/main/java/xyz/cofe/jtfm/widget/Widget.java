@@ -71,6 +71,6 @@ implements IWidget<SELF>
      * Обработка событий ввода
      * @param ks событие ввода
      */
-    public void input( @NonNull KeyStroke ks ){};
+    public boolean input( @NonNull KeyStroke ks ){ return false; }
     //endregion
 }

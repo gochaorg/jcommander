@@ -571,13 +571,13 @@ public class Table<A> extends Widget<Table<A>> {
     }
 
     @Override
-    public void input( @NonNull KeyStroke ks ){
+    public boolean input( @NonNull KeyStroke ks ){
         if( ks==null )throw new IllegalArgumentException( "ks==null" );
 
         var action = getKeyStokes().get(ks);
         if( action!=null ){
             action.run();
-            return;
+            return true;
         }
 
         if( ks instanceof MouseAction ){
@@ -585,15 +585,18 @@ public class Table<A> extends Widget<Table<A>> {
             switch( ma.getActionType() ){
                 case CLICK_DOWN:
                     if( ma.getButton()==1 && !ma.isCtrlDown() && !ma.isAltDown() && !ma.isShiftDown() ){
-                        rowIndexOf(ma.getPosition()).ifPresent( idx -> {
-                            if( values==null || values.isEmpty() )return;
+                        return rowIndexOf(ma.getPosition()).map( idx -> {
+                            if( values==null || values.isEmpty() )return false;
                             if( idx>=values.size() )idx = values.size()-1;
                             setFocused(values.get(idx));
-                        });
+                            return true;
+                        }).orElse(false);
                     }
                     break;
             }
         }
+
+        return false;
     }
 
     private Optional<Integer> rowIndexOf( TerminalPosition pos ){
