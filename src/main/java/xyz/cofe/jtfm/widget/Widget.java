@@ -21,6 +21,8 @@ implements IWidget<SELF>, VisibleProperty
         });
     }
 
+    private final OwnProperty<Boolean,SELF> visible_op = new OwnProperty<>( (SELF)this, true );
+
     private final SimpleProperty<Boolean> visible = new SimpleProperty<>(true);
     {
         listenVisible(this);
