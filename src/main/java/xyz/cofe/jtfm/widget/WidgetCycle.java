@@ -193,7 +193,7 @@ public class WidgetCycle {
      * @param newFocusOwner допускается null, требуется что бы, было <br>
      *                      newFocusOwner.isFocusable() <br>
      *                      newFocusOwner.visible().get()
-     * @return
+     * @return Смена фокуса
      */
     public Optional<Change<IWidget<?>,IWidget<?>>> setFocusOwner( @Nullable IWidget<?> newFocusOwner ){
         var oldFocusOwner = focusOwner;
