@@ -185,7 +185,7 @@ public class WidgetCycle {
         while( itr.hasPrevious() ){
             var w = itr.previous();
             if( w==null )continue;
-            if( !w.isVisible() )continue;
+            if( !w.visible().get() )continue;
             if( !w.isFocusable() )continue;
             setFocusOwner(w);
             return Optional.of(w);
@@ -208,7 +208,7 @@ public class WidgetCycle {
 
             for( var i=range.a(); i<range.b(); i++ ){
                 var itm = widgets.get(i);
-                if( itm==null || !itm.isVisible() || !itm.isFocusable() )continue;
+                if( itm==null || !itm.visible().get() || !itm.isFocusable() )continue;
                 setFocusOwner(itm);
                 return Optional.of(itm);
             }
@@ -242,7 +242,7 @@ public class WidgetCycle {
             var ma = (MouseAction)ks;
             for( int i=widgets.size()-1; i>=0; i-- ){
                 var w = widgets.get(i);
-                if( w==null || !w.isVisible() )continue;
+                if( w==null || !w.visible().get() )continue;
                 if( w.rect().get().include( ma.getPosition() ) ){
                 }
             }
@@ -308,7 +308,7 @@ public class WidgetCycle {
                     for( var wid : widgets ){
                         if( redrawRequests.contains(wid) ){
                             try{
-                                if( wid.isVisible() ){
+                                if( wid.visible().get() ){
                                     wid.render(g);
                                 }
                             } catch( Throwable renderErr ){

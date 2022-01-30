@@ -1,12 +1,7 @@
 package xyz.cofe.jtfm.widget;
 
-import xyz.cofe.jtfm.SimpleProperty;
+import xyz.cofe.jtfm.OwnProperty;
 
-public interface VisibleProperty extends IsVisible {
-    SimpleProperty<Boolean> visible();
-
-    @Override
-    default boolean isVisible(){
-        return visible().get();
-    }
+public interface VisibleProperty<SELF> {
+    OwnProperty<Boolean,SELF> visible();
 }

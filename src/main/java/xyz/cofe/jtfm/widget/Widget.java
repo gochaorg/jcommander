@@ -12,7 +12,7 @@ import xyz.cofe.jtfm.SimpleProperty;
  * Абстрактный компонент (виджет)
  */
 public abstract class Widget<SELF extends Widget<?>>
-implements IWidget<SELF>, VisibleProperty
+implements IWidget<SELF>
 {
     protected void repaint(){
         WidgetCycle.tryGet().ifPresent( wc -> {
@@ -20,26 +20,25 @@ implements IWidget<SELF>, VisibleProperty
         });
     }
 
-    private final OwnProperty<Boolean,SELF> visible_op = new OwnProperty<>(true, (SELF)this);
+    //region visible : Boolean - видимость
+    @SuppressWarnings({"unchecked", "ConstantConditions", "cast.unsafe"})
+    private final OwnProperty<Boolean,SELF> visible = new OwnProperty<>(true, (SELF)this);
 
-    private final SimpleProperty<Boolean> visible = new SimpleProperty<>(true);
-    {
-        listenVisible(this);
-    }
+    @Override public OwnProperty<Boolean, SELF> visible(){ return visible; }
 
     private static void listenVisible( @UnderInitialization(Widget.class) @NonNull Widget<?> w ){
-        w.visible.listen( (p,old,cur) -> {
-            //w.repaint();
+        w.visible.listen( (s,old,cur) -> {
+            s.owner().repaint();
         });
     }
 
-    @Override
-    public SimpleProperty<Boolean> visible(){
-        return visible;
+    {
+        listenVisible(this);
     }
+    //endregion
 
     //region rect : Rect - Расположение компонента
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","cast.unsafe"})
     private final OwnProperty<Rect,SELF> o_rect = new OwnProperty<>(Rect.of(0,0,1,1), (SELF) this);
 
     /**

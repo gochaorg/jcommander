@@ -53,6 +53,7 @@ public class Table<A> extends Widget<Table<A>> {
     /**
      * список значений / данные таблицы
      */
+    @SuppressWarnings("FieldMayBeFinal")
     @MonotonicNonNull
     private EventList<@NonNull A> values;
 
