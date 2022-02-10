@@ -5,6 +5,8 @@ import com.googlecode.lanterna.graphics.StyleSet;
 import com.googlecode.lanterna.graphics.TextImage;
 import com.googlecode.lanterna.screen.TabBehaviour;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import xyz.cofe.jtfm.widget.IWidget;
+import xyz.cofe.jtfm.widget.Widget;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -25,6 +27,22 @@ public class RelTxtGraphics implements com.googlecode.lanterna.graphics.TextGrap
         this.target = target;
         this.left = left;
         this.top = top;
+    }
+
+    public RelTxtGraphics( com.googlecode.lanterna.graphics.TextGraphics target, Rect rect ){
+        if( target==null )throw new IllegalArgumentException( "target==null" );
+        if( rect==null )throw new IllegalArgumentException( "rect==null" );
+        this.target = target;
+        this.left = rect.left();
+        this.top = rect.top();
+    }
+
+    public RelTxtGraphics( com.googlecode.lanterna.graphics.TextGraphics target, IWidget<?> wid ){
+        if( target==null )throw new IllegalArgumentException( "target==null" );
+        if( wid==null )throw new IllegalArgumentException( "wid==null" );
+        this.target = target;
+        this.left = wid.rect().get().left();
+        this.top = wid.rect().get().top();
     }
 
     private int left = 0;

@@ -382,7 +382,7 @@ public class WidgetCycle {
                             try{
                                 if( wid.visible().get() ){
                                     if( wid.relativeLayout() ){
-                                        wid.render(new RelTxtGraphics(g));
+                                        wid.render(new RelTxtGraphics(g, wid));
                                     }else {
                                         wid.render(g);
                                     }

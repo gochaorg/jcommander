@@ -32,16 +32,11 @@ class Widget1Test extends Widget<Widget1Test> implements OnFocusLost, OnFocusGai
     public void render( @NonNull TextGraphics g ){
         var r = rect().get();
         if( hasFocus() )
-            doubleBorder.render(g,r);
+            doubleBorder.render(g,Rect.of(0,0,r.width(),r.height()));
         else
-            singleBorder.render(g,r);
+            singleBorder.render(g,Rect.of(0,0,r.width(),r.height()));
 
-        var tg = new RelTxtGraphics(g, r.left(), r.top());
-        tg.putString(0,0,text!=null ? text : "sample");
-
-        tg.putString(0,0,text!=null ? text : "sample");
-
-        //g.putString(r.left(), r.top(), text!=null ? text : "sample");
+        g.putString(0,0,text!=null ? text : "sample");
     }
 
     @Override
