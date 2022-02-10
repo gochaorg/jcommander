@@ -1,6 +1,7 @@
 package xyz.cofe.jtfm;
 
 import org.junit.jupiter.api.Test;
+import xyz.cofe.jtfm.widget.KeyShortcut;
 
 public class KeyStrokeTest {
     @Test

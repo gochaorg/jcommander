@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm;
+package xyz.cofe.jtfm.gr;
 
 import com.googlecode.lanterna.TerminalPosition;
 

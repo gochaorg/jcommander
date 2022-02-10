@@ -4,7 +4,7 @@ import com.googlecode.lanterna.TextColor;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import xyz.cofe.jtfm.Rect;
+import xyz.cofe.jtfm.gr.Rect;
 import xyz.cofe.text.Align;
 
 /**

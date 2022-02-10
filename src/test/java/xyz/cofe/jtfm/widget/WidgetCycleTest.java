@@ -4,7 +4,7 @@ import com.googlecode.lanterna.terminal.MouseCaptureMode;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminalServer;
-import xyz.cofe.jtfm.Rect;
+import xyz.cofe.jtfm.gr.Rect;
 
 import java.io.IOException;
 

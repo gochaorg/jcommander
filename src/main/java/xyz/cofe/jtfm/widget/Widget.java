@@ -5,8 +5,7 @@ import com.googlecode.lanterna.input.KeyStroke;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.jtfm.OwnProperty;
-import xyz.cofe.jtfm.Rect;
-import xyz.cofe.jtfm.SimpleProperty;
+import xyz.cofe.jtfm.gr.Rect;
 
 /**
  * Абстрактный компонент (виджет)

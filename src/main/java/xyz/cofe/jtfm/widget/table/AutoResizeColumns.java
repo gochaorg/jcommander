@@ -1,6 +1,6 @@
 package xyz.cofe.jtfm.widget.table;
 
-import xyz.cofe.jtfm.Rect;
+import xyz.cofe.jtfm.gr.Rect;
 
 import java.util.function.Consumer;
 

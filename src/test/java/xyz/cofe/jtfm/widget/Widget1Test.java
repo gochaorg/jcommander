@@ -4,9 +4,8 @@ import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import xyz.cofe.jtfm.Border;
-import xyz.cofe.jtfm.Rect;
-import xyz.cofe.jtfm.RelTxtGraphics;
+import xyz.cofe.jtfm.gr.Border;
+import xyz.cofe.jtfm.gr.Rect;
 
 import java.util.Optional;
 

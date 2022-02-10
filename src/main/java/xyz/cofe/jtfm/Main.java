@@ -12,6 +12,7 @@ import com.googlecode.lanterna.terminal.ansi.TelnetTerminalServer;
 import xyz.cofe.io.fs.File;
 import xyz.cofe.jtfm.files.DirectoryTable;
 import xyz.cofe.jtfm.files.FilesTable;
+import xyz.cofe.jtfm.gr.Rect;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;

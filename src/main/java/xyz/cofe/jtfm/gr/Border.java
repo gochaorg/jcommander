@@ -1,8 +1,9 @@
-package xyz.cofe.jtfm;
+package xyz.cofe.jtfm.gr;
 
 import com.googlecode.lanterna.TextCharacter;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
+import xyz.cofe.jtfm.SimpleProperty;
 
 import java.util.Optional;
 

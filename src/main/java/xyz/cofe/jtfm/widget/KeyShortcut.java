@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm;
+package xyz.cofe.jtfm.widget;
 
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;

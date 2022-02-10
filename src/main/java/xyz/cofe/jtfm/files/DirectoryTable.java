@@ -2,7 +2,7 @@ package xyz.cofe.jtfm.files;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import xyz.cofe.jtfm.KeyShortcut;
+import xyz.cofe.jtfm.widget.KeyShortcut;
 import xyz.cofe.jtfm.Observer2;
 import xyz.cofe.jtfm.SimpleProperty;
 

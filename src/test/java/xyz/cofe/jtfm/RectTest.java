@@ -2,6 +2,7 @@ package xyz.cofe.jtfm;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import xyz.cofe.jtfm.gr.Rect;
 
 public class RectTest {
     @Test

@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm;
+package xyz.cofe.jtfm.gr;
 
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.graphics.StyleSet;
@@ -6,7 +6,6 @@ import com.googlecode.lanterna.graphics.TextImage;
 import com.googlecode.lanterna.screen.TabBehaviour;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.jtfm.widget.IWidget;
-import xyz.cofe.jtfm.widget.Widget;
 
 import java.util.Collection;
 import java.util.EnumSet;

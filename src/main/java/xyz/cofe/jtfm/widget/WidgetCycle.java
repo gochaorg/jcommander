@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Tuple2;
 import xyz.cofe.jtfm.Change;
-import xyz.cofe.jtfm.RelTxtGraphics;
+import xyz.cofe.jtfm.gr.RelTxtGraphics;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
