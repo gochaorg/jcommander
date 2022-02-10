@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm;
+package xyz.cofe.jtfm.files;
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;

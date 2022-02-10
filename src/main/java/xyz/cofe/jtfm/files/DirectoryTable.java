@@ -1,7 +1,10 @@
-package xyz.cofe.jtfm;
+package xyz.cofe.jtfm.files;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import xyz.cofe.jtfm.KeyShortcut;
+import xyz.cofe.jtfm.Observer2;
+import xyz.cofe.jtfm.SimpleProperty;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;

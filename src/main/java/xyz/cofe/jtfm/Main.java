@@ -10,6 +10,8 @@ import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminalServer;
 import xyz.cofe.io.fs.File;
+import xyz.cofe.jtfm.files.DirectoryTable;
+import xyz.cofe.jtfm.files.FilesTable;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
