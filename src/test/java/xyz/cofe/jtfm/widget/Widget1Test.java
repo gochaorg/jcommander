@@ -6,12 +6,13 @@ import com.googlecode.lanterna.input.KeyType;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.jtfm.Border;
 import xyz.cofe.jtfm.Rect;
+import xyz.cofe.jtfm.RelTxtGraphics;
 
 import java.util.Optional;
 
-class WTest extends Widget<WTest> implements OnFocusLost, OnFocusGain {
+class Widget1Test extends Widget<Widget1Test> implements OnFocusLost, OnFocusGain {
     private boolean hasFocus(){
-        return WidgetCycle.tryGet().flatMap( wc -> wc.findFocusOwner().map( fo -> fo==WTest.this ) ).orElse(false);
+        return WidgetCycle.tryGet().flatMap( wc -> wc.findFocusOwner().map( fo -> fo== Widget1Test.this ) ).orElse(false);
     }
 
     private Border singleBorder = new Border(true);
@@ -35,7 +36,12 @@ class WTest extends Widget<WTest> implements OnFocusLost, OnFocusGain {
         else
             singleBorder.render(g,r);
 
-        g.putString(r.left(), r.top(), text!=null ? text : "sample");
+        var tg = new RelTxtGraphics(g, r.left(), r.top());
+        tg.putString(0,0,text!=null ? text : "sample");
+
+        tg.putString(0,0,text!=null ? text : "sample");
+
+        //g.putString(r.left(), r.top(), text!=null ? text : "sample");
     }
 
     @Override

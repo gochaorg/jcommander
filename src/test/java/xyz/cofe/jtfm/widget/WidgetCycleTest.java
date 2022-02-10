@@ -44,12 +44,12 @@ public class WidgetCycleTest {
     private void start( Terminal terminal ){
         WidgetCycle wc = WidgetCycle.create(terminal, MyWCycle::new);
 
-        var w = new WTest();
+        var w = new Widget1Test();
         w.setText("sample one");
         w.rect().set(Rect.of(2,2,20, 3));
         wc.addWidget(w);
 
-        var w2 = new WTest();
+        var w2 = new Widget1Test();
         w2.setText("sample two");
         w2.rect().set(Rect.of(2,6,20, 3));
         wc.addWidget(w2);

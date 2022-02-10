@@ -34,6 +34,9 @@ import java.util.*;
  */
 @SuppressWarnings("ConstantConditions")
 public class Table<A> extends Widget<Table<A>> {
+    @Override
+    public boolean relativeLayout(){ return false; }
+
     /**
      * колонки таблицы
      */

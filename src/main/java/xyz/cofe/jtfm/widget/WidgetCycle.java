@@ -3,7 +3,6 @@ package xyz.cofe.jtfm.widget;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.MouseAction;
-import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
@@ -12,14 +11,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Tuple2;
 import xyz.cofe.jtfm.Change;
-import xyz.cofe.jtfm.Rect;
+import xyz.cofe.jtfm.RelTxtGraphics;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
 
 /**
  * Основной цикл работы с виджетами.
@@ -383,7 +381,11 @@ public class WidgetCycle {
                         if( redrawRequests.contains(wid) ){
                             try{
                                 if( wid.visible().get() ){
-                                    wid.render(g);
+                                    if( wid.relativeLayout() ){
+                                        wid.render(new RelTxtGraphics(g));
+                                    }else {
+                                        wid.render(g);
+                                    }
                                 }
                             } catch( Throwable renderErr ){
                                 log(renderErr);

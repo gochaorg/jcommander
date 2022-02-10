@@ -20,6 +20,12 @@ implements IWidget<SELF>
         });
     }
 
+    /**
+     * Рендер ({@link #render(TextGraphics)}) относительно расположения
+     * @return true - рендер относительно; false - абсолютно
+     */
+    public boolean relativeLayout(){ return true; }
+
     //region visible : Boolean - видимость
     @SuppressWarnings({"unchecked", "ConstantConditions", "cast.unsafe"})
     private final OwnProperty<Boolean,SELF> visible = new OwnProperty<>(true, (SELF)this);
