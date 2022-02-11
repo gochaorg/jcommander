@@ -7,6 +7,7 @@ public interface IWidget<SELF>
         IsFocusable,
         VisibleProperty<SELF>,
         Input,
-        RelativeLayout
+        RelativeLayout,
+        NestedWidgets
 {
 }

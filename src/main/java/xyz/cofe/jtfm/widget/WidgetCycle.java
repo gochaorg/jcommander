@@ -103,8 +103,6 @@ public class WidgetCycle {
     private void onTerminalResized( TerminalSize size ){
     }
 
-    //public boolean
-
     private final Queue<Job<?>> jobs = new ConcurrentLinkedQueue<>();
 
     /**
@@ -152,10 +150,16 @@ public class WidgetCycle {
     }
     //endregion
 
+    // TODO config
     private long cycleSleep(){ return 1; }
+
+    // TODO config
     private boolean cycleYield(){ return true; }
 
+    // TODO config
     private long socket_timeout_cycleSleep(){ return -1; }
+
+    // TODO config
     private boolean socket_timeout_cycleYield(){ return false; }
 
     private final Set<IWidget<?>> redrawRequests = new HashSet<>();
@@ -182,6 +186,8 @@ public class WidgetCycle {
 
     private @Nullable IWidget<?> focusOwner;
     private int focusOwnerPointer = -1;
+
+    // TODO config
     private int focusHistoryMaxSize(){ return 1000; }
 
     private List<WeakReference<IWidget<?>>> focusOwnerHistory = new LinkedList<>();
@@ -332,6 +338,12 @@ public class WidgetCycle {
         screen.setCursorPosition(null);
     }
 
+    // TODO config
+    private boolean render_checkRequests(){ return true; }
+
+    // TODO config
+    private boolean render_checkNestedRequest(){ return false; }
+
     /**
      * Запуск цикла обработки
      */
@@ -374,25 +386,38 @@ public class WidgetCycle {
 
                 //////////////////
                 // process render
-                if( !redrawRequests.isEmpty() ){
+                if( !render_checkRequests() || !redrawRequests.isEmpty() ){
                     screen.doResizeIfNecessary();
                     var g = screen.newTextGraphics();
-                    for( var wid : widgets ){
-                        if( redrawRequests.contains(wid) ){
-                            try{
-                                if( wid.visible().get() ){
-                                    if( wid.relativeLayout() ){
-                                        wid.render(new RelTxtGraphics(g, wid));
-                                    }else {
-                                        wid.render(g);
-                                    }
+
+                    var rel_g = new RelTxtGraphics(g);
+                    for( var tp : WidgetsWalk.visibleTree(widgets).go() ){
+                        if( !render_checkNestedRequest() || redrawRequests.contains(tp.getNode()) ){
+
+                            int rel_x = 0;
+                            int rel_y = 0;
+                            for( var n : tp.nodeList() ){
+                                if( n.relativeLayout() ){
+                                    rel_x += n.rect().get().left();
+                                    rel_y += n.rect().get().top();
                                 }
-                            } catch( Throwable renderErr ){
-                                log(renderErr);
                             }
-                            redrawRequests.remove(wid);
+                            rel_g = rel_g.withLeftTop(rel_x, rel_y);
+
+                            tp.getNode().render(
+                                tp.getNode().relativeLayout() ?
+                                    rel_g : g
+                            );
+
+                            redrawRequests.remove(tp.getNode());
                         }
                     }
+
+                    if( !redrawRequests.isEmpty() ){
+                        // TODO !!!!!
+                        redrawRequests.clear();
+                    }
+
                     screen.refresh();
                 }
 

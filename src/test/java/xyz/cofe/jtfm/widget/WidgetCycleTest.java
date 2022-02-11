@@ -51,8 +51,17 @@ public class WidgetCycleTest {
 
         var w2 = new Widget1Test();
         w2.setText("sample two");
-        w2.rect().set(Rect.of(2,6,20, 3));
+        w2.rect().set(Rect.of(2,9,20, 3));
         wc.addWidget(w2);
+
+        var w3 = new Widget1Test();
+        w3.setText("three");
+        w3.rect().set(Rect.of(2,2,16,3));
+        w2.nestedWidgets.add(w3);
+
+        for( var wid : WidgetsWalk.visibleTree(wc.widgets()).go() ){
+            System.out.println(".. "+wid.getNode());
+        }
 
         wc.run();
     }

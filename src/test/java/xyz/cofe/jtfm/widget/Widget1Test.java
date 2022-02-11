@@ -7,11 +7,20 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.jtfm.gr.Border;
 import xyz.cofe.jtfm.gr.Rect;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 class Widget1Test extends Widget<Widget1Test> implements OnFocusLost, OnFocusGain {
     private boolean hasFocus(){
         return WidgetCycle.tryGet().flatMap( wc -> wc.findFocusOwner().map( fo -> fo== Widget1Test.this ) ).orElse(false);
+    }
+
+    public final List<IWidget<?>> nestedWidgets = new ArrayList<>();
+
+    @Override
+    public @NonNull Iterable<IWidget<?>> getNestedWidgets(){
+        return nestedWidgets;
     }
 
     private Border singleBorder = new Border(true);
