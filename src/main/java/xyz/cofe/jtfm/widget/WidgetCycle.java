@@ -190,7 +190,7 @@ public class WidgetCycle {
     // TODO config
     private int focusHistoryMaxSize(){ return 1000; }
 
-    private List<WeakReference<IWidget<?>>> focusOwnerHistory = new LinkedList<>();
+    private final List<WeakReference<IWidget<?>>> focusOwnerHistory = new LinkedList<>();
 
     /**
      * Смена фокуса
