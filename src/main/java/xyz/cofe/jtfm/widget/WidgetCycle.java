@@ -306,6 +306,10 @@ public class WidgetCycle {
         return cnt;
     }
 
+    /**
+     * Обработка ввода (мыши или клавиатуры)
+     * @param ks событие клавиатура
+     */
     protected void processInput( KeyStroke ks ){
         if( ks instanceof MouseAction ){
             var ma = (MouseAction)ks;

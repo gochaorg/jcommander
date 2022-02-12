@@ -4,6 +4,8 @@ import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import xyz.cofe.collection.BasicEventList;
+import xyz.cofe.collection.EventList;
 import xyz.cofe.jtfm.gr.Border;
 import xyz.cofe.jtfm.gr.Rect;
 
@@ -16,10 +18,10 @@ class Widget1Test extends Widget<Widget1Test> implements OnFocusLost, OnFocusGai
         return WidgetCycle.tryGet().flatMap( wc -> wc.findFocusOwner().map( fo -> fo== Widget1Test.this ) ).orElse(false);
     }
 
-    public final List<IWidget<?>> nestedWidgets = new ArrayList<>();
+    public final EventList<IWidget<?>> nestedWidgets = new BasicEventList<>();
 
     @Override
-    public @NonNull Iterable<IWidget<?>> getNestedWidgets(){
+    public @NonNull EventList<? extends IWidget<?>> getNestedWidgets(){
         return nestedWidgets;
     }
 

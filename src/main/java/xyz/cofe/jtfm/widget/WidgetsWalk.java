@@ -2,6 +2,8 @@ package xyz.cofe.jtfm.widget;
 
 import com.googlecode.lanterna.graphics.TextGraphics;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import xyz.cofe.collection.BasicEventList;
+import xyz.cofe.collection.EventList;
 import xyz.cofe.collection.ImTreeWalk;
 import xyz.cofe.iter.Eterable;
 import xyz.cofe.iter.TreeIterBuilder;
@@ -9,6 +11,7 @@ import xyz.cofe.jtfm.OwnProperty;
 import xyz.cofe.jtfm.gr.Rect;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -16,20 +19,26 @@ import java.util.function.Function;
  */
 public class WidgetsWalk {
     public static class VirtualRoot implements IWidget<VirtualRoot> {
-        public final Iterable<? extends IWidget<?>> widgets;
-
         @SuppressWarnings("nullness")
         public VirtualRoot( @NonNull Iterable<? extends IWidget<?>> widgets ){
-            this.widgets = widgets;
-            //visible_prop = new OwnProperty<>(true, this);
-
             this.rect_prop = new OwnProperty<>(Rect.of(0,0,100,100), this);
             this.visible_prop = new OwnProperty<>(true, this);
+
+        }
+
+        public final EventList<IWidget<?>> nestedWidgets = new BasicEventList<>();
+
+        @SuppressWarnings("nullness")
+        private final OwnProperty<Optional<Widget<?>>, VirtualRoot> _parent = new OwnProperty<>(Optional.empty(),this);
+
+        @Override
+        public OwnProperty<Optional<Widget<?>>, VirtualRoot> parent(){
+            return _parent;
         }
 
         @Override
-        public @NonNull Iterable<? extends IWidget<?>> getNestedWidgets(){
-            return widgets;
+        public @NonNull EventList<? extends IWidget<?>> getNestedWidgets(){
+            return nestedWidgets;
         }
 
         private final OwnProperty<Rect,VirtualRoot> rect_prop; // = new OwnProperty<>(Rect.of(0,0,100,100), this);

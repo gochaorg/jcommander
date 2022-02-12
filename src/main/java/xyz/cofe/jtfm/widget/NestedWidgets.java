@@ -1,8 +1,8 @@
 package xyz.cofe.jtfm.widget;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.List;
+import xyz.cofe.collection.EventList;
+import xyz.cofe.jtfm.widget.impl.NestedWidgetsImpl;
 
 /**
  * Дочерние виджеты
@@ -12,5 +12,6 @@ public interface NestedWidgets {
      * Возвращает дочерние виджеты
      * @return дочерние виджеты
      */
-    default @NonNull Iterable<? extends IWidget<?>> getNestedWidgets(){ return List.of(); }
+    @SuppressWarnings("unchecked")
+    default @NonNull EventList<? extends IWidget<?>> getNestedWidgets(){ return NestedWidgetsImpl.nonModify; }
 }

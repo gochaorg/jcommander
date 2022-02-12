@@ -7,6 +7,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.jtfm.OwnProperty;
 import xyz.cofe.jtfm.gr.Rect;
 
+import java.util.Optional;
+
 /**
  * Абстрактный компонент (виджет)
  */
@@ -19,11 +21,26 @@ implements IWidget<SELF>
         });
     }
 
+    //region parent : Optional<Widget<?>> - родительский виджет
+    @SuppressWarnings({"unchecked","cast.unsafe"})
+    private final OwnProperty<Optional<Widget<?>>,SELF> o_parent = new OwnProperty<>(
+        Optional.empty(),
+        (SELF) this);
+
+    /**
+     * Свойство - родительский виджет
+     * @return виджет
+     */
+    public OwnProperty<Optional<Widget<?>>,SELF> parent(){ return o_parent; }
+    //endregion
+
+    //region relativeLayout() : boolean - true - рендер относительно; false - абсолютно
     /**
      * Рендер ({@link #render(TextGraphics)}) относительно расположения
      * @return true - рендер относительно; false - абсолютно
      */
     public boolean relativeLayout(){ return true; }
+    //endregion
 
     //region visible : Boolean - видимость
     @SuppressWarnings({"unchecked", "ConstantConditions", "cast.unsafe"})

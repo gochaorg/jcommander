@@ -8,6 +8,7 @@ public interface IWidget<SELF>
         VisibleProperty<SELF>,
         Input,
         RelativeLayout,
-        NestedWidgets
+        NestedWidgets,
+        ParentProperty<SELF>
 {
 }
