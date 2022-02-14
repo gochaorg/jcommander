@@ -4,6 +4,8 @@ import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import xyz.cofe.collection.BasicEventList;
+import xyz.cofe.collection.EventList;
 import xyz.cofe.jtfm.OwnProperty;
 import xyz.cofe.jtfm.gr.Rect;
 
@@ -15,6 +17,13 @@ import java.util.Optional;
 public abstract class Widget<SELF extends Widget<?>>
 implements IWidget<SELF>
 {
+    @SuppressWarnings("nullness")
+    protected Widget(){
+        listenForSetParent(this);
+        listenRect2(this);
+        listenVisible(this);
+    }
+
     protected void repaint(){
         WidgetCycle.tryGet().ifPresent( wc -> {
             wc.addRenderRequest(this);
@@ -23,7 +32,7 @@ implements IWidget<SELF>
 
     //region parent : Optional<Widget<?>> - родительский виджет
     @SuppressWarnings({"unchecked","cast.unsafe"})
-    private final OwnProperty<Optional<Widget<?>>,SELF> o_parent = new OwnProperty<>(
+    private final OwnProperty<Optional<IWidget<?>>,SELF> o_parent = new OwnProperty<>(
         Optional.empty(),
         (SELF) this);
 
@@ -31,7 +40,31 @@ implements IWidget<SELF>
      * Свойство - родительский виджет
      * @return виджет
      */
-    public OwnProperty<Optional<Widget<?>>,SELF> parent(){ return o_parent; }
+    public OwnProperty<Optional<IWidget<?>>,SELF> parent(){ return o_parent; }
+
+    @SuppressWarnings("nullness")
+    private static void listenForSetParent( @UnderInitialization(Widget.class) @NonNull Widget<?> wid ){
+        wid.getNestedWidgets().onChanged( (idx,oldWid,curWid) -> {
+            if( oldWid!=null ){
+                var p = oldWid.parent().get();
+                if( p.isPresent() && p.get()==wid ){
+                    oldWid.parent().set(Optional.empty());
+                }
+            }
+            if( curWid!=null ){
+                curWid.parent().set(Optional.of(wid));
+            }
+        });
+    }
+
+    private EventList<IWidget<?>> nestedWidgets;
+
+    @Override
+    public @NonNull EventList<IWidget<?>> getNestedWidgets(){
+        if( nestedWidgets!=null )return nestedWidgets;
+        nestedWidgets = new BasicEventList<>();
+        return nestedWidgets;
+    }
     //endregion
 
     //region relativeLayout() : boolean - true - рендер относительно; false - абсолютно
@@ -53,10 +86,6 @@ implements IWidget<SELF>
             s.owner().repaint();
         });
     }
-
-    {
-        listenVisible(this);
-    }
     //endregion
 
     //region rect : Rect - Расположение компонента
@@ -73,10 +102,6 @@ implements IWidget<SELF>
         w.o_rect.listen( (s,old,cur) -> {
             s.owner().repaint();
         });
-    }
-
-    {
-        listenRect2(this);
     }
     //endregion
 

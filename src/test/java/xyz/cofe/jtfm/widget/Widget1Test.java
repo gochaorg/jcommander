@@ -13,15 +13,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("nullness")
 class Widget1Test extends Widget<Widget1Test> implements OnFocusLost, OnFocusGain {
     private boolean hasFocus(){
         return WidgetCycle.tryGet().flatMap( wc -> wc.findFocusOwner().map( fo -> fo== Widget1Test.this ) ).orElse(false);
     }
 
-    public final EventList<IWidget<?>> nestedWidgets = new BasicEventList<>();
+    //public final EventList<IWidget<?>> nestedWidgets = new BasicEventList<>();
+    private EventList<IWidget<?>> nestedWidgets;
 
     @Override
-    public @NonNull EventList<? extends IWidget<?>> getNestedWidgets(){
+    public @NonNull EventList<IWidget<?>> getNestedWidgets(){
+        if( nestedWidgets!=null )return nestedWidgets;
+        nestedWidgets = new BasicEventList<>();
         return nestedWidgets;
     }
 

@@ -13,5 +13,5 @@ public interface NestedWidgets {
      * @return дочерние виджеты
      */
     @SuppressWarnings("unchecked")
-    default @NonNull EventList<? extends IWidget<?>> getNestedWidgets(){ return NestedWidgetsImpl.nonModify; }
+    default @NonNull EventList<IWidget<?>> getNestedWidgets(){ return NestedWidgetsImpl.nonModify; }
 }

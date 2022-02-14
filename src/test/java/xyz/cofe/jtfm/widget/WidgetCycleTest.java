@@ -44,25 +44,53 @@ public class WidgetCycleTest {
     private void start( Terminal terminal ){
         WidgetCycle wc = WidgetCycle.create(terminal, MyWCycle::new);
 
-        var w = new Widget1Test();
-        w.setText("sample one");
-        w.rect().set(Rect.of(2,2,20, 3));
-        wc.addWidget(w);
+        var w1 = new Widget1Test();
+        w1.setText("one");
+        w1.rect().set(Rect.of(2,2,20, 3));
+        wc.addWidget(w1);
 
         var w2 = new Widget1Test();
-        w2.setText("sample two");
+        w2.setText("two");
         w2.rect().set(Rect.of(2,9,20, 3));
         wc.addWidget(w2);
 
         var w3 = new Widget1Test();
         w3.setText("three");
         w3.rect().set(Rect.of(2,2,16,3));
-        w2.nestedWidgets.add(w3);
+        w2.getNestedWidgets().add(w3);
 
         for( var wid : WidgetsWalk.visibleTree(wc.widgets()).go() ){
             System.out.println(".. "+wid.getNode());
         }
 
-        wc.run();
+        System.out.println("-".repeat(40));
+
+        System.out.println("w3 "+w3.getText()
+            +" next: "+WidgetCycle.findNextVisible(w3).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+            +" prev: "+WidgetCycle.findPrevVisible(w3).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+        );
+
+        System.out.println("w1 "+w1.getText()
+            +" next: "+WidgetCycle.findNextVisible(w1).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+            +" prev: "+WidgetCycle.findPrevVisible(w1).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+        );
+
+        System.out.println("w2 "+w2.getText()
+            +" next: "+WidgetCycle.findNextVisible(w2).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+            +" prev: "+WidgetCycle.findPrevVisible(w2).map(w -> ((Widget1Test)w).getText() )
+        );
+
+        System.out.println("w3 "+w3.getText()
+            +" next: "+WidgetCycle.findNextVisible(w3).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+            +" prev: "+WidgetCycle.findPrevVisible(w3).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+        );
+
+        try{
+            wc.run();
+        } catch( Error err ){
+            if( !"end processing".equals(err.getMessage()) ){
+                err.printStackTrace();
+            }
+        }
     }
 }

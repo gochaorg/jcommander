@@ -12,5 +12,5 @@ public interface ParentProperty<SELF> {
      * Свойство - родительский виджет
      * @return виджет
      */
-    OwnProperty<Optional<Widget<?>>,SELF> parent();
+    OwnProperty<Optional<IWidget<?>>,SELF> parent();
 }
