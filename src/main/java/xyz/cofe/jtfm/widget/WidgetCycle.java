@@ -117,9 +117,7 @@ public class WidgetCycle {
         jobs.add(job);
     }
 
-    //region widgets : List<IWidget<?>>
-    //private final List<IWidget<?>> widgets = new ArrayList<>();
-
+    //region widgetRoot : VirtualRoot - Виртуальный корень виджетов
     private final VirtualRoot widgetRoot = new VirtualRoot(List.of());
 
     /**
@@ -127,37 +125,6 @@ public class WidgetCycle {
      * @return корень виджетов
      */
     public VirtualRoot widgetRoot(){ return widgetRoot; }
-
-    /**
-     * Добавление виджета
-     * @param widget виджет
-     */
-    public void addWidget( @NonNull IWidget<?> widget ){
-        //noinspection ConstantConditions
-        if( widget==null )throw new IllegalArgumentException( "widget==null" );
-        checkThreadMatch("can't add widget");
-        widgetRoot.nestedWidgets().add(widget);
-        addRenderRequest(widget);
-    }
-
-    /**
-     * Удаление виджета
-     * @param widget виджет
-     */
-    public void removeWidget( @NonNull IWidget<?> widget ){
-        //noinspection ConstantConditions
-        if( widget==null )throw new IllegalArgumentException( "widget==null" );
-        checkThreadMatch("can't remove widget");
-        widget.nestedWidgets().remove(widget);
-    }
-
-    /**
-     * Получение списка виджетов
-     * @return список виджетов (readonly)
-     */
-    public List<IWidget<?>> widgets(){
-        return Collections.unmodifiableList(widgetRoot.nestedWidgets());
-    }
     //endregion
 
     // TODO config

@@ -52,35 +52,12 @@ public class WidgetCycleTest {
         var w2 = new Widget1Test();
         w2.setText("two");
         w2.rect().set(Rect.of(2,9,20, 3+4));
-        wc.addWidget(w2);
+        wc.widgetRoot().nestedWidgets().add(w2);
 
         var w3 = new Widget1Test();
         w3.setText("three");
         w3.rect().set(Rect.of(2,2,16,3));
         w2.nestedWidgets().add(w3);
-
-//        for( var wid : WidgetsWalk.visibleTree(wc.widgets()).go() ){
-//            System.out.println(".. "+wid.getNode());
-//        }
-//        System.out.println("-".repeat(40));
-
-//        var navTree = new NavTree<>(LikeTree.widgetTree());
-//
-//        List.of(
-//            Tuple.of("w2", w2),
-//            Tuple.of("w1", w1),
-//            Tuple.of("w3", w3)
-//        ).forEach(t->{
-//            System.out.println("a: "+t.a()+" "+t.b().getText()
-//                +" next: "+WidgetCycle.findNextVisible(t.b()).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-//                +" prev: "+WidgetCycle.findPrevVisible(t.b()).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-//            );
-//
-//            System.out.println("b: "+t.a()+" "+t.b().getText()
-//                +" next: "+navTree.next(t.b()).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-//                +" prev: "+navTree.prev(t.b()).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-//            );
-//        });
 
         try{
             wc.run();
