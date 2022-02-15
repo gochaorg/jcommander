@@ -23,7 +23,7 @@ class Widget1Test extends Widget<Widget1Test> implements OnFocusLost, OnFocusGai
     private EventList<IWidget<?>> nestedWidgets;
 
     @Override
-    public @NonNull EventList<IWidget<?>> getNestedWidgets(){
+    public @NonNull EventList<IWidget<?>> nestedWidgets(){
         if( nestedWidgets!=null )return nestedWidgets;
         nestedWidgets = new BasicEventList<>();
         return nestedWidgets;

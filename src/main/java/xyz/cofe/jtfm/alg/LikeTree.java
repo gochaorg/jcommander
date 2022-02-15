@@ -46,19 +46,19 @@ public interface LikeTree<N> {
 
             @Override
             public int childrenSize( @NonNull IWidget<?> node ){
-                return node.getNestedWidgets().size();
+                return node.nestedWidgets().size();
             }
 
             @Override
             public Optional<IWidget<?>> child( @NonNull IWidget<?> node, int idx ){
                 if( idx<0 )return Optional.empty();
-                if( idx<childrenSize(node) )return Optional.of(node.getNestedWidgets().get(idx));
+                if( idx<childrenSize(node) )return Optional.of(node.nestedWidgets().get(idx));
                 return Optional.empty();
             }
 
             @Override
             public Optional<Integer> indexOf( IWidget<?> parent, IWidget<?> child ){
-                int i = parent.getNestedWidgets().indexOf(child);
+                int i = parent.nestedWidgets().indexOf(child);
                 return i<0 ? Optional.empty() : Optional.of(i);
             }
         };

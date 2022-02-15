@@ -44,7 +44,7 @@ implements IWidget<SELF>
 
     @SuppressWarnings("nullness")
     private static void listenForSetParent( @UnderInitialization(Widget.class) @NonNull Widget<?> wid ){
-        wid.getNestedWidgets().onChanged( (idx,oldWid,curWid) -> {
+        wid.nestedWidgets().onChanged( ( idx, oldWid, curWid) -> {
             if( oldWid!=null ){
                 var p = oldWid.parent().get();
                 if( p.isPresent() && p.get()==wid ){
@@ -60,7 +60,7 @@ implements IWidget<SELF>
     private EventList<IWidget<?>> nestedWidgets;
 
     @Override
-    public @NonNull EventList<IWidget<?>> getNestedWidgets(){
+    public @NonNull EventList<IWidget<?>> nestedWidgets(){
         if( nestedWidgets!=null )return nestedWidgets;
         nestedWidgets = new BasicEventList<>();
         return nestedWidgets;

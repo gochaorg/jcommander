@@ -1,8 +1,10 @@
 package xyz.cofe.jtfm.alg;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
+import xyz.cofe.fn.Fn1;
 import xyz.cofe.jtfm.widget.IWidget;
 
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -117,5 +119,49 @@ public class NavTree<N> {
         if( p.isEmpty() )return Optional.empty();
         if( filter.test(p.get()) )return p;
         return Optional.empty();
+    }
+
+    /**
+     * Направление выборки
+     */
+    public static enum Direction
+    {
+        Next,
+        Prev;
+    }
+
+    /**
+     * Итератор относительно указанного элемента
+     * @param n узел
+     * @param d направление
+     * @param includeSelf включать в выборку сам узел
+     * @return итератор
+     */
+    public Iterator<N> iterator( @NonNull N n, @NonNull Direction d, boolean includeSelf ){
+        return new Iterator<N>() {
+            private N fetch( N n, Direction d ){
+                switch( d ){
+                    case Next:
+                        return NavTree.this.next(n).orElse(null);
+                    case Prev:
+                        return NavTree.this.prev(n).orElse(null);
+                }
+                return null;
+            }
+
+            private N cur = includeSelf ? fetch(n,d) : n;
+
+            @Override
+            public boolean hasNext(){
+                return cur!=null;
+            }
+
+            @Override
+            public N next(){
+                N r = cur;
+                cur = fetch(cur,d);
+                return r;
+            }
+        };
     }
 }

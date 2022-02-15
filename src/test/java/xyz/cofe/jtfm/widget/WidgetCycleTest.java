@@ -4,14 +4,9 @@ import com.googlecode.lanterna.terminal.MouseCaptureMode;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminalServer;
-import xyz.cofe.fn.Tuple;
-import xyz.cofe.jtfm.alg.LikeTree;
-import xyz.cofe.jtfm.alg.NavTree;
 import xyz.cofe.jtfm.gr.Rect;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class WidgetCycleTest {
     public static void main(String[] args){
@@ -52,7 +47,7 @@ public class WidgetCycleTest {
         var w1 = new Widget1Test();
         w1.setText("one");
         w1.rect().set(Rect.of(2,2,20, 3));
-        wc.addWidget(w1);
+        wc.widgetRoot().nestedWidgets().add(w1);
 
         var w2 = new Widget1Test();
         w2.setText("two");
@@ -62,7 +57,7 @@ public class WidgetCycleTest {
         var w3 = new Widget1Test();
         w3.setText("three");
         w3.rect().set(Rect.of(2,2,16,3));
-        w2.getNestedWidgets().add(w3);
+        w2.nestedWidgets().add(w3);
 
 //        for( var wid : WidgetsWalk.visibleTree(wc.widgets()).go() ){
 //            System.out.println(".. "+wid.getNode());

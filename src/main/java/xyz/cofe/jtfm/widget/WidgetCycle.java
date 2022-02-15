@@ -1,7 +1,6 @@
 package xyz.cofe.jtfm.widget;
 
 import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.MouseAction;
 import com.googlecode.lanterna.screen.TerminalScreen;
@@ -124,6 +123,12 @@ public class WidgetCycle {
     private final VirtualRoot widgetRoot = new VirtualRoot(List.of());
 
     /**
+     * Виртуальный корень виджетов
+     * @return корень виджетов
+     */
+    public VirtualRoot widgetRoot(){ return widgetRoot; }
+
+    /**
      * Добавление виджета
      * @param widget виджет
      */
@@ -131,7 +136,7 @@ public class WidgetCycle {
         //noinspection ConstantConditions
         if( widget==null )throw new IllegalArgumentException( "widget==null" );
         checkThreadMatch("can't add widget");
-        widgetRoot.getNestedWidgets().add(widget);
+        widgetRoot.nestedWidgets().add(widget);
         addRenderRequest(widget);
     }
 
@@ -143,7 +148,7 @@ public class WidgetCycle {
         //noinspection ConstantConditions
         if( widget==null )throw new IllegalArgumentException( "widget==null" );
         checkThreadMatch("can't remove widget");
-        widget.getNestedWidgets().remove(widget);
+        widget.nestedWidgets().remove(widget);
     }
 
     /**
@@ -151,7 +156,7 @@ public class WidgetCycle {
      * @return список виджетов (readonly)
      */
     public List<IWidget<?>> widgets(){
-        return Collections.unmodifiableList(widgetRoot.getNestedWidgets());
+        return Collections.unmodifiableList(widgetRoot.nestedWidgets());
     }
     //endregion
 
@@ -249,9 +254,9 @@ public class WidgetCycle {
      */
     public Optional<IWidget<?>> findFocusOwner(){
         if( focusOwner!=null )return Optional.of(focusOwner);
-        if( widgetRoot.getNestedWidgets().isEmpty() )return Optional.empty();
+        if( widgetRoot.nestedWidgets().isEmpty() )return Optional.empty();
 
-        var itr = widgetRoot.getNestedWidgets().listIterator(widgetRoot.getNestedWidgets().size());
+        var itr = widgetRoot.nestedWidgets().listIterator(widgetRoot.nestedWidgets().size());
         while( itr.hasPrevious() ){
             var w = itr.previous();
             if( w==null )continue;
@@ -270,21 +275,21 @@ public class WidgetCycle {
      */
     public Optional<IWidget<?>> switchNextFocus(){
         if( focusOwner==null )return findFocusOwner();
-        if( widgetRoot.getNestedWidgets().isEmpty() )return Optional.empty();
+        if( widgetRoot.nestedWidgets().isEmpty() )return Optional.empty();
 
         if( focusOwner==null )return Optional.empty();
         IWidget<?> fo = focusOwner;
 
-        int focusIdx = widgetRoot.getNestedWidgets().indexOf(fo);
+        int focusIdx = widgetRoot.nestedWidgets().indexOf(fo);
         if( focusIdx<0 )return Optional.empty();
 
-        var ranges = List.of(Tuple2.of(0,focusIdx), Tuple2.of(focusIdx+1, widgetRoot.getNestedWidgets().size()));
+        var ranges = List.of(Tuple2.of(0,focusIdx), Tuple2.of(focusIdx+1, widgetRoot.nestedWidgets().size()));
         for( var range : ranges ){
             var cnt = range.b() - range.a();
             if( cnt<1 )continue;
 
             for( var i=range.a(); i<range.b(); i++ ){
-                var itm = widgetRoot.getNestedWidgets().get(i);
+                var itm = widgetRoot.nestedWidgets().get(i);
                 if( itm==null || !itm.visible().get() || !itm.isFocusable() )continue;
                 setFocusOwner(itm);
                 return Optional.of(itm);
@@ -322,8 +327,8 @@ public class WidgetCycle {
         if( ks instanceof MouseAction ){
             var ma = (MouseAction)ks;
             IWidget<?> found = null;
-            for( int i=widgetRoot.getNestedWidgets().size()-1; i>=0; i-- ){
-                var w = widgetRoot.getNestedWidgets().get(i);
+            for( int i = widgetRoot.nestedWidgets().size()-1; i>=0; i-- ){
+                var w = widgetRoot.nestedWidgets().get(i);
                 if( w==null || !w.visible().get() )continue;
                 if( w.rect().get().include( ma.getPosition() ) ){
                     found = w;
@@ -352,9 +357,6 @@ public class WidgetCycle {
 
     // TODO config
     private boolean render_checkRequests(){ return true; }
-
-    // TODO config
-    private boolean render_checkNestedRequest(){ return false; }
 
     private final NavTree<IWidget<?>> visibleTreeNavigation =
         new NavTree<>(LikeTree.widgetTree()).filter(w -> w instanceof VirtualRoot || w.visible().get()
@@ -388,6 +390,7 @@ public class WidgetCycle {
                         long c_sleep = socket_timeout_cycleSleep();
                         if( c_sleep > 0 ){
                             try{
+                                //noinspection BusyWait
                                 Thread.sleep(c_sleep);
                             } catch( InterruptedException e ){
                                 log(e);
@@ -405,9 +408,6 @@ public class WidgetCycle {
                 if( !render_checkRequests() || !redrawRequests.isEmpty() ){
                     screen.doResizeIfNecessary();
                     var g = screen.newTextGraphics();
-
-                    //var rel_g = new RelTxtGraphics(g);
-                    //renderByTreeIterator(g, rel_g);
 
                     IWidget<?> wid = widgetRoot;
                     while( true ){
@@ -447,7 +447,7 @@ public class WidgetCycle {
 
                 //////////////////
                 // exit ?
-                if( jobs.isEmpty() && widgetRoot.getNestedWidgets().isEmpty() ){
+                if( jobs.isEmpty() && widgetRoot.nestedWidgets().isEmpty() ){
                     break;
                 }
 
@@ -456,6 +456,7 @@ public class WidgetCycle {
                 long c_sleep = cycleSleep();
                 if( c_sleep>0 ){
                     try{
+                        //noinspection BusyWait
                         Thread.sleep(c_sleep);
                     } catch( InterruptedException e ){
                         log(e);
