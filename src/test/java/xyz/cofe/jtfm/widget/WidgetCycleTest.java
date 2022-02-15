@@ -4,9 +4,14 @@ import com.googlecode.lanterna.terminal.MouseCaptureMode;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminal;
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminalServer;
+import xyz.cofe.fn.Tuple;
+import xyz.cofe.jtfm.alg.LikeTree;
+import xyz.cofe.jtfm.alg.NavTree;
 import xyz.cofe.jtfm.gr.Rect;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class WidgetCycleTest {
     public static void main(String[] args){
@@ -51,7 +56,7 @@ public class WidgetCycleTest {
 
         var w2 = new Widget1Test();
         w2.setText("two");
-        w2.rect().set(Rect.of(2,9,20, 3));
+        w2.rect().set(Rect.of(2,9,20, 3+4));
         wc.addWidget(w2);
 
         var w3 = new Widget1Test();
@@ -59,31 +64,28 @@ public class WidgetCycleTest {
         w3.rect().set(Rect.of(2,2,16,3));
         w2.getNestedWidgets().add(w3);
 
-        for( var wid : WidgetsWalk.visibleTree(wc.widgets()).go() ){
-            System.out.println(".. "+wid.getNode());
-        }
+//        for( var wid : WidgetsWalk.visibleTree(wc.widgets()).go() ){
+//            System.out.println(".. "+wid.getNode());
+//        }
+//        System.out.println("-".repeat(40));
 
-        System.out.println("-".repeat(40));
-
-        System.out.println("w3 "+w3.getText()
-            +" next: "+WidgetCycle.findNextVisible(w3).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-            +" prev: "+WidgetCycle.findPrevVisible(w3).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-        );
-
-        System.out.println("w1 "+w1.getText()
-            +" next: "+WidgetCycle.findNextVisible(w1).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-            +" prev: "+WidgetCycle.findPrevVisible(w1).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-        );
-
-        System.out.println("w2 "+w2.getText()
-            +" next: "+WidgetCycle.findNextVisible(w2).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-            +" prev: "+WidgetCycle.findPrevVisible(w2).map(w -> ((Widget1Test)w).getText() )
-        );
-
-        System.out.println("w3 "+w3.getText()
-            +" next: "+WidgetCycle.findNextVisible(w3).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-            +" prev: "+WidgetCycle.findPrevVisible(w3).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
-        );
+//        var navTree = new NavTree<>(LikeTree.widgetTree());
+//
+//        List.of(
+//            Tuple.of("w2", w2),
+//            Tuple.of("w1", w1),
+//            Tuple.of("w3", w3)
+//        ).forEach(t->{
+//            System.out.println("a: "+t.a()+" "+t.b().getText()
+//                +" next: "+WidgetCycle.findNextVisible(t.b()).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+//                +" prev: "+WidgetCycle.findPrevVisible(t.b()).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+//            );
+//
+//            System.out.println("b: "+t.a()+" "+t.b().getText()
+//                +" next: "+navTree.next(t.b()).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+//                +" prev: "+navTree.prev(t.b()).map(w -> w instanceof Widget1Test ? ((Widget1Test)w).getText() : "?" )
+//            );
+//        });
 
         try{
             wc.run();

@@ -1,6 +1,7 @@
 package xyz.cofe.jtfm.widget;
 
 import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.MouseAction;
 import com.googlecode.lanterna.screen.TerminalScreen;
@@ -11,6 +12,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Tuple2;
 import xyz.cofe.jtfm.Change;
+import xyz.cofe.jtfm.alg.LikeTree;
+import xyz.cofe.jtfm.alg.NavTree;
 import xyz.cofe.jtfm.gr.RelTxtGraphics;
 
 import java.io.IOException;
@@ -291,85 +294,6 @@ public class WidgetCycle {
         return Optional.empty();
     }
 
-    private static Optional<IWidget<?>> sib(@NonNull IWidget<?> wid, int off) {
-        if( off==0 )return Optional.of(wid);
-
-        var prnt = wid.parent().get();
-        if( prnt.isEmpty() )return Optional.empty();
-
-        int iwid = prnt.get().getNestedWidgets().indexOf(wid);
-        if( iwid<0 )return Optional.empty();
-
-        int trgt = iwid+off;
-        if( trgt<0 )return Optional.empty();
-        if( trgt>=prnt.get().getNestedWidgets().size() )return Optional.empty();
-        return Optional.of(prnt.get().getNestedWidgets().get(trgt));
-    }
-
-    /**
-     * Поиск следующего виджета для рендера относительно указанного
-     * @param wid виджет
-     * @return следующий
-     */
-    public static Optional<IWidget<?>> findNextVisible(@NonNull IWidget<?> wid){
-        //noinspection ConstantConditions
-        if( wid==null )throw new IllegalArgumentException( "wid==null" );
-
-        if( !wid.getNestedWidgets().isEmpty() ){
-            int ni = -1;
-            for( var nwid : wid.getNestedWidgets() ){
-                ni++;
-                if( nwid == null ) throw new IllegalStateException("nestedWidget[" + ni + "]==null");
-                if( !nwid.visible().get() ) continue;
-                return Optional.of(nwid);
-            }
-        }
-
-        while( true ) {
-            while( true ) {
-                var w_sib = sib(wid, 1);
-                if( w_sib.isEmpty() ) break;
-                if( w_sib.get().visible().get() ) return w_sib;
-                wid = w_sib.get();
-            }
-
-            var w_prnt = wid.parent().get();
-            if( w_prnt.isEmpty() ) return Optional.empty();
-            wid = w_prnt.get();
-        }
-    }
-
-    private static Optional<IWidget<?>> last_child_or_self_visible(@NonNull IWidget<?> wid){
-        if( !wid.visible().get() )return Optional.empty();
-
-        while( true ) {
-            if( wid.getNestedWidgets().isEmpty() )return Optional.of(wid);
-            var itr = wid.getNestedWidgets().listIterator(wid.getNestedWidgets().size());
-            while( itr.hasPrevious() ) {
-                var w_ch = itr.previous();
-                if( !w_ch.visible().get() ) continue;
-                if( w_ch.getNestedWidgets().isEmpty() ) return Optional.of(w_ch);
-                wid = w_ch;
-                break;
-            }
-        }
-    }
-
-    public static Optional<IWidget<?>> findPrevVisible(@NonNull IWidget<?> wid){
-        //noinspection ConstantConditions
-        if( wid==null )throw new IllegalArgumentException( "wid==null" );
-
-        var w_sib = sib(wid, -1);
-        if( w_sib.isPresent() ){
-            return last_child_or_self_visible(w_sib.get());
-        }
-
-        var p = wid.parent().get();
-        if( p.isEmpty() )return Optional.empty();
-        if( p.get().visible().get() )return p;
-        return Optional.empty();
-    }
-
     /**
      * Обработка очереди заданий
      * @return кол-во заданий
@@ -432,6 +356,10 @@ public class WidgetCycle {
     // TODO config
     private boolean render_checkNestedRequest(){ return false; }
 
+    private final NavTree<IWidget<?>> visibleTreeNavigation =
+        new NavTree<>(LikeTree.widgetTree()).filter(w -> w instanceof VirtualRoot || w.visible().get()
+    );
+
     /**
      * Запуск цикла обработки
      */
@@ -478,27 +406,35 @@ public class WidgetCycle {
                     screen.doResizeIfNecessary();
                     var g = screen.newTextGraphics();
 
-                    var rel_g = new RelTxtGraphics(g);
-                    for( var tp : WidgetsWalk.visibleTree(widgetRoot.getNestedWidgets()).go() ){
-                        if( !render_checkNestedRequest() || redrawRequests.contains(tp.getNode()) ){
+                    //var rel_g = new RelTxtGraphics(g);
+                    //renderByTreeIterator(g, rel_g);
 
-                            int rel_x = 0;
-                            int rel_y = 0;
-                            for( var n : tp.nodeList() ){
-                                if( n.relativeLayout() ){
-                                    rel_x += n.rect().get().left();
-                                    rel_y += n.rect().get().top();
-                                }
+                    IWidget<?> wid = widgetRoot;
+                    while( true ){
+                        int rel_x = 0;
+                        int rel_y = 0;
+                        var w = wid;
+                        while( true ){
+                            if( w.relativeLayout() ){
+                                rel_x += w.rect().get().left();
+                                rel_y += w.rect().get().top();
                             }
-                            rel_g = rel_g.withLeftTop(rel_x, rel_y);
-
-                            tp.getNode().render(
-                                tp.getNode().relativeLayout() ?
-                                    rel_g : g
-                            );
-
-                            redrawRequests.remove(tp.getNode());
+                            var w_o = w.parent().get();
+                            if( w_o.isEmpty() )break;
+                            w = w_o.get();
                         }
+
+                        if( wid.relativeLayout() ){
+                            var rel_g = new RelTxtGraphics(g);
+                            rel_g = rel_g.withLeftTop(rel_x, rel_y);
+                            wid.render( rel_g );
+                        }else{
+                            wid.render( g );
+                        }
+
+                        var w_o = visibleTreeNavigation.next(wid);
+                        if( w_o.isEmpty() )break;
+                        wid = w_o.get();
                     }
 
                     if( !redrawRequests.isEmpty() ){
