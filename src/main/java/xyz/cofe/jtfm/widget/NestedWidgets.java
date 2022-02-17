@@ -7,11 +7,12 @@ import xyz.cofe.jtfm.widget.impl.NestedWidgetsImpl;
 /**
  * Дочерние виджеты
  */
-public interface NestedWidgets {
+public interface NestedWidgets extends NestedNodes<IWidget<?>> {
     /**
      * Возвращает дочерние виджеты
      * @return дочерние виджеты
      */
     @SuppressWarnings("unchecked")
-    default @NonNull EventList<IWidget<?>> nestedWidgets(){ return NestedWidgetsImpl.nonModify; }
+    @Override
+    default @NonNull EventList<IWidget<?>> nestedNodes(){ return NestedWidgetsImpl.nonModify; }
 }

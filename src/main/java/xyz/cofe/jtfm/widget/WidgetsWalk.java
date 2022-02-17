@@ -15,7 +15,7 @@ public class WidgetsWalk {
     private static final Function<IWidget<?>,Iterable<? extends IWidget<?>>> visibleTree
         = root ->
         root == null || !root.visible().get() ? List.<Widget<?>>of() :
-            Eterable.of(root.nestedWidgets()).filter(
+            Eterable.of(root.nestedNodes()).filter(
                 w -> w!=null && w.visible().get()
             )
         ;

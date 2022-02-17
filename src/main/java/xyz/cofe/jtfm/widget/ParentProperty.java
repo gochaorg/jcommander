@@ -7,10 +7,10 @@ import java.util.Optional;
 /**
  * Свойство - родительский виджет
  */
-public interface ParentProperty<SELF> {
+public interface ParentProperty<PARENT,SELF> {
     /**
      * Свойство - родительский виджет
      * @return виджет
      */
-    OwnProperty<Optional<IWidget<?>>,SELF> parent();
+    OwnProperty<Optional<PARENT>,SELF> parent();
 }

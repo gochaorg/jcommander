@@ -47,17 +47,17 @@ public class WidgetCycleTest {
         var w1 = new Widget1Test();
         w1.setText("one");
         w1.rect().set(Rect.of(2,2,20, 3));
-        wc.widgetRoot().nestedWidgets().add(w1);
+        wc.widgetRoot().nestedNodes().add(w1);
 
         var w2 = new Widget1Test();
         w2.setText("two");
         w2.rect().set(Rect.of(2,9,20, 3+4));
-        wc.widgetRoot().nestedWidgets().add(w2);
+        wc.widgetRoot().nestedNodes().add(w2);
 
         var w3 = new Widget1Test();
         w3.setText("three");
         w3.rect().set(Rect.of(2,2,16,3));
-        w2.nestedWidgets().add(w3);
+        w2.nestedNodes().add(w3);
 
         try{
             wc.run();

@@ -9,6 +9,6 @@ public interface IWidget<SELF>
         Input,
         RelativeLayout,
         NestedWidgets,
-        ParentProperty<SELF>
+        ParentProperty<IWidget<?>,SELF>
 {
 }

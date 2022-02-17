@@ -1,8 +1,7 @@
 package xyz.cofe.jtfm.alg;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import xyz.cofe.fn.Fn1;
-import xyz.cofe.jtfm.widget.IWidget;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -130,6 +129,42 @@ public class NavTree<N> {
         Prev;
     }
 
+    public static class NavIterator<N>
+    implements Iterator<N>
+    {
+        private final NavTree<N> navTree;
+        private final Direction direction;
+        private Optional<N> cur;
+
+        public NavIterator( @NonNull NavTree<N> navTree, @NonNull N from, @NonNull Direction d, boolean includeSelf ){
+            this.navTree = navTree;
+            this.direction = d;
+            this.cur = includeSelf ? fetch(navTree, from,d) : Optional.of(from);
+        }
+
+        private static <N> Optional<N> fetch( NavTree<N> navTree, @NonNull N n, Direction d ){
+            switch( d ){
+                case Next:
+                    return navTree.next(n);
+                case Prev:
+                    return navTree.prev(n);
+            }
+            throw new UnsupportedOperationException("!!!");
+        }
+
+        @Override
+        public boolean hasNext(){
+            return cur.isPresent();
+        }
+
+        @Override
+        public N next(){
+            N r = cur.get();
+            cur = fetch(navTree, cur.get(), direction);
+            return r;
+        }
+    }
+
     /**
      * Итератор относительно указанного элемента
      * @param n узел
@@ -137,31 +172,32 @@ public class NavTree<N> {
      * @param includeSelf включать в выборку сам узел
      * @return итератор
      */
-    public Iterator<N> iterator( @NonNull N n, @NonNull Direction d, boolean includeSelf ){
-        return new Iterator<N>() {
-            private N fetch( N n, Direction d ){
-                switch( d ){
-                    case Next:
-                        return NavTree.this.next(n).orElse(null);
-                    case Prev:
-                        return NavTree.this.prev(n).orElse(null);
-                }
-                return null;
-            }
+    @SuppressWarnings("nullness")
+    public NavIterator<N> iterator( @NonNull N n, @NonNull Direction d, boolean includeSelf ){
+        return new NavIterator<N>(this, n, d, includeSelf);
+    }
 
-            private N cur = includeSelf ? fetch(n,d) : n;
-
-            @Override
-            public boolean hasNext(){
-                return cur!=null;
+    /**
+     * Поиск крайнего элемента
+     * @param n элемент
+     * @param d направление
+     * @return крайний элемент
+     */
+    public Optional<N> extreme( @NonNull N n, @NonNull Direction d ){
+        if( !filter.test(n) )return Optional.empty();
+        while( true ){
+            Optional<N> follow = Optional.empty();
+            switch( d ){
+                case Next:
+                    follow = next(n);
+                    break;
+                case Prev:
+                    follow = prev(n);
+                    break;
             }
-
-            @Override
-            public N next(){
-                N r = cur;
-                cur = fetch(cur,d);
-                return r;
-            }
-        };
+            if( follow.isEmpty() )break;
+            n = follow.get();
+        }
+        return Optional.of(n);
     }
 }

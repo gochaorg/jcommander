@@ -13,6 +13,7 @@ import xyz.cofe.fn.Tuple2;
 import xyz.cofe.jtfm.Change;
 import xyz.cofe.jtfm.alg.LikeTree;
 import xyz.cofe.jtfm.alg.NavTree;
+import xyz.cofe.jtfm.gr.Rect;
 import xyz.cofe.jtfm.gr.RelTxtGraphics;
 
 import java.io.IOException;
@@ -221,9 +222,9 @@ public class WidgetCycle {
      */
     public Optional<IWidget<?>> findFocusOwner(){
         if( focusOwner!=null )return Optional.of(focusOwner);
-        if( widgetRoot.nestedWidgets().isEmpty() )return Optional.empty();
+        if( widgetRoot.nestedNodes().isEmpty() )return Optional.empty();
 
-        var itr = widgetRoot.nestedWidgets().listIterator(widgetRoot.nestedWidgets().size());
+        var itr = widgetRoot.nestedNodes().listIterator(widgetRoot.nestedNodes().size());
         while( itr.hasPrevious() ){
             var w = itr.previous();
             if( w==null )continue;
@@ -242,21 +243,21 @@ public class WidgetCycle {
      */
     public Optional<IWidget<?>> switchNextFocus(){
         if( focusOwner==null )return findFocusOwner();
-        if( widgetRoot.nestedWidgets().isEmpty() )return Optional.empty();
+        if( widgetRoot.nestedNodes().isEmpty() )return Optional.empty();
 
         if( focusOwner==null )return Optional.empty();
         IWidget<?> fo = focusOwner;
 
-        int focusIdx = widgetRoot.nestedWidgets().indexOf(fo);
+        int focusIdx = widgetRoot.nestedNodes().indexOf(fo);
         if( focusIdx<0 )return Optional.empty();
 
-        var ranges = List.of(Tuple2.of(0,focusIdx), Tuple2.of(focusIdx+1, widgetRoot.nestedWidgets().size()));
+        var ranges = List.of(Tuple2.of(0,focusIdx), Tuple2.of(focusIdx+1, widgetRoot.nestedNodes().size()));
         for( var range : ranges ){
             var cnt = range.b() - range.a();
             if( cnt<1 )continue;
 
             for( var i=range.a(); i<range.b(); i++ ){
-                var itm = widgetRoot.nestedWidgets().get(i);
+                var itm = widgetRoot.nestedNodes().get(i);
                 if( itm==null || !itm.visible().get() || !itm.isFocusable() )continue;
                 setFocusOwner(itm);
                 return Optional.of(itm);
@@ -293,21 +294,23 @@ public class WidgetCycle {
     protected void processInput( KeyStroke ks ){
         if( ks instanceof MouseAction ){
             var ma = (MouseAction)ks;
-            IWidget<?> found = null;
-            for( int i = widgetRoot.nestedWidgets().size()-1; i>=0; i-- ){
-                var w = widgetRoot.nestedWidgets().get(i);
-                if( w==null || !w.visible().get() )continue;
-                if( w.rect().get().include( ma.getPosition() ) ){
-                    found = w;
-                    break;
+            visibleTreeNavigation.extreme(widgetRoot(), NavTree.Direction.Next).ifPresent( last_wid -> {
+                var itr = visibleTreeNavigation.iterator(
+                    last_wid,
+                    NavTree.Direction.Prev,
+                    false);
+                while( itr.hasNext() ){
+                    var wid = itr.next();
+                    if( toAbsolute(wid).include(ma.getPosition()) ){
+                        if( wid.isFocusable() ){
+                            setFocusOwner(wid);
+                        }
+                        if( wid.input(ma) ){
+                            break;
+                        }
+                    }
                 }
-            }
-            if( found!=null ){
-                if( found.isFocusable() ){
-                    setFocusOwner(found);
-                }
-                found.input(ma);
-            }
+            });
         }else {
             try{
                 findFocusOwner().ifPresent(wid -> wid.input(ks));
@@ -328,6 +331,22 @@ public class WidgetCycle {
     private final NavTree<IWidget<?>> visibleTreeNavigation =
         new NavTree<>(LikeTree.widgetTree()).filter(w -> w instanceof VirtualRoot || w.visible().get()
     );
+
+    private static Rect toAbsolute( @NonNull IWidget<?> w ){
+        int rel_x = 0;
+        int rel_y = 0;
+        while( true ){
+            if( w.relativeLayout() ){
+                rel_x += w.rect().get().left();
+                rel_y += w.rect().get().top();
+            }
+            var w_o = w.parent().get();
+            if( w_o.isEmpty() )break;
+            w = w_o.get();
+        }
+
+        return Rect.of(rel_x, rel_y, w.rect().get().width(), w.rect().get().height() );
+    }
 
     /**
      * Запуск цикла обработки
@@ -414,7 +433,7 @@ public class WidgetCycle {
 
                 //////////////////
                 // exit ?
-                if( jobs.isEmpty() && widgetRoot.nestedWidgets().isEmpty() ){
+                if( jobs.isEmpty() && widgetRoot.nestedNodes().isEmpty() ){
                     break;
                 }
 
