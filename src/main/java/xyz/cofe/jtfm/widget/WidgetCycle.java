@@ -105,6 +105,8 @@ public class WidgetCycle {
     }
 
     private void onTerminalResized( TerminalSize size ){
+        if( size==null )return;
+        widgetRoot().rect().set(0,0, size.getColumns(), size.getRows() );
     }
 
     //region jobs : Queue<Job<?>> - конкурентная очередь задач
@@ -352,7 +354,8 @@ public class WidgetCycle {
             screen.startScreen();
             resetCursorPos(screen);
 
-            //widgetRoot().rect().set();
+            var term_size = screen.getTerminalSize();
+            widgetRoot().rect().set( 0,0,term_size.getColumns(),term_size.getRows() );
 
             terminal.addResizeListener( resizer );
 
