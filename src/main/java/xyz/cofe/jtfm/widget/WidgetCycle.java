@@ -178,7 +178,7 @@ public class WidgetCycle {
      *                      newFocusOwner.visible().get()
      * @return Смена фокуса
      */
-    public Optional<Change<IWidget<?>,IWidget<?>>> setFocusOwner( @Nullable IWidget<?> newFocusOwner ){
+    public Optional<Change<Optional<IWidget<?>>,Optional<IWidget<?>>>> setFocusOwner( @Nullable IWidget<?> newFocusOwner ){
         var oldFocusOwner = focusOwner;
         if( newFocusOwner==oldFocusOwner )return Optional.empty();
 
@@ -211,8 +211,8 @@ public class WidgetCycle {
 
         return Optional.of(
             Change.fromTo(
-                oldFocusOwner,
-                newFocusOwner
+                oldFocusOwner !=null ? Optional.of(oldFocusOwner) : Optional.empty(),
+                newFocusOwner != null ? Optional.of(newFocusOwner) : Optional.empty()
             )
         );
     }
@@ -242,26 +242,27 @@ public class WidgetCycle {
      * Переключение фокуса
      * @return смененный фокус
      */
-    public Optional<IWidget<?>> switchNextFocus(){
-        if( focusOwner==null )return findFocusOwner();
+    public Optional<Change<Optional<IWidget<?>>,Optional<IWidget<?>>>> switchNextFocus(){
+        if( focusOwner==null ){
+            var fo = findFocusOwner();
+            return fo.isEmpty() ? Optional.empty() :
+                Optional.of(
+                    Change.fromTo(
+                        Optional.empty(),
+                        fo
+                    )
+                );
+        }
         if( widgetRoot.nestedNodes().isEmpty() )return Optional.empty();
 
         if( focusOwner==null )return Optional.empty();
         IWidget<?> fo = focusOwner;
 
-        int focusIdx = widgetRoot.nestedNodes().indexOf(fo);
-        if( focusIdx<0 )return Optional.empty();
-
-        var ranges = List.of(Tuple2.of(0,focusIdx), Tuple2.of(focusIdx+1, widgetRoot.nestedNodes().size()));
-        for( var range : ranges ){
-            var cnt = range.b() - range.a();
-            if( cnt<1 )continue;
-
-            for( var i=range.a(); i<range.b(); i++ ){
-                var itm = widgetRoot.nestedNodes().get(i);
-                if( itm==null || !itm.visible().get() || !itm.isFocusable() )continue;
-                setFocusOwner(itm);
-                return Optional.of(itm);
+        while( true ){
+            var nxt = visibleTreeNavigation.next(fo);
+            if( nxt.isEmpty() )break;
+            if( nxt.get().isFocusable() ){
+                return setFocusOwner(nxt.get());
             }
         }
 
@@ -295,24 +296,18 @@ public class WidgetCycle {
     protected void processInput( KeyStroke ks ){
         if( ks instanceof MouseAction ){
             var ma = (MouseAction)ks;
-            visibleTreeNavigation.extreme(widgetRoot(), NavTree.Direction.Next).ifPresent( last_wid -> {
-                var itr = visibleTreeNavigation.iterator(
-                    last_wid,
-                    NavTree.Direction.Prev,
-                    false);
-                while( itr.hasNext() ){
-                    var wid = itr.next();
-                    var prnt_loc_ma = wid.parent().get().map( prnt_w -> prnt_w.toLocal(ma) ).orElse(ma);
-                    if( wid.rect().get().include( prnt_loc_ma.getPosition() ) ){
-                        if( wid.isFocusable() ){
-                            setFocusOwner(wid);
-                        }
-                        if( wid.input(wid.toLocal(ma)) ){
-                            break;
-                        }
+
+            for( var wid : visibleTreeNavigation.lastToHead(widgetRoot()) ){
+                var prnt_loc_ma = wid.parent().get().map( prnt_w -> prnt_w.toLocal(ma) ).orElse(ma);
+                if( wid.rect().get().include( prnt_loc_ma.getPosition() ) ){
+                    if( wid.isFocusable() ){
+                        setFocusOwner(wid);
+                    }
+                    if( wid.input(wid.toLocal(ma)) ){
+                        break;
                     }
                 }
-            });
+            }
         }else {
             try{
                 findFocusOwner().ifPresent(wid -> wid.input(ks));
@@ -333,22 +328,6 @@ public class WidgetCycle {
     private final NavTree<IWidget<?>> visibleTreeNavigation =
         new NavTree<>(LikeTree.widgetTree()).filter(w -> w instanceof VirtualRoot || w.visible().get()
     );
-
-//    private static Rect toAbsolute( @NonNull IWidget<?> w ){
-//        int rel_x = 0;
-//        int rel_y = 0;
-//        while( true ){
-//            if( w.relativeLayout() ){
-//                rel_x += w.rect().get().left();
-//                rel_y += w.rect().get().top();
-//            }
-//            var w_o = w.parent().get();
-//            if( w_o.isEmpty() )break;
-//            w = w_o.get();
-//        }
-//
-//        return Rect.of(rel_x, rel_y, w.rect().get().width(), w.rect().get().height() );
-//    }
 
     /**
      * Запуск цикла обработки
