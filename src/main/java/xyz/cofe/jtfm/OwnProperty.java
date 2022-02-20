@@ -6,7 +6,17 @@ import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Свойство с владельцем свойства
+ * @param <VALUE> тип значения
+ * @param <OWN> тип владельца
+ */
 public class OwnProperty<VALUE,OWN> implements Property<VALUE,OwnProperty<VALUE,OWN>>, MutableProperty<VALUE, OwnProperty<VALUE,OWN>> {
+    /**
+     * Конструктор
+     * @param initial начальное значение
+     * @param owner владелец свойства
+     */
     public OwnProperty( VALUE initial, OWN owner ){
         if( owner==null )throw new IllegalArgumentException( "owner==null" );
         if( initial==null )throw new IllegalArgumentException( "initial==null" );
@@ -17,6 +27,10 @@ public class OwnProperty<VALUE,OWN> implements Property<VALUE,OwnProperty<VALUE,
     private OWN owner;
     private VALUE value;
 
+    /**
+     * Возвращает владельца свойства
+     * @return владелец свойства
+     */
     public OWN owner(){ return owner; }
 
     @Override
