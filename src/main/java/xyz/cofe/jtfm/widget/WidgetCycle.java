@@ -107,10 +107,11 @@ public class WidgetCycle {
     private void onTerminalResized( TerminalSize size ){
     }
 
+    //region jobs : Queue<Job<?>> - конкурентная очередь задач
     private final Queue<Job<?>> jobs = new ConcurrentLinkedQueue<>();
 
     /**
-     * Добавление задания в очередь
+     * Добавление задания в очередь, thread safe
      * @param job задание
      */
     public void addJob(@NonNull Job<?> job){
@@ -118,6 +119,7 @@ public class WidgetCycle {
         if( job==null )throw new IllegalArgumentException( "job==null" );
         jobs.add(job);
     }
+    //endregion
 
     //region widgetRoot : VirtualRoot - Виртуальный корень виджетов
     private final VirtualRoot widgetRoot = new VirtualRoot(List.of());
@@ -348,8 +350,9 @@ public class WidgetCycle {
         try {
             screen = new TerminalScreen(terminal);
             screen.startScreen();
-
             resetCursorPos(screen);
+
+            //widgetRoot().rect().set();
 
             terminal.addResizeListener( resizer );
 
