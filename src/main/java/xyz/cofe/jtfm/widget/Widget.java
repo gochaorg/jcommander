@@ -90,13 +90,13 @@ implements IWidget<SELF>
 
     //region rect : Rect - Расположение компонента
     @SuppressWarnings({"unchecked","cast.unsafe"})
-    private final OwnProperty<Rect,SELF> o_rect = new OwnProperty<>(Rect.of(0,0,1,1), (SELF) this);
+    private final RectProp<SELF> o_rect = new RectProp<>(Rect.of(0,0,1,1), (SELF) this);
 
     /**
      * Свойство - расположение объекта
      * @return расположение объекта
      */
-    public OwnProperty<Rect,SELF> rect(){ return o_rect; }
+    public RectProp<SELF> rect(){ return o_rect; }
 
     private static void listenRect2( @UnderInitialization(Widget.class) @NonNull Widget<?> w ){
         w.o_rect.listen( (s,old,cur) -> {
