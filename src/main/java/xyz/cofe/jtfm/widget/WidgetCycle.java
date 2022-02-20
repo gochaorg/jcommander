@@ -13,6 +13,7 @@ import xyz.cofe.fn.Tuple2;
 import xyz.cofe.jtfm.Change;
 import xyz.cofe.jtfm.alg.LikeTree;
 import xyz.cofe.jtfm.alg.NavTree;
+import xyz.cofe.jtfm.gr.Point;
 import xyz.cofe.jtfm.gr.Rect;
 import xyz.cofe.jtfm.gr.RelTxtGraphics;
 
@@ -301,11 +302,12 @@ public class WidgetCycle {
                     false);
                 while( itr.hasNext() ){
                     var wid = itr.next();
-                    if( toAbsolute(wid).include(ma.getPosition()) ){
+                    var prnt_loc_ma = wid.parent().get().map( prnt_w -> prnt_w.toLocal(ma) ).orElse(ma);
+                    if( wid.rect().get().include( prnt_loc_ma.getPosition() ) ){
                         if( wid.isFocusable() ){
                             setFocusOwner(wid);
                         }
-                        if( wid.input(ma) ){
+                        if( wid.input(wid.toLocal(ma)) ){
                             break;
                         }
                     }
@@ -332,21 +334,21 @@ public class WidgetCycle {
         new NavTree<>(LikeTree.widgetTree()).filter(w -> w instanceof VirtualRoot || w.visible().get()
     );
 
-    private static Rect toAbsolute( @NonNull IWidget<?> w ){
-        int rel_x = 0;
-        int rel_y = 0;
-        while( true ){
-            if( w.relativeLayout() ){
-                rel_x += w.rect().get().left();
-                rel_y += w.rect().get().top();
-            }
-            var w_o = w.parent().get();
-            if( w_o.isEmpty() )break;
-            w = w_o.get();
-        }
-
-        return Rect.of(rel_x, rel_y, w.rect().get().width(), w.rect().get().height() );
-    }
+//    private static Rect toAbsolute( @NonNull IWidget<?> w ){
+//        int rel_x = 0;
+//        int rel_y = 0;
+//        while( true ){
+//            if( w.relativeLayout() ){
+//                rel_x += w.rect().get().left();
+//                rel_y += w.rect().get().top();
+//            }
+//            var w_o = w.parent().get();
+//            if( w_o.isEmpty() )break;
+//            w = w_o.get();
+//        }
+//
+//        return Rect.of(rel_x, rel_y, w.rect().get().width(), w.rect().get().height() );
+//    }
 
     /**
      * Запуск цикла обработки

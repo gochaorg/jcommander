@@ -3,6 +3,7 @@ package xyz.cofe.jtfm.widget;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+import com.googlecode.lanterna.input.MouseAction;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import xyz.cofe.collection.BasicEventList;
 import xyz.cofe.collection.EventList;
@@ -70,7 +71,7 @@ class Widget1Test extends Widget<Widget1Test> implements OnFocusLost, OnFocusGai
 
     @Override
     public boolean input( @NonNull KeyStroke ks ){
-        System.out.println("accept " + ks);
+        //System.out.println("accept " + ks);
         if( ks.getKeyType() == KeyType.ArrowLeft ){
             var r = rect().get();
             rect().set(Rect.of(r.left() - 1, r.top(), r.width(), r.height()));
@@ -79,6 +80,11 @@ class Widget1Test extends Widget<Widget1Test> implements OnFocusLost, OnFocusGai
         if( ks.getKeyType() == KeyType.ArrowRight ){
             var r = rect().get();
             rect().set(Rect.of(r.left() + 1, r.top(), r.width(), r.height()));
+            return true;
+        }
+        if( ks instanceof MouseAction ){
+            var ma = (MouseAction)ks;
+            System.out.println("accept "+ma+" "+text);
             return true;
         }
         return false;

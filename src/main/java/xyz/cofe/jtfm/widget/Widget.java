@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * Абстрактный компонент (виджет)
  */
-public abstract class Widget<SELF extends Widget<?>>
+public abstract class Widget<SELF extends Widget<SELF>>
 implements IWidget<SELF>
 {
     @SuppressWarnings("nullness")

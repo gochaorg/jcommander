@@ -1,6 +1,7 @@
 package xyz.cofe.jtfm.gr;
 
 import com.googlecode.lanterna.TerminalPosition;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * Прямоугольник.
@@ -41,6 +42,38 @@ public interface Rect {
      * @return Правый край
      */
     public default int right(){ return left()+width(); }
+
+    /**
+     * Верхняя левая точка
+     * @return угловая точка
+     */
+    public default Point leftTop(){
+        return new Point(left(), top());
+    }
+
+    /**
+     * Верхняя левая точка
+     * @return угловая точка
+     */
+    public default Point rightTop(){
+        return new Point(right(), top());
+    }
+
+    /**
+     * Верхняя левая точка
+     * @return угловая точка
+     */
+    public default Point leftBottom(){
+        return new Point(left(), bottom());
+    }
+
+    /**
+     * Верхняя левая точка
+     * @return угловая точка
+     */
+    public default Point rightBottom(){
+        return new Point(right(), bottom());
+    }
 
     /**
      * Проверка нахождения точки (x, y) в рамке.
@@ -115,9 +148,21 @@ public interface Rect {
      * @param p true - точка внутри рамки
      * @return  true - точка внутри рамки
      */
-    public default boolean include( TerminalPosition p ){
+    public default boolean include( @NonNull TerminalPosition p ){
+        //noinspection ConstantConditions
         if( p==null )throw new IllegalArgumentException( "p==null" );
         return include( p.getColumn(), p.getRow() );
+    }
+
+    /**
+     * Проверка нахождения точки (x, y) в рамке, проверка осуществляется в полу интервале
+     * @param p true - точка внутри рамки
+     * @return  true - точка внутри рамки
+     */
+    public default boolean include( @NonNull Point p ){
+        //noinspection ConstantConditions
+        if( p==null )throw new IllegalArgumentException( "p==null" );
+        return include( p.x, p.y );
     }
 
     /**
