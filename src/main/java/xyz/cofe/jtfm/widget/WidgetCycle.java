@@ -257,12 +257,21 @@ public class WidgetCycle {
 
         if( focusOwner==null )return Optional.empty();
         IWidget<?> fo = focusOwner;
+        boolean startFromFo = true;
 
-        while( true ){
-            var nxt = visibleTreeNavigation.next(fo);
-            if( nxt.isEmpty() )break;
-            if( nxt.get().isFocusable() ){
-                return setFocusOwner(nxt.get());
+        while( true ) {
+            while( true ) {
+                var nxt = visibleTreeNavigation.next(fo);
+                if( nxt.isEmpty() ) break;
+                if( nxt.get().isFocusable() ){
+                    return setFocusOwner(nxt.get());
+                }
+            }
+            if( startFromFo ){
+                startFromFo = false;
+                fo = widgetRoot;
+            }else{
+                break;
             }
         }
 
