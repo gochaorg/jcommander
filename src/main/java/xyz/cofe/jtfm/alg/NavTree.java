@@ -3,9 +3,12 @@ package xyz.cofe.jtfm.alg;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * Навигация по дереву в порядке - в глубину.
@@ -129,7 +132,11 @@ public class NavTree<N> {
         Prev;
     }
 
-    public static class NavIterator<N>
+    /**
+     * Итератор
+     * @param <N> элементы итератора
+     */
+    private static class NavIterator<N>
     implements Iterator<N>
     {
         private final NavTree<N> navTree;
@@ -173,8 +180,32 @@ public class NavTree<N> {
      * @return итератор
      */
     @SuppressWarnings("nullness")
-    public NavIterator<N> iterator( @NonNull N n, @NonNull Direction d, boolean includeSelf ){
+    public Iterator<N> iterator( @NonNull N n, @NonNull Direction d, boolean includeSelf ){
         return new NavIterator<N>(this, n, d, includeSelf);
+    }
+
+    private static class NavIterable<N> implements Iterable<N> {
+        private final Supplier<Iterator<N>> iterator;
+
+        public NavIterable( Supplier<Iterator<N>> iterator ){
+            this.iterator = iterator;
+        }
+
+        @Override
+        public Iterator<N> iterator(){
+            return this.iterator.get();
+        }
+    }
+
+    /**
+     * Итератор
+     * @param n от какого элемента итерирование
+     * @param d направление
+     * @param includeSelf включать сам элемент в выборку
+     * @return итератор
+     */
+    public Iterable<N> iterable( @NonNull N n, @NonNull Direction d, boolean includeSelf ){
+        return new NavIterable<N>( ()->this.iterator(n, d, includeSelf) );
     }
 
     /**
@@ -199,5 +230,25 @@ public class NavTree<N> {
             n = follow.get();
         }
         return Optional.of(n);
+    }
+
+    /**
+     * Итератор с последнего элемента к первому
+     * @param n элемент дерева
+     * @return итератор
+     */
+    public Iterator<N> lastToHeadIterator( @NonNull N n ){
+        var e = extreme(n,Direction.Next);
+        if( e.isEmpty() )return Collections.emptyIterator();
+        return iterator(e.get(), Direction.Prev, true);
+    }
+
+    /**
+     * Итератор с последнего элемента к первому
+     * @param n элемент дерева
+     * @return итератор
+     */
+    public Iterable<N> lastToHead( @NonNull N n ){
+        return new NavIterable<>( ()->lastToHeadIterator(n) );
     }
 }
