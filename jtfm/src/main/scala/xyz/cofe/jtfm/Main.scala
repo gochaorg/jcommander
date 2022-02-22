@@ -1,22 +1,60 @@
 package xyz.cofe.jtfm
 
-import com.googlecode.lanterna.terminal.DefaultTerminalFactory
+import com.googlecode.lanterna.terminal.{DefaultTerminalFactory, ExtendedTerminal, MouseCaptureMode, Terminal}
+import com.googlecode.lanterna.terminal.ansi.TelnetTerminal
 
-enum ParseState:
+enum ParseCmdLineState:
   case Init
   case TelnetPort
   case TelnetUse
 
+/**
+ * Опции командной строки
+ * @param state Состояние парсера коммандной строки
+ * @param telnetStart Запустить telnet сервер
+ * @param telnetPort Порт на котором заустить telnet
+ * @param unparsed Не распознанные параметры
+ * @param termConfigure Конфигурация работы мыши в терминале
+ */
 case class CmdLineOpt(
-                       state: ParseState = ParseState.Init,
-                       telnetPort: Int = 4044,
+                       /** Состояние парсера коммандной строки */
+                       state: ParseCmdLineState = ParseCmdLineState.Init,
+  
+                       /** Запустить telnet сервер */
                        telnetStart: Boolean = false,
-                       unparsed: List[String] = List()
-                     )
+  
+                       /** Порт на котором заустить telnet */
+                       telnetPort: Int = 4044,
+  
+                       /** Не распознанные параметры */
+                       unparsed: List[String] = List(),
+  
+                       /** Конфигурация работы мыши в терминале */
+                       termConfigure: (Terminal => Any) = trm => {
+                         trm match {
+                           case t: ExtendedTerminal => t.setMouseCaptureMode(MouseCaptureMode.CLICK)
+                         }
+                       }
+                     ):
+  /**
+   * Применение настроек к терминалу
+   *
+   * @param term терминал
+   * @return терминал
+   */
+  def apply(term: Terminal): Terminal =
+    termConfigure(term)
+    term
+    
+  def start()=
+    if( telnetStart )
+      startTelnet(this)
+    else
+      startDefault(this)
 
 object CmdLineOpt:
   
-  import ParseState._
+  import ParseCmdLineState._
   
   def parse(args: Seq[String]): CmdLineOpt =
     args.foldLeft(CmdLineOpt())((opt, arg) => {
@@ -36,19 +74,23 @@ object CmdLineOpt:
       }
     })
 
+/**
+ * Входная точка програмы
+ * @param args аргументы коммандной строки
+ */
 @main def hello(args: String*): Unit =
-  CmdLineOpt.parse(args) match {
-    case CmdLineOpt(_, telnetPort, true, _) =>
-      println(s"start telnet here on port $telnetPort")
-    case CmdLineOpt(_, _, false, _) =>
-      println("start as is")
-    case _ =>
-      throw new Error("undefined beheavior")
-  }
+  CmdLineOpt.parse(args).start()
 
-//startDefault()
+/**
+ * Старт в обычном режиме
+ * @param opt опции командной строки
+ */
+def startDefault(opt:CmdLineOpt): Unit =
+  Session(opt(DefaultTerminalFactory().createTerminal()))
 
-def startDefault(): Unit =
-  Session(DefaultTerminalFactory().createTerminal())
-
-
+/**
+ * Старт telnet сервера
+ * @param opt опции
+ */
+def startTelnet(opt:CmdLineOpt): Unit =
+  println(s"start telnet on ${opt.telnetPort} port")
