@@ -8,9 +8,27 @@ import xyz.cofe.jtfm.ev.OwnProperty
  * @tparam SELF собственный тип
  * @tparam PRNT тип родителя
  */
-trait Parent[SELF, PRNT <: Parent[_, _]] {
+trait Parent[SELF, PRNT] {
   /**
    * Возвращает родительское свойство
    */
-  lazy val parent: OwnProperty[Option[PRNT], SELF]
+  lazy val parent: OwnProperty[Option[PRNT], SELF] = OwnProperty(None,this.asInstanceOf[SELF])
+  
+  def path[N]( node:Any=>Option[N] ):List[N] = {
+    var lst = List[N]()
+    node(this) match {
+      case Some(n) => lst = n :: lst
+      case _ =>
+    }
+    parent.value match {
+      case Some(p) => p match {
+        case x:Parent[_,_] =>
+          val pp = x.path(node).asInstanceOf[List[N]]
+          lst = pp ::: lst
+        case _ =>
+      }
+      case _ =>
+    }
+    lst
+  }
 }

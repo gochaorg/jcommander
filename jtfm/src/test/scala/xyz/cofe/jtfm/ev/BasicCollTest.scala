@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm
+package xyz.cofe.jtfm.ev
 
 import org.junit.Test
 import xyz.cofe.jtfm.ev.BasicCollection
