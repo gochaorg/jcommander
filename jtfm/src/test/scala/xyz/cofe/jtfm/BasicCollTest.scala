@@ -1,6 +1,7 @@
 package xyz.cofe.jtfm
 
 import org.junit.Test
+import xyz.cofe.jtfm.ev.BasicCollection
 
 class BasicCollTest {
   @Test

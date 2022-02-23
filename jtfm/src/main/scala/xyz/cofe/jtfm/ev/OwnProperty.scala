@@ -1,4 +1,6 @@
-package xyz.cofe.jtfm
+package xyz.cofe.jtfm.ev
+
+import xyz.cofe.jtfm.ev._
 
 import scala.ref.WeakReference
 

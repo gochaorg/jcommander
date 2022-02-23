@@ -1,4 +1,6 @@
-package xyz.cofe.jtfm
+package xyz.cofe.jtfm.ev
+
+import xyz.cofe.jtfm.ev._
 
 /**
  * Коллекция с уведомлениями
@@ -10,10 +12,11 @@ trait CollectionWithNotify[SELF, N] extends Collection[N] {
   /**
    * Тип подписчика
    */
-  type LISTENER=(SELF, Int, Option[N], Option[N]) => Unit
+  type LISTENER = (SELF, Int, Option[N], Option[N]) => Unit
   
   /**
    * Подписаться на события
+   *
    * @param l подписчик
    * @return отписка
    */
