@@ -43,30 +43,9 @@ class OwnProperty[VALUE,OWNER]
   /**
    * Управление подписчиком
    * @param l подписчик
-   */
-  class Listener(val l:LISTENER ) {
-  
-    /**
-     * Добавление подписчика
-     */
-    def add():Unit = {
-      listeners = l :: listeners
-    }
-  
-    /**
-     * Удаление подписчика
-     */
-    def remove():Unit = {
-      listeners = listeners.filter( _ != l )
-    }
-  }
-  
-  /**
-   * Управление подписчиком
-   * @param l подписчик
    * @return Управление
    */
-  def listener( l:LISTENER ) = Listener(l)
+  def listener( l:LISTENER ) = Listener(l, ()=>listeners, (ls)=>listeners=ls )
   
   /**
    * Подписка на уведомления о изменении значения

@@ -6,4 +6,5 @@ package xyz.cofe.jtfm
 trait Widget[SELF <: Widget[SELF]]
 extends
   Parent[SELF,Widget[SELF]] // Свойство parent
+  , Nested[SELF,_ <: Widget[_]] // Дочерние объекты
   
