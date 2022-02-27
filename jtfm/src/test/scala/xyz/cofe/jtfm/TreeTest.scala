@@ -2,6 +2,7 @@ package xyz.cofe.jtfm
 
 import org.junit.Test
 import xyz.cofe.jtfm.ev.{BasicCollection, CollectionWithNotify, OwnProperty}
+import xyz.cofe.jtfm.wid.Widget
 
 class TreeTest {
   class Wid(val text:String) extends Widget[Wid] {
