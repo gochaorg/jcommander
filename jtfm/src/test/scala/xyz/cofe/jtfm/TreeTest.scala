@@ -31,13 +31,20 @@ class TreeTest {
     import NavigateFilter.any
     val nav = Navigate.deepOrder
     
-    List(
-      w1,w2,w3,
-      w4
-    ).foreach { w =>
-      val next = nav.next(w)
-      val prev = nav.prev(w)
-      println(s"${w} next:${next} prev:${prev}")
+    Map(
+      w1->(Some(w2),None),
+      w2->(Some(w3),Some(w1)),
+      w3->(Some(w4),Some(w2)),
+      w4->(None,Some(w3)),
+    ).foreach { case (from, must) =>
+      val (nxt,prv) = must
+      val nxt_w = nav.next(from)
+      val prv_w = nav.prev(from)
+      val nxt_m = nxt_w == nxt
+      val prv_m = prv_w == prv
+      println(s"from $from next:$nxt_w match $nxt_m;   prev:$prv_w match $prv_m")
+      assert(nxt_m)
+      assert(prv_m)
     }
   }
 }
