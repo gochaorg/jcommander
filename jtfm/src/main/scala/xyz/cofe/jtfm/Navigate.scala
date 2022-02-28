@@ -45,55 +45,87 @@ implicit class LikeTreeOps[N]( val n:N )(implicit val likeTree: LikeTree[N] ) {
   def indexOf(child:N) = likeTree.indexOf(n,child)
   def child(idx:Int) = likeTree.child(n, idx)
   def sib(idx:Int) = likeTree.sib(n, idx)
+  object children extends Iterable[N] {
+    override def size:Int = likeTree.childrenCount(n)    
+    def iterator:Iterator[N] = new Iterator[N] 
+    {
+      private var idx:Int = 0
+      private var cnt:Int = likeTree.childrenCount(n)
+      override def hasNext: Boolean = idx < cnt
+      override def next(): N = {
+        val c = child(idx)
+        idx += 1
+        c.get
+      }
+    }
+    object reverse extends Iterable[N] {
+      def iterator:Iterator[N] = new Iterator[N] {
+        private var idx:Int = likeTree.childrenCount(n) - 1
+        override def hasNext: Boolean = idx >= 0
+        override def next(): N = {
+          val c = child(idx)
+          idx -= 1
+          c.get
+        }
+      }
+    }
+  }
+  object siblings extends Iterable[N] {
+    case class SibIter( private var from:Option[N], offset:Int=1 ) extends Iterator[N] {
+      override def hasNext:Boolean = from.isDefined
+      override def next(): N = {
+        val r = from
+        from = from.get.sib(offset)
+        r.get
+      }
+    }
+    def iterator:Iterator[N] = SibIter(n.sib(1),1)
+    object reverse extends Iterable[N] {
+      def iterator:Iterator[N] = SibIter(n.sib(-1),-1)
+    }
+  }
+  object parents extends Iterable[N] {
+    def iterator:Iterator[N] = new {
+      private var from = parent
+      override def hasNext:Boolean = from.isDefined
+      override def next(): N = {
+        var r = from
+        from = from.get.parent
+        r.get
+      }
+    }
+  }
 }
 
 object Navigate {
-  def deepOrder[N](using likeTree:LikeTree[N])(using filter:NavigateFilter[N] ):Navigate[N] = new {
-    def next( n:N ):Option[N] = {
-      val childCnt = n.childrenCount
-      var res:Option[N] = None;
-      if( childCnt>0 ){
-        (0 until childCnt).foreach { i =>
-          res match {
-            case None =>
-              n.child(i) match {
-                case Some(ch) =>
-                  if( filter.test(ch) ){
-                    res = Some(ch)
-                  }
-                case _ =>
-              }
-            case Some(_) =>
+  def combine[N]( from:Iterable[N], nextIter:N=>Option[Iterable[N]] ):Iterable[N] = new Iterable[N] {
+    def iterator:Iterator[N] = new {
+      private var itr = from.iterator
+      override def hasNext:Boolean = itr.hasNext
+      override def next(): N = {
+        val res = itr.next
+        if( !itr.hasNext ){
+          nextIter(res) match {
+            case Some(nxt) => itr = nxt.iterator
+            case _ =>
           }
         }
+        res
       }
-      res match {
-        case None =>
-          var from = n;
-          var br_p = false
-          while( res.isEmpty && !br_p ){
-            var br = false
-            while( !br ){
-              from.sib(1) match {
-                case Some(sib) =>
-                  if( filter.test(sib) ){
-                    br = true
-                    res = Some(sib)
-                  }else{
-                    from = sib
-                  }
-                case None =>
-                  br = true
-              }
-            }
-            from.parent match {
-              case Some(prnt) => from = prnt
-              case _ => br_p = true
-            }
-          }
-        case Some(_) =>
-      }
-      res
+    }
+  }
+
+  def deepOrder[N](using likeTree:LikeTree[N])(using filter:NavigateFilter[N] ):Navigate[N] = new {
+    def next( n:N ):Option[N] = {
+      val chlds = n.children.filter( filter.test ).headOption
+
+      val sib_i = n.siblings.filter( filter.test ).headOption      
+      val sib2prnt = combine( 
+        sib_i, 
+        last => last.parent.map { prnt => prnt.siblings.filter(filter.test) } 
+      ).headOption
+
+      chlds.orElse( sib2prnt )      
     }
     
     private def last_child_or_self_visible(n:N):Option[N] = {
