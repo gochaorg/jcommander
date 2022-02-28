@@ -6,7 +6,7 @@ import xyz.cofe.jtfm.wid.Widget
 
 class TreeTest {
   class Wid(val text:String) extends Widget[Wid] {
-    override def toString: String = s"wid $text"
+    override def toString: String = s"$text"
   }
   
   @Test
@@ -26,5 +26,18 @@ class TreeTest {
     
     val p = w4.widgetPath
     println(p)
+    
+    import Widget._
+    import NavigateFilter.any
+    val nav = Navigate.deepOrder
+    
+    List(
+      w1,w2,w3,
+      w4
+    ).foreach { w =>
+      val next = nav.next(w)
+      val prev = nav.prev(w)
+      println(s"${w} next:${next} prev:${prev}")
+    }
   }
 }

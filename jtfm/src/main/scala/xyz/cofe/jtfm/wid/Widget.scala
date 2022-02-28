@@ -1,6 +1,6 @@
 package xyz.cofe.jtfm.wid
 
-import xyz.cofe.jtfm.{Nested, Parent}
+import xyz.cofe.jtfm.{LikeTree, Nested, Parent}
 
 /**
  * Виджет - визуальный элемент для рендера и управления данными
@@ -36,6 +36,22 @@ trait Widget[SELF <: Widget[SELF]]
     _ match {
       case w: Widget[_] => Some(w)
       case _ => None
+    }
+  }
+}
+
+object Widget {
+  import xyz.cofe.jtfm.LikeTree
+  implicit val likeTree: LikeTree[Widget[_]] = new {
+    def parent(n:Widget[_]):Option[Widget[_]] = n.parent.value
+    def childrenCount(n:Widget[_]):Int = n.nested.size
+    def indexOf(parent:Widget[_], child:Widget[_]):Option[Int] = {
+      val x = parent.nested.zip(0 until parent.nested.size).filter( (w,i) => w==child && w.isInstanceOf[Widget[_]] ).map( (w,i) => (w.asInstanceOf[Widget[_]], i) );
+      x.headOption.map( (_,i) => i )
+    }
+    def child(parent:Widget[_], idx:Int):Option[Widget[_]] = {
+      val x = parent.nested.zip(0 until parent.nested.size).filter( (w,i) => i==idx && w.isInstanceOf[Widget[_]] ).map( (w,i) => (w.asInstanceOf[Widget[_]], i) );
+      x.headOption.map( (w,_) => w )
     }
   }
 }
