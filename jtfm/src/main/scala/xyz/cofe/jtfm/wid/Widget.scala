@@ -47,7 +47,8 @@ object Widget {
     def childrenCount(n:Widget[_]):Int = n.nested.size
     def indexOf(parent:Widget[_], child:Widget[_]):Option[Int] = {
       val x = parent.nested.zip(0 until parent.nested.size).filter( (w,i) => w==child && w.isInstanceOf[Widget[_]] ).map( (w,i) => (w.asInstanceOf[Widget[_]], i) );
-      x.headOption.map( (_,i) => i )
+      val xi = x.headOption.map( (_,i) => i )
+      xi
     }
     def child(parent:Widget[_], idx:Int):Option[Widget[_]] = {
       val x = parent.nested.zip(0 until parent.nested.size).filter( (w,i) => i==idx && w.isInstanceOf[Widget[_]] ).map( (w,i) => (w.asInstanceOf[Widget[_]], i) );

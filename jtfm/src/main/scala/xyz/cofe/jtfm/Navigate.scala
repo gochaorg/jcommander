@@ -71,11 +71,20 @@ implicit class LikeTreeOps[N]( val n:N )(implicit val likeTree: LikeTree[N] ) {
     }
   }
   object siblings extends Iterable[N] {
+    private def debug(s:String) =
+      ()//println(s)
+      
     case class SibIter( private var from:Option[N], offset:Int=1 ) extends Iterator[N] {
+      private val from_init = from
       override def hasNext:Boolean = from.isDefined
       override def next(): N = {
         val r = from
         from = from.get.sib(offset)
+        debug(
+          s"""|sib next(from=$from_init offset=$offset):
+              |  res: $r
+              |  follow: $from
+              """.stripMargin.trim)
         r.get
       }
     }
@@ -100,75 +109,81 @@ implicit class LikeTreeOps[N]( val n:N )(implicit val likeTree: LikeTree[N] ) {
 object Navigate {
   def combine[N]( from:Iterable[N], nextIter:N=>Option[Iterable[N]] ):Iterable[N] = new Iterable[N] {
     def iterator:Iterator[N] = new {
+      private def debug(s:String) = ()
+      private def debugln(s:String) = ()
       private var itr = from.iterator
       override def hasNext:Boolean = itr.hasNext
       override def next(): N = {
+        debug("combine ");
         val res = itr.next
+        debug(s"res=$res ")
         if( !itr.hasNext ){
+          debug("tryNext ")
           nextIter(res) match {
-            case Some(nxt) => itr = nxt.iterator
+            case Some(nxt) =>
+              debug(" accept")
+              itr = nxt.iterator
             case _ =>
+              debug(" no")
           }
         }
+        debugln("")
         res
       }
     }
   }
 
   def deepOrder[N](using likeTree:LikeTree[N])(using filter:NavigateFilter[N] ):Navigate[N] = new {
-    def next( n:N ):Option[N] = {
-      val chlds = n.children.filter( filter.test ).headOption
-
-      val sib_i = n.siblings.filter( filter.test ).headOption      
-      val sib2prnt = combine( 
-        sib_i, 
-        last => last.parent.map { prnt => prnt.siblings.filter(filter.test) } 
-      ).headOption
-
-      chlds.orElse( sib2prnt )      
+    private def next_sibPrnt( from:N ):Option[N] = from.parent match {
+      case Some(prnt) =>
+        prnt.siblings.filter( filter.test ).headOption match {
+          case Some(sibPrnt) =>
+            Some(sibPrnt)
+          case None =>
+            next_sibPrnt(prnt)
+        }
+      case None => None
     }
     
-    private def last_child_or_self_visible(n:N):Option[N] = {
+    def next( n:N ):Option[N] = {
+      n.children.filter( filter.test ).headOption match {
+        case Some(ch) => Some(ch)
+        case None =>
+          next_sibPrnt(n).headOption match {
+            case Some(ch) => Some(ch)
+            case None => n.siblings.filter( filter.test ).headOption
+          }
+      }
+    }
+  
+    private def last_child_or_self_visible1(n:N):Option[N] = {
       if( !filter.test(n) ){
         None
       }else{
-        var stop = false
-        var from = n
-        var res = Some(from)
-        while( !stop ){
-          val c = from.childrenCount
-          if( c<1 ){
-            stop = true
-            res = Some(from)
-          }else{
-            var stop1 = false
-            for( i <- (c-1) to 0 by -1 ) {
-              if (!stop1) {
-                from.child(i) match {
-                  case Some(ch) =>
-                    if( filter.test(ch) ){
-                      val n_cs = ch.childrenCount
-                      if( n_cs<1 ){
-                        res = Some(ch)
-                        stop = true
-                        stop1 = true
-                      }else{
-                        from = ch
-                      }
-                    }
-                  case _ =>
-                }
+        if( n.childrenCount<1 ){
+          Some(n)
+        }else {
+          val from = n.children.reverse
+            .filter { filter.test }
+            .headOption
+          
+          combine(
+            from, visible =>
+              if( visible.childrenCount<1 ) {
+                Some(List(visible))
+              } else {
+                Some(visible.children.reverse.headOption)
               }
-            }
-          }
+          ).headOption
         }
-        res
       }
     }
+    
     def prev( n:N ):Option[N] = {
       n.sib(-1) match {
         case Some(sib) =>
-          last_child_or_self_visible(sib)
+          val r1 = last_child_or_self_visible1(sib)
+          r1
         case _ =>
           n.parent match {
             case Some(prt) if filter.test(prt) =>
