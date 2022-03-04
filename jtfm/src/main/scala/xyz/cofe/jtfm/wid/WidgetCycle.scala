@@ -11,7 +11,12 @@ import com.googlecode.lanterna.terminal.Terminal
 class WidgetCycle( 
     private val terminal: Terminal 
 ) {
-  
+  /**
+   *
+   */
+  def run():Unit = {
+      
+  }
 }
 
 object WidgetCycle {
@@ -32,7 +37,11 @@ object WidgetCycle {
             }
         }
     }
-
+    
+    /**
+     * Получение цикла обработки UI для текущего потока
+     * @return цикл
+     */
     def tryGet:Option[WidgetCycle] = {
         val x = currentCycle.get
         if( x!=null ) Some(x) else None

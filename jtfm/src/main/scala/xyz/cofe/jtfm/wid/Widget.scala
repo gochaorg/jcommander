@@ -1,14 +1,19 @@
 package xyz.cofe.jtfm.wid
 
 import xyz.cofe.jtfm.{LikeTree, Nested, Parent}
+import com.googlecode.lanterna.input.KeyStroke
 
 /**
  * Виджет - визуальный элемент для рендера и управления данными
  */
 trait Widget[SELF <: Widget[SELF]]
   extends
-    Parent[SELF, Widget[_]] // Свойство parent
+    Parent[SELF, Widget[_]]   // Свойство parent
     , Nested[SELF, Widget[_]] // Дочерние объекты
+    , RectProperty[SELF]      // Расположение виджета
+    , VisibleProperty[SELF]   // Видим виджет
+    , Render                  // Рендер
+    , UserInput[KeyStroke]    // События пользовательского ввода
 {
   val me = this.asInstanceOf[Widget[_]]
   nested.listen((coll, idx, old, cur) => {
