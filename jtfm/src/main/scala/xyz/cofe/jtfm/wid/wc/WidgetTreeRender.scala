@@ -1,8 +1,9 @@
-package xyz.cofe.jtfm.wid
+package xyz.cofe.jtfm.wid.wc
 
 import com.googlecode.lanterna.screen.Screen
 import xyz.cofe.jtfm.Navigate
 import xyz.cofe.jtfm.gr.Point
+import xyz.cofe.jtfm.wid.Widget
 
 class WidgetTreeRender[W <: Widget[_]]
 (

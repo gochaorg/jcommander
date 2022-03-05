@@ -13,10 +13,7 @@ object Throttling {
           state
         } catch {
           case e:java.lang.InterruptedException => 
-            state match {
-              case s:State.Work => s.stop()
-              case _ => state
-            }
+            state.finish()
         }
       }else{
         state

@@ -10,10 +10,23 @@ import com.googlecode.lanterna.TerminalSize
 import xyz.cofe.jtfm.gr.Rect
 
 import xyz.cofe.jtfm.wid.VirtualWidgetRoot
-import xyz.cofe.jtfm.wid.WidgetTreeRender
 import xyz.cofe.jtfm.wid.Widget
 
-sealed trait State
+sealed trait State {
+  /**
+   * Переход в состояние Завершено
+   */
+  def finish():State.End = {
+    this match {
+      case w:State.Init => State.End()
+      case w:State.Work => 
+        w.shutdown.foreach( _(w) )
+        State.End()
+      case w:State.End => w
+    }
+  }
+}
+
 object State {
   /** Начальное состояние */
   case class Init(
@@ -26,7 +39,8 @@ object State {
     screen: Screen,
     shutdown: List[Work=>Unit],
     renderTree: WidgetTreeRender[Widget[_]],
-    throttling: Throttling = Throttling.Sleep(10)
+    throttling: Throttling = Throttling.Sleep(10),
+    ubHandler: UndefinedBehavior = UndefinedBehavior.TimeRateLimit(10000L, 8L)
   ) extends State
 
   /** Завершенное состояние */
@@ -71,13 +85,8 @@ object State {
         state.throttling(state)
       } catch {
         case e:Throwable =>
-          state
+          state.ubHandler(state, e)
       }
-    }
-
-    def stop():State.End = {
-      state.shutdown.foreach( _(state) )
-      State.End()
     }
   }
 }
