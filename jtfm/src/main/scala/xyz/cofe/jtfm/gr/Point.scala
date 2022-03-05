@@ -63,4 +63,10 @@ object Point {
             }
         }
     }
+
+    implicit def fromPointToTerminalPosition( p:Point ):TerminalPosition =
+        new TerminalPosition(p.x, p.y)
+
+    implicit def terminalPosition2Point( p:TerminalPosition ):Point =
+        Point(p.getColumn, p.getRow)
 }

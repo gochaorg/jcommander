@@ -63,6 +63,30 @@ trait LikeTree[N] {
 trait Navigate[N] {
   def next( n:N ):Option[N]
   def prev( n:N ):Option[N]
+  def forwardIterator( n:N ):Iterator[N] = { 
+    val fetch = next
+    new Iterator[N] {
+      private var from : Option[N] = Some(n)
+      def hasNext:Boolean = from.isDefined
+      def next:N = {
+        val r = from.get
+        from = fetch(n)
+        r
+      }
+    }
+  }
+  def backwardIterator( n:N ):Iterator[N] = { 
+    val fetch = prev
+    new Iterator[N] {
+      private var from : Option[N] = Some(n)
+      def hasNext:Boolean = from.isDefined
+      def next:N = {
+        val r = from.get
+        from = fetch(n)
+        r
+      }
+    }
+  }
 }
 
 /**
@@ -78,6 +102,11 @@ object NavigateFilter {
    */
   implicit val any : NavigateFilter[Any] = new NavigateFilter[Any] {
     override def test(n: Any): Boolean = true
+  }
+
+  /** Создание фильтра */
+  def create[N]( f:N=>Boolean ):NavigateFilter[N] = new {
+    override def test(n:N) = f(n)
   }
 }
 

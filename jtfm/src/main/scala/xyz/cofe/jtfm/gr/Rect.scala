@@ -12,6 +12,8 @@ final case class Rect(left:Int, top:Int, right:Int, bottom:Int) {
     lazy val rightTop:Point = Point(right,top)
     lazy val leftBottom:Point = Point(left,bottom)
     lazy val rightBottom:Point = Point(right,bottom)
+    lazy val size:Size2D = Size2D(width,height)
+
     def include(
         x:Int, y:Int, 
         inc_left:Boolean, inc_right:Boolean, inc_top:Boolean, inc_bottom:Boolean 
@@ -34,7 +36,7 @@ final case class Rect(left:Int, top:Int, right:Int, bottom:Int) {
         include( x,y,true,inc_right_bottom,true,inc_right_bottom )
     def include( x:Int, y:Int ):Boolean = 
         include( x,y,false )
-    def include( p:Point ):Boolean = include(p.x, p.y)
+    def include( p:Point ):Boolean = include(p.x, p.y)    
 }
 
 object Rect {
