@@ -17,7 +17,7 @@ class WidgetTreeRender[W <: Widget[_]]
     wid.widgetPath
       .map( w => w.rect.value.leftTop )
       .foldLeft(p)((a,b)=>{a.translate(b)})
-
+ 
   def apply():Unit = {
     val g = screen.newTextGraphics
     navigate.forwardIterator(root).foreach { w => 

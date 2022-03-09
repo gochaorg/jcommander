@@ -2,6 +2,10 @@ package xyz.cofe.jtfm
 
 import com.googlecode.lanterna.terminal.{DefaultTerminalFactory, ExtendedTerminal, MouseCaptureMode, Terminal}
 import com.googlecode.lanterna.terminal.ansi.TelnetTerminal
+import com.googlecode.lanterna.terminal.ansi.TelnetTerminalServer
+
+import java.net.SocketTimeoutException
+import java.util.concurrent.atomic.AtomicReference
 
 enum ParseCmdLineState:
   case Init
@@ -16,26 +20,29 @@ enum ParseCmdLineState:
  * @param unparsed Не распознанные параметры
  * @param termConfigure Конфигурация работы мыши в терминале
  */
-case class CmdLineOpt(
-                       /** Состояние парсера коммандной строки */
-                       state: ParseCmdLineState = ParseCmdLineState.Init,
-  
-                       /** Запустить telnet сервер */
-                       telnetStart: Boolean = false,
-  
-                       /** Порт на котором заустить telnet */
-                       telnetPort: Int = 4044,
-  
-                       /** Не распознанные параметры */
-                       unparsed: List[String] = List(),
-  
-                       /** Конфигурация работы мыши в терминале */
-                       termConfigure: (Terminal => Any) = trm => {
-                         trm match {
-                           case t: ExtendedTerminal => t.setMouseCaptureMode(MouseCaptureMode.CLICK)
-                         }
-                       }
-                     ):
+case class CmdLineOpt
+(
+  /** Состояние парсера коммандной строки */
+  state: ParseCmdLineState = ParseCmdLineState.Init,
+
+  /** Запустить telnet сервер */
+  telnetStart: Boolean = false,
+
+  /** Порт на котором заустить telnet */
+  telnetPort: Int = 4044,
+
+  /** Не распознанные параметры */
+  unparsed: List[String] = List(),
+
+  /** Конфигурация работы мыши в терминале */
+  termConfigure: (Terminal => Terminal) = trm => {
+    trm match {
+      case t: ExtendedTerminal => t.setMouseCaptureMode(MouseCaptureMode.CLICK)
+      case _ => 
+    }
+    trm
+  }
+):
   /**
    * Применение настроек к терминалу
    *
@@ -89,8 +96,66 @@ def startDefault(opt:CmdLineOpt): Unit =
   Session(opt(DefaultTerminalFactory().createTerminal()))
 
 /**
+ * Сессия запущенная в отдельном потоке
+ * @param startSesssion получение/запуск сессии
+ */
+class ThreadSession( private val startSesssion:()=>Session ):
+  private val ses:AtomicReference[Session] = new AtomicReference[Session](null)
+
+  val sessionThread = new Thread():
+    override def run():Unit =
+      ses.set(startSesssion())
+  
+  sessionThread.setDaemon(true)
+  sessionThread.setName("terminal session")
+  sessionThread.start()
+  
+  def kill() =
+    val s = ses.get()
+    if s!=null then
+      s.terminate()
+
+/**
  * Старт telnet сервера
  * @param opt опции
  */
 def startTelnet(opt:CmdLineOpt): Unit =
-  println(s"start telnet on ${opt.telnetPort} port")
+  println(s"starting telnet on ${opt.telnetPort} port")
+  val telNet = new TelnetTerminalServer(opt.telnetPort)
+  telNet.getServerSocket.setSoTimeout( 1000 * 2 )
+
+  val sessionManager = new SessionManager[ThreadSession]()
+  val listener = sessionManager.listen( ()=>{
+    try {
+      val term = telNet.acceptConnection()
+      Some( ThreadSession(()=>Session(term)) )
+    } catch {
+      case e:SocketTimeoutException => None
+    }
+  })
+
+  var stop = false
+  while 
+    !stop
+  do
+    val inputs = new java.util.Scanner( System.in )
+    System.out.println("enter 'exit' for stop >")
+    val line = inputs.nextLine.trim
+    if line.equalsIgnoreCase("exit") then
+      listener.stopNow()
+      stop = true
+    else if line.equalsIgnoreCase("ses") then
+      println(
+        s"""
+           |sessions ${sessionManager.sessions.size}
+           |  alive ${sessionManager.sessions.filter(_.sessionThread.isAlive).size}
+           |""".stripMargin.trim )
+
+  implicit val termSes1 = new Terminable[Session] {
+    def terminate(s:Session):Unit = s.terminate()
+  }
+  implicit val termSes2 = new Terminable[ThreadSession] {
+    def terminate(s:ThreadSession):Unit = s.kill()
+  }
+  sessionManager.terminateAll
+  

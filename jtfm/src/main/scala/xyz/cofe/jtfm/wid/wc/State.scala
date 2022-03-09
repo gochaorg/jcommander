@@ -38,6 +38,7 @@ object State {
   case class Work( 
     screen: Screen,
     shutdown: List[Work=>Unit],
+    visibleNavigator: Navigate[Widget[?]],
     renderTree: WidgetTreeRender[Widget[_]],
     throttling: Throttling = Throttling.Sleep(10),
     ubHandler: UndefinedBehavior = UndefinedBehavior.TimeRateLimit(10000L, 8L)
@@ -73,6 +74,7 @@ object State {
       State.Work(
         screen,
         shutdown,
+        visibleNavigator = visibleNavigator,
         renderTree = WidgetTreeRender(state.root, screen)(visibleNavigator)
       )
     }
