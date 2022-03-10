@@ -23,21 +23,45 @@ class WidgetCycle(
   /** Виджеты */
   val root: VirtualWidgetRoot = VirtualWidgetRoot()
 
+  @volatile
   private var _state_ : State = State.Init(root, terminal)
   def state:State = _state_
   private def state_= (s:State) = _state_ = s
-
+  
+  @volatile
+  private var stopNow = false
+  
+  trait Stopper {
+    def await():Unit
+  }
+  
+  def stop():Stopper = {
+    stopNow = true
+    new Stopper {
+      def await():Unit = {
+        while
+          !state.isInstanceOf[State.End]
+        do
+          Thread.sleep(10)
+      }
+    }
+  }
+  
   /**
    * Запуск цикла обработки событий
    */
   def run(): Unit = {
-    while( !state.isInstanceOf[State.End] ){
-      val newState = state match {
-        case s:State.Init => s.run()
-        case s:State.Work => s.run()
-        case _ => state
+    while( (!state.isInstanceOf[State.End]) ){
+      if( stopNow ){
+        state = state.finish()
+      }else {
+        val newState = state match {
+          case s: State.Init => s.run()
+          case s: State.Work => s.run()
+          case _ => state
+        }
+        state = newState
       }
-      state = newState      
     }
   }
 }
@@ -46,17 +70,17 @@ object WidgetCycle {
   private val currentCycle: InheritableThreadLocal[WidgetCycle] =
     new InheritableThreadLocal()
 
-  def apply(term: Terminal): Either[WidgetCycle, Error] = {
+  def apply(term: Terminal): Either[Error,WidgetCycle] = {
     val wc0 = currentCycle.get
     if (wc0 == null) {
       val wc1 = new WidgetCycle(term)
       currentCycle.set(wc1)
-      Left(wc1)
+      Right(wc1)
     } else {
       if (wc0.terminal == term) {
-        Left(wc0)
+        Right(wc0)
       } else {
-        Right(
+        Left(
           new Error("has already created WidgetCycle for different Terminal")
         )
       }

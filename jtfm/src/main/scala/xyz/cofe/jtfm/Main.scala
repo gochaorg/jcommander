@@ -93,18 +93,21 @@ object CmdLineOpt:
  * @param opt опции командной строки
  */
 def startDefault(opt:CmdLineOpt): Unit =
-  Session(opt(DefaultTerminalFactory().createTerminal()))
+  Session(opt(DefaultTerminalFactory().createTerminal())).run()
 
 /**
  * Сессия запущенная в отдельном потоке
- * @param startSesssion получение/запуск сессии
+ * @param openSesssion получение/запуск сессии
  */
-class ThreadSession( private val startSesssion:()=>Session ):
+class ThreadSession( private val openSesssion:()=>Session ):
   private val ses:AtomicReference[Session] = new AtomicReference[Session](null)
 
   val sessionThread = new Thread():
     override def run():Unit =
-      ses.set(startSesssion())
+      val ses1=openSesssion()
+      ses.set(ses1)
+      ses1.run()
+      println(s"stop session at thread ${Thread.currentThread().getId} : ${Thread.currentThread().getName}")
   
   sessionThread.setDaemon(true)
   sessionThread.setName("terminal session")
@@ -128,34 +131,58 @@ def startTelnet(opt:CmdLineOpt): Unit =
   val listener = sessionManager.listen( ()=>{
     try {
       val term = telNet.acceptConnection()
-      Some( ThreadSession(()=>Session(term)) )
+      Some( ThreadSession(()=>{
+        Thread.currentThread().setName(s"terminal session ${term.getRemoteSocketAddress}")
+        println(s"accept connection from ${term.getRemoteSocketAddress} and start thread ${Thread.currentThread().getId} : ${Thread.currentThread().getName}")
+        Session(term)
+      }))
     } catch {
       case e:SocketTimeoutException => None
     }
   })
+  
+  implicit val termSes1 = new Terminable[Session] { def terminate(s:Session):Unit = s.terminate() }
+  implicit val termSes2 = new Terminable[ThreadSession] { def terminate(s:ThreadSession):Unit = s.kill() }
+
+  println(
+    s"""|commands:
+        |  ls - list sessions
+        |  exit - finish all work and exit
+        |  kill <th_id> - kill session
+        |""".stripMargin.trim)
 
   var stop = false
   while 
     !stop
   do
     val inputs = new java.util.Scanner( System.in )
-    System.out.println("enter 'exit' for stop >")
+    println("enter 'exit' for stop >")
     val line = inputs.nextLine.trim
     if line.equalsIgnoreCase("exit") then
       listener.stopNow()
       stop = true
-    else if line.equalsIgnoreCase("ses") then
+    else if line.equalsIgnoreCase("ls") then
+      sessionManager.remove( ses => !ses.sessionThread.isAlive )
+      
       println(
         s"""
-           |sessions ${sessionManager.sessions.size}
-           |  alive ${sessionManager.sessions.filter(_.sessionThread.isAlive).size}
+           |sessions count ${sessionManager.sessions.size}
            |""".stripMargin.trim )
-
-  implicit val termSes1 = new Terminable[Session] {
-    def terminate(s:Session):Unit = s.terminate()
-  }
-  implicit val termSes2 = new Terminable[ThreadSession] {
-    def terminate(s:ThreadSession):Unit = s.kill()
-  }
+      sessionManager.sessions.foreach { ses =>
+        println(
+          s"""
+              |  th_id=${ses.sessionThread.getId} alive=${ses.sessionThread.isAlive} name=${ses.sessionThread.getName}
+              |""".stripMargin.trim )
+      }
+    else
+      "kill (?<th>[0-9]+)".r.findFirstMatchIn(line) match {
+        case Some(m) =>
+          
+          sessionManager.sessions
+            .filter( _.sessionThread.getId == m.group("th").toLong )
+            .filter( _.sessionThread.isAlive )
+            .foreach { ses => sessionManager.terminate(ses) }
+        case _ =>
+      }
   sessionManager.terminateAll
   

@@ -41,10 +41,10 @@ final case class Rect(left:Int, top:Int, right:Int, bottom:Int) {
 
 object Rect {
     def apply( x0:Int, y0:Int, x1:Int, y1:Int ):Rect = 
-        Rect( x0.min(x1),y0.min(y1),x1.max(x0),y1.max(y0) )
+        new Rect( x0.min(x1),y0.min(y1),x1.max(x0),y1.max(y0) )
 
     def apply( a:Point, b:Point ):Rect =
-        Rect( 
+        new Rect(
         a.x min b.x, a.y min b.y, 
         a.x max b.x, a.y max b.y 
         )

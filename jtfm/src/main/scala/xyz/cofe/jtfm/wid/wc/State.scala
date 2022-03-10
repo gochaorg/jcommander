@@ -7,10 +7,12 @@ import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.TerminalSize
+import com.googlecode.lanterna.input.KeyType
 import xyz.cofe.jtfm.gr.Rect
-
 import xyz.cofe.jtfm.wid.VirtualWidgetRoot
 import xyz.cofe.jtfm.wid.Widget
+
+import java.net.SocketTimeoutException
 
 sealed trait State {
   /**
@@ -35,13 +37,16 @@ object State {
   ) extends State
 
   /** Рабочее состояние */
-  case class Work( 
-    screen: Screen,
-    shutdown: List[Work=>Unit],
-    visibleNavigator: Navigate[Widget[?]],
-    renderTree: WidgetTreeRender[Widget[_]],
-    throttling: Throttling = Throttling.Sleep(10),
-    ubHandler: UndefinedBehavior = UndefinedBehavior.TimeRateLimit(10000L, 8L)
+  case class Work(
+                   terminal: Terminal,
+                   screen: Screen,
+                   shutdown: List[Work=>Unit],
+                   visibleNavigator: Navigate[Widget[?]],
+                   inputProcess: InputProcess = InputProcess.dummy( ks => List(KeyType.Escape, KeyType.Enter).contains(ks.getKeyType) ),
+                   renderTree: WidgetTreeRender[Widget[_]],
+                   throttling: Throttling = Throttling.Sleep(100),
+                   ubHandler: UndefinedBehavior = UndefinedBehavior.TimeRateLimit(10000L, 8L),
+                   focused: Option[Widget[_]] = None,
   ) extends State
 
   /** Завершенное состояние */
@@ -67,11 +72,13 @@ object State {
       var shutdown = List[State.Work=>Unit]()
       shutdown = shutdown :+ { w => state.terminal.removeResizeListener(r_ls) }
       shutdown = shutdown :+ { w => screen.stopScreen() }
+      shutdown = shutdown :+ { w => state.terminal.close() }
 
       val visibleFilter: NavigateFilter[? <: Widget[?]] = NavigateFilter.create( { _.visible.value } )
       val visibleNavigator: Navigate[Widget[?]] = Navigate.deepOrder
 
       State.Work(
+        state.terminal,
         screen,
         shutdown,
         visibleNavigator = visibleNavigator,
@@ -79,16 +86,58 @@ object State {
       )
     }
   }
+  
+  type DoWork = State.Work => State
+  implicit class CombineWork(val from:DoWork) {
+    def next( to:DoWork ):DoWork = w => {
+      from(w) match {
+        case w_next:State.Work => to(w_next)
+        case oth:_ => oth
+      }
+    }
+  }
 
   implicit class WorkState( val state:State.Work ) {
-    def run():State = {
+    val screenResize:DoWork = w => {
+      w.screen.doResizeIfNecessary()
+      w
+    }
+    val render:DoWork = w => {
       try {
-        state.renderTree.apply()
-        state.throttling(state)
+        val g = w.screen.newTextGraphics()
+        g.putString( 1,1, "Test render" )
+        w.renderTree.apply()
+        w
       } catch {
-        case e:Throwable =>
-          state.ubHandler(state, e)
+        case e:Throwable => w.ubHandler(w,e)
       }
+    }
+    val throttling:DoWork = w => {
+      w.throttling(w)
+    }
+    val inputs:DoWork = w => {
+      try {
+        val input = state.terminal.pollInput()
+        if input != null then
+          w.inputProcess.input(w, input)
+        else
+          w
+      } catch {
+        case e:SocketTimeoutException => w
+        case e:Throwable => w.ubHandler(w, e)
+      }
+    }
+    val screenRefresh:DoWork = w => { w.screen.refresh(); w }
+    
+    val allWorks:DoWork =
+      inputs next
+        screenResize next
+        render next
+        throttling next
+        screenRefresh
+    
+    def run():State = {
+      allWorks(state)
     }
   }
 }

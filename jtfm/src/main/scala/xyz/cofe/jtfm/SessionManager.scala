@@ -8,8 +8,24 @@ class SessionManager[S](){
 
   def registry( ses:S ):Unit =
     _sessions = ses :: _sessions
-
+    
+  def remove( ses:S ):Unit =
+    _sessions = _sessions.filter { s => s!=ses }
+  
+  def remove( ses:Seq[S] ):Unit =
+    _sessions = _sessions.filter { s => !ses.contains(s) }
+    
+  def remove( sesForRemove:S=>Boolean ):Unit =
+    _sessions = _sessions.filterNot(sesForRemove)
+  
   def sessions:List[S] = _sessions
+  
+  def terminate( ses:S )(using t:Terminable[S]):Unit = {
+    val terminated = _sessions
+      .filter { _ == ses }
+      .map { ses => t.terminate(ses); ses }
+    _sessions = _sessions.filter { s => !terminated.contains(s) }
+  }
   
   def terminateAll(using t:Terminable[S]):Unit = {
     _sessions.foreach { t.terminate(_) }
