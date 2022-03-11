@@ -48,4 +48,15 @@ object Rect {
         a.x min b.x, a.y min b.y, 
         a.x max b.x, a.y max b.y 
         )
+
+    def apply( a:Point ):FirstPoint = FirstPoint( a )
+    def apply( x:Int, y:Int ):FirstPoint = FirstPoint( Point(x,y) )
+    
+    case class FirstPoint( val p:Point ){
+        def size( width:Int, height:Int ):Rect = Rect( p, p.translate(width, height) )
+        def size( s:Point ):Rect = Rect( p, p.translate(s) )
+        
+        def to( x:Int, y:Int ):Rect = Rect( p, Point(x,y) )
+        def to( to:Point ):Rect = Rect( p, to )
+    }
 }

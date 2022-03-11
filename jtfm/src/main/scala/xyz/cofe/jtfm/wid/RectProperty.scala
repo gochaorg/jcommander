@@ -1,7 +1,7 @@
 package xyz.cofe.jtfm.wid
 
 import xyz.cofe.jtfm.ev.OwnProperty
-import xyz.cofe.jtfm.gr.Rect
+import xyz.cofe.jtfm.gr.{Point, Rect}
 
 trait RectProperty[SELF : RepaitRequest] {
   self: Widget[_] =>
@@ -33,6 +33,20 @@ object RectProperty {
       val w = rp.value.width
       val h = rp.value.height
       rp.value = Rect( p0, p0.translate(w,v) )
+    }
+    
+    object move {
+      def relative( x:Int, y:Int ):Unit = {
+        rp.value = Rect( rp.value.leftTop.translate(x,y), rp.value.rightBottom.translate(x,y) )
+      }
+      def relative( p:Point ):Unit = {
+        relative( p.x, p.y )
+      }
+      
+      def absolute( x:Int, y:Int ):Unit = {
+        rp.value = Rect( Point(x,y), Point(x,y).translate(width, height) )
+      }
+      def absolute( p:Point ):Unit = absolute(p.x, p.y)
     }
   }
 }

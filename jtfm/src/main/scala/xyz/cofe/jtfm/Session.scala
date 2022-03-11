@@ -1,5 +1,6 @@
 package xyz.cofe.jtfm
 
+import com.googlecode.lanterna.TextColor
 import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.terminal.Terminal
 import xyz.cofe.jtfm.gr.Rect
@@ -32,13 +33,17 @@ class Session ( terminal: Terminal ):
   private def buildUi( wc:WidgetCycle ):Unit =
     val lbl1 = Label()
     wc.root.nested.append( lbl1 )
-    lbl1.rect.value = Rect(1,1,20,2)
+    lbl1.rect.value = Rect(1,1).size(20,3)
+    lbl1.foreground.value = TextColor.ANSI.RED_BRIGHT
+    lbl1.background.value = TextColor.ANSI.BLUE
     lbl1.text.value = "label_a"
   
     val lbl2 = Label()
     wc.root.nested.append( lbl2 )
-    lbl2.rect.value = Rect(1,5,20,6)
+    lbl2.rect.value = Rect(1,5).size(18,3)
     lbl2.text.value = "label_b"
+    lbl2.foreground.value = TextColor.ANSI.GREEN_BRIGHT
+    lbl2.background.value = TextColor.ANSI.BLACK_BRIGHT
   
     var c1 = 0
     wc.jobs match {
