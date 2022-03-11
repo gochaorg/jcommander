@@ -7,9 +7,9 @@ import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.TerminalSize
-
 import xyz.cofe.jtfm.gr.Rect
-import xyz.cofe.jtfm.wid.wc._
+import xyz.cofe.jtfm.wid.wc.*
+import xyz.cofe.jtfm.wid.wc.State.Work
 
 /** Цикл управления событиями ввода и рендера.
   *
@@ -63,6 +63,20 @@ class WidgetCycle(
         state = newState
       }
     }
+  }
+  
+  def jobs: Option[Jobs] = state match {
+    case s: xyz.cofe.jtfm.wid.wc.State.Init =>
+      Some(s.jobs)
+    case s: xyz.cofe.jtfm.wid.wc.State.Work =>
+      Some(s.jobs)
+    case _: xyz.cofe.jtfm.wid.wc.State.End =>
+      None
+  }
+  
+  def workState: Option[Work] = state match {
+    case s: xyz.cofe.jtfm.wid.wc.State.Work => Some(s)
+    case _ => None
   }
 }
 

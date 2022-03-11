@@ -36,6 +36,10 @@ class OwnProperty[VALUE,OWNER]
     fire(old,_value)
   }
   
+  def value_= (v:VALUE):Unit = {
+    value(v)
+  }
+  
   /**
    * Возвращает владельца свойства
    * @return владелец

@@ -15,7 +15,7 @@ trait Widget[SELF <: Widget[SELF]]
     , Render                  // Рендер
     , UserInput[KeyStroke]    // События пользовательского ввода
 {
-  val me = this.asInstanceOf[Widget[_]]
+  private val me = this.asInstanceOf[Widget[_]]
   nested.listen((coll, idx, old, cur) => {
     cur match {
       case Some(c) => c.parent.value(Some(me))

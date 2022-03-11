@@ -70,7 +70,7 @@ trait Navigate[N] {
       def hasNext:Boolean = from.isDefined
       def next:N = {
         val r = from.get
-        from = fetch(n)
+        from = fetch(r)
         r
       }
     }
@@ -82,7 +82,7 @@ trait Navigate[N] {
       def hasNext:Boolean = from.isDefined
       def next:N = {
         val r = from.get
-        from = fetch(n)
+        from = fetch(r)
         r
       }
     }

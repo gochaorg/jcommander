@@ -72,5 +72,21 @@ class TreeTest {
     
     println(s"fail count $failCount")
     assert(failCount<1)
+    
+    println("-_".repeat(40))
+    println("fw iter from w1")
+    val fItr = nav.forwardIterator(w1)
+    
+    val fEl0 = fItr.next()
+    println(s"next(0) = ${fEl0}")
+    
+    val fEl1 = fItr.next()
+    println(s"next(1) = ${fEl1}")
+    
+    val fEl2 = fItr.next()
+    println(s"next(2) = ${fEl2}")
+    
+    val fEl3 = fItr.next()
+    println(s"next(3) = ${fEl3}")
   }
 }

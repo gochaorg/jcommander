@@ -33,7 +33,8 @@ object State {
   /** Начальное состояние */
   case class Init(
     root: VirtualWidgetRoot,
-    terminal: Terminal
+    terminal: Terminal,
+    jobs: Jobs = Jobs()
   ) extends State
 
   /** Рабочее состояние */
@@ -47,6 +48,7 @@ object State {
                    throttling: Throttling = Throttling.Sleep(100),
                    ubHandler: UndefinedBehavior = UndefinedBehavior.TimeRateLimit(10000L, 8L),
                    focused: Option[Widget[_]] = None,
+                   jobs: Jobs
   ) extends State
 
   /** Завершенное состояние */
@@ -81,8 +83,9 @@ object State {
         state.terminal,
         screen,
         shutdown,
+        jobs = state.jobs,
         visibleNavigator = visibleNavigator,
-        renderTree = WidgetTreeRender(state.root, screen)(visibleNavigator)
+        renderTree = WidgetTreeRender(state.root, screen)(visibleNavigator).repaitRequest()
       )
     }
   }
@@ -104,8 +107,6 @@ object State {
     }
     val render:DoWork = w => {
       try {
-        val g = w.screen.newTextGraphics()
-        g.putString( 1,1, "Test render" )
         w.renderTree.apply()
         w
       } catch {
@@ -128,9 +129,13 @@ object State {
       }
     }
     val screenRefresh:DoWork = w => { w.screen.refresh(); w }
+    val jobRunner:DoWork = w => {
+      w.jobs.run(w)
+    }
     
     val allWorks:DoWork =
       inputs next
+        jobRunner next
         screenResize next
         render next
         throttling next

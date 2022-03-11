@@ -27,4 +27,15 @@ trait Property[SELF <: Property[SELF, VALUE], VALUE] {
    * @return отписка от уведомлений
    */
   def listen(l: (SELF, VALUE, VALUE) => Unit): () => Unit
+  
+  /**
+   * Подписка на уведомления о изменении значения
+   *
+   * @param l подписчик
+   * @return (SELF, отписка от уведомлений)
+   */
+  def observe( l: (SELF,VALUE,VALUE)=>Unit ): (SELF, ()=>Unit) = {
+    val ls = listen(l)
+    (this.asInstanceOf[SELF], ls)
+  }
 }
