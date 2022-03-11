@@ -44,6 +44,12 @@ class Session ( terminal: Terminal ):
     lbl2.text.value = "label_b"
     lbl2.foreground.value = TextColor.ANSI.GREEN_BRIGHT
     lbl2.background.value = TextColor.ANSI.BLACK_BRIGHT
+    
+    wc.root.rect.listen( (prop,old,cur)=>{
+      lbl2.text.value = s"${cur.width} x ${cur.height}"
+    })
+    
+    lbl2.rect.bind( wc.root ) { (_, src) => Rect( src.rightBottom.translate(-15,-4), src.rightBottom.translate(-1,-1) ) }
   
     var c1 = 0
     wc.jobs match {
