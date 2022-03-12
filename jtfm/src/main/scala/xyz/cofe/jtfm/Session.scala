@@ -61,7 +61,6 @@ class Session ( terminal: Terminal ):
                 case d: InputDummy =>
                   val d2: InputDummy = d
                   d2.handler( KeyType.F5, _ => {
-                    println("inc")
                     c1 += 1
                     lbl1.text.value = s"label ${c1}"
                   })

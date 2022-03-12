@@ -61,8 +61,25 @@ trait LikeTree[N] {
  * Навигация по дереву
  */
 trait Navigate[N] {
+  /**
+   * Навигация к следующему узлу
+   * @param n узел
+   * @return следующий узел
+   */
   def next( n:N ):Option[N]
+  
+  /**
+   * Навигация к предыдущему узлу
+   * @param n узел
+   * @return предыдущий узел
+   */
   def prev( n:N ):Option[N]
+  
+  /**
+   * Итератор вперед (next) от указанного
+   * @param n от какого узла навигация
+   * @return итератор
+   */
   def forwardIterator( n:N ):Iterator[N] = { 
     val fetch = next
     new Iterator[N] {
@@ -75,6 +92,12 @@ trait Navigate[N] {
       }
     }
   }
+  
+  /**
+   * Итератор назад (prev) от указанного
+   * @param n от какого узла навигация
+   * @return итератор
+   */
   def backwardIterator( n:N ):Iterator[N] = { 
     val fetch = prev
     new Iterator[N] {
@@ -114,11 +137,42 @@ object NavigateFilter {
  * Расширение для навигации
  */
 implicit class LikeTreeOps[N]( val n:N )(implicit val likeTree: LikeTree[N] ) {
+  /**
+   * Возвращает родительский узел
+   * @return родительский узел
+   */
   def parent:Option[N] = likeTree.parent(n)
+  
+  /**
+   * Возвращает кол-во дочерних узлов
+   * @return кол-во дочерних узлов
+   */
   def childrenCount = likeTree.childrenCount(n)
+  
+  /**
+   * Возвращает индекс дочернего узла
+   * @param child узел
+   * @return индекс
+   */
   def indexOf(child:N) = likeTree.indexOf(n,child)
+  
+  /**
+   * Возвращает дочерний узел по его индексу
+   * @param idx индекс
+   * @return узел
+   */
   def child(idx:Int) = likeTree.child(n, idx)
+  
+  /**
+   * Возвращает соседний (брат/сестра) узел относительно текущего
+   * @param idx индекс, -1 - соседний слева, +1 - соседний справа
+   * @return соседний узел
+   */
   def sib(idx:Int) = likeTree.sib(n, idx)
+  
+  /**
+   * Итератор по дочерним узлам
+   */
   object children extends Iterable[N] {
     override def size:Int = likeTree.childrenCount(n)    
     def iterator:Iterator[N] = new Iterator[N] 
@@ -132,6 +186,10 @@ implicit class LikeTreeOps[N]( val n:N )(implicit val likeTree: LikeTree[N] ) {
         c.get
       }
     }
+  
+    /**
+     * Обратный итератор, от последнего дочернего, к первому дочернему
+     */
     object reverse extends Iterable[N] {
       def iterator:Iterator[N] = new Iterator[N] {
         private var idx:Int = likeTree.childrenCount(n) - 1
@@ -144,6 +202,11 @@ implicit class LikeTreeOps[N]( val n:N )(implicit val likeTree: LikeTree[N] ) {
       }
     }
   }
+  
+  /**
+   * Итератор по соседним узлам, от текущего.
+   * Сам узел не будет включен в список итерируемых.
+   */
   object siblings extends Iterable[N] {
     private def debug(s:String) =
       ()//println(s)
@@ -163,10 +226,20 @@ implicit class LikeTreeOps[N]( val n:N )(implicit val likeTree: LikeTree[N] ) {
       }
     }
     def iterator:Iterator[N] = SibIter(n.sib(1),1)
+  
+    /**
+     * Обратный итератор.
+     * Сам узел не будет включен в список итерируемых.
+     */
     object reverse extends Iterable[N] {
       def iterator:Iterator[N] = SibIter(n.sib(-1),-1)
     }
   }
+  
+  /**
+   * Итератор по родительским узлам, от текущего к корню
+   * Сам узел не будет включен в список итерируемых.
+   */
   object parents extends Iterable[N] {
     def iterator:Iterator[N] = new {
       private var from = parent

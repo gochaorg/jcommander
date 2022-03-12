@@ -14,6 +14,12 @@ trait Parent[SELF, PRNT] {
    */
   lazy val parent: OwnProperty[Option[PRNT], SELF] = OwnProperty(None,this.asInstanceOf[SELF])
   
+  /**
+   * Возвращает путь от корня к текущему узлу
+   * @param node функция получения узла
+   * @tparam N тип узла
+   * @return список узлов, от корня к текущему
+   */
   def path[N]( node:Any=>Option[N] ):List[N] = {
     var lst = List[N]()
     node(this) match {
