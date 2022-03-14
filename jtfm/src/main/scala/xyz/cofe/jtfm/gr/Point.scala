@@ -20,6 +20,13 @@ final case class Point(x:Int, y:Int) {
      * Инверсия точки
      */
     def invert(x_inv:Boolean, y_inv:Boolean):Point = Point(if(x_inv)-x else x, if(y_inv)-y else y)
+    
+    /**
+     * Разница
+     * @param p точка
+     * @return разница
+     */
+    def diff( p:Point ):Point = Point( x-p.x, y-p.y )
 
     /**
      * Инверсия точки
