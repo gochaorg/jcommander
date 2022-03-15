@@ -36,7 +36,7 @@ final case class Rect(left:Int, top:Int, right:Int, bottom:Int) {
         include( x,y,true,inc_right_bottom,true,inc_right_bottom )
     def include( x:Int, y:Int ):Boolean = 
         include( x,y,false )
-    def include( p:Point ):Boolean = include(p.x, p.y)    
+    def include( p:Point ):Boolean = include(p.x, p.y)
 }
 
 object Rect {

@@ -21,6 +21,8 @@ object UndefinedBehavior {
   /** Не пропускать ни какую ошибку, сразу останавлливаться */
   case class PanicFirst() extends UndefinedBehavior {
     def apply(state:State, err:Throwable):State = {
+      System.err.println(err)
+      err.printStackTrace(System.err)
       state.finish()
     }
   }

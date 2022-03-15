@@ -46,7 +46,8 @@ object State {
                    inputProcess: InputProcess,
                    renderTree: WidgetTreeRender[Widget[_]],
                    throttling: Throttling = Throttling.Sleep(100),
-                   ubHandler: UndefinedBehavior = UndefinedBehavior.TimeRateLimit(10000L, 8L),
+                   ubHandler: UndefinedBehavior = UndefinedBehavior.PanicFirst(),
+                      //UndefinedBehavior.TimeRateLimit(10000L, 8L),
                    jobs: Jobs
   ) extends State
 

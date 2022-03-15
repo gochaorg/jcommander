@@ -37,7 +37,8 @@ case class CmdLineOpt
   /** Конфигурация работы мыши в терминале */
   termConfigure: (Terminal => Terminal) = trm => {
     trm match {
-      case t: ExtendedTerminal => t.setMouseCaptureMode(MouseCaptureMode.CLICK)
+      case t: ExtendedTerminal =>
+        t.setMouseCaptureMode(MouseCaptureMode.CLICK)
       case _ => 
     }
     trm
@@ -51,7 +52,6 @@ case class CmdLineOpt
    */
   def apply(term: Terminal): Terminal =
     termConfigure(term)
-    term
     
   def start()=
     if( telnetStart )
@@ -134,7 +134,7 @@ def startTelnet(opt:CmdLineOpt): Unit =
       Some( ThreadSession(()=>{
         Thread.currentThread().setName(s"terminal session ${term.getRemoteSocketAddress}")
         println(s"accept connection from ${term.getRemoteSocketAddress} and start thread ${Thread.currentThread().getId} : ${Thread.currentThread().getName}")
-        Session(term)
+        Session(opt(term))
       }))
     } catch {
       case e:SocketTimeoutException => None

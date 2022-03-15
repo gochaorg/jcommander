@@ -2,6 +2,7 @@ package xyz.cofe.jtfm.wid
 
 import xyz.cofe.jtfm.{LikeTree, Nested, Parent}
 import com.googlecode.lanterna.input.KeyStroke
+import xyz.cofe.jtfm.gr.Point
 
 /**
  * Виджет - визуальный элемент для рендера и управления данными
@@ -47,6 +48,7 @@ trait Widget[SELF <: Widget[SELF]]
 
 object Widget {
   import xyz.cofe.jtfm.LikeTree
+  
   implicit val likeTree: LikeTree[Widget[_]] = new {
     def parent(n:Widget[_]):Option[Widget[_]] = n.parent.value
     def childrenCount(n:Widget[_]):Int = n.nested.size
@@ -59,5 +61,25 @@ object Widget {
       val x = parent.nested.zip(0 until parent.nested.size).filter( (w,i) => i==idx && w.isInstanceOf[Widget[_]] ).map( (w,i) => (w.asInstanceOf[Widget[_]], i) );
       x.headOption.map( (w,_) => w )
     }
+  }
+  
+  implicit class PointOps( p:Point ) {
+    /**
+     * Конвертирует точку в абсолютные координаты
+     * @return абсолютная координата
+     */
+    def toAbsolute[W <: Widget[_]](w:W):Point =
+      w.widgetPath
+        .map( w => w.rect.value.leftTop )
+        .foldLeft(p)((a,b)=>{a.translate(b)})
+  
+    /**
+     * Конвертирует точку в локальные координаты
+     * @return лоакльная координата
+     */
+    def toLocal[W <: Widget[_]](w:W):Point =
+      w.widgetPath
+        .map( w => w.rect.value.leftTop.invert() )
+        .foldLeft(p)((a,b)=>{a.translate(b)})
   }
 }

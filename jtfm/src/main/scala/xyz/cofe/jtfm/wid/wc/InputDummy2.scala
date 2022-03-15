@@ -1,7 +1,9 @@
 package xyz.cofe.jtfm.wid.wc
 
-import com.googlecode.lanterna.input.{KeyStroke, KeyType}
-import xyz.cofe.jtfm.wid.Widget
+import com.googlecode.lanterna.input.{KeyStroke, KeyType, MouseAction}
+import xyz.cofe.jtfm.wid.{FocusProperty, Widget}
+import xyz.cofe.jtfm.wid.Widget.*
+import xyz.cofe.jtfm.gr.Point
 
 class InputDummy2[W <: Widget[_]]( val fm:FocusManager[W] ) extends InputDummy {
   override def focusOwner: Option[Widget[_]] = fm.focusOwner
@@ -17,6 +19,37 @@ class InputDummy2[W <: Widget[_]]( val fm:FocusManager[W] ) extends InputDummy {
   }
   
   override def input(state: State.Work, ks: KeyStroke): State = {
+    ks match {
+      case ma: MouseAction =>
+        fm.navigate.last(fm.root) match {
+          case None =>
+          case Some(last_w) =>
+            fm.navigate.backwardIterator(last_w).find { wid =>
+              val mma : MouseAction = ma
+              val abs : Point = Point(mma.getPosition)
+              val local : Point = abs toLocal wid
+              val x = wid.rect.value.size.include(local)
+              x
+            } match {
+              case None =>
+              case Some( wid ) =>
+                val mma : MouseAction = ma
+                val abs : Point = Point(mma.getPosition)
+                val local : Point = abs toLocal wid
+                val local_ma = new MouseAction(mma.getActionType, mma.getButton, local)
+                wid match {
+                  case f:FocusProperty[_] =>
+                    fm.switchTo(wid) match {
+                      case Some(sw) =>
+                      case None =>
+                    }
+                  case _ =>
+                }
+                wid.input(local_ma)
+            }
+        }
+      case _ =>
+    }
     super.input(state, ks)
   }
 }

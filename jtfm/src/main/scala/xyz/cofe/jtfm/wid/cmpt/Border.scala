@@ -3,7 +3,7 @@ package xyz.cofe.jtfm.wid.cmpt
 import com.googlecode.lanterna.graphics.TextGraphics
 import xyz.cofe.jtfm.ev.OwnProperty
 import xyz.cofe.jtfm.gr.Rect
-import xyz.cofe.jtfm.wid.{BackgroundProperty, ForegroundProperty, OpaqueProperty, Widget}
+import xyz.cofe.jtfm.wid.{BackgroundProperty, FocusProperty, ForegroundProperty, OpaqueProperty, Widget}
 import xyz.cofe.jtfm.gr.Symbols.{DoubleThin, SingleThin, Border as BorderSym}
 
 class Border
@@ -11,12 +11,17 @@ class Border
     with BackgroundProperty[Border]
     with ForegroundProperty[Border]
     with OpaqueProperty[Border]
+    with FocusProperty[Border](true)
 {
-  private val bsym : BorderSym = SingleThin
+  private def bsym : BorderSym = focus.value match {
+    case false => SingleThin
+    case true => DoubleThin
+  }
   
   override def render( gr:TextGraphics ):Unit = {
     this.renderOpaque(gr)
-
+    
+    val bsym = this.bsym
     val r = this.rect.value
     if( r.width>0 && r.height>0 ){
       gr.setBackgroundColor(background.value)

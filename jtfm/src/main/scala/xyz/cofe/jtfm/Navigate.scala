@@ -78,7 +78,7 @@ trait Navigate[N] {
   /**
    * Итератор вперед (next) от указанного
    * @param n от какого узла навигация
-   * @return итератор
+   * @return итератор, включая указанный
    */
   def forwardIterator( n:N ):Iterator[N] = { 
     val fetch = next
@@ -96,7 +96,7 @@ trait Navigate[N] {
   /**
    * Итератор назад (prev) от указанного
    * @param n от какого узла навигация
-   * @return итератор
+   * @return итератор, включая указанный
    */
   def backwardIterator( n:N ):Iterator[N] = { 
     val fetch = prev
@@ -110,6 +110,13 @@ trait Navigate[N] {
       }
     }
   }
+  
+  /**
+   * Последний элемент
+   * @param from от какого узла навигация
+   * @return Последний элемент
+   */
+  def last( from:N ):Option[N]
 }
 
 /**
@@ -339,6 +346,23 @@ object Navigate {
               None
           }
       }
+    }
+    
+    def last( from:N ):Option[N] = {
+      var n = from
+      var stop = false
+      while( !stop ){
+        val cc = n.childrenCount
+        if( cc>0 ){
+          n.child(cc-1) match {
+            case Some(nc) => n = nc
+            case None => stop = true
+          }
+        }else{
+          stop = true
+        }
+      }
+      Some(n)
     }
   }
 }
