@@ -1,6 +1,7 @@
 package xyz.cofe.jtfm.wid.cmpt
 
 import com.googlecode.lanterna.graphics.TextGraphics
+import com.googlecode.lanterna.input.KeyStroke
 import xyz.cofe.jtfm.ev.OwnProperty
 import xyz.cofe.jtfm.gr.Rect
 import xyz.cofe.jtfm.wid.{BackgroundProperty, FocusProperty, ForegroundProperty, OpaqueProperty, Widget}
@@ -17,6 +18,8 @@ class Border
     case false => SingleThin
     case true => DoubleThin
   }
+  
+  override def input(ev: KeyStroke): Boolean = true
   
   override def render( gr:TextGraphics ):Unit = {
     this.renderOpaque(gr)

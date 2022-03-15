@@ -37,15 +37,18 @@ class InputDummy2[W <: Widget[_]]( val fm:FocusManager[W] ) extends InputDummy {
                 val abs : Point = Point(mma.getPosition)
                 val local : Point = abs toLocal wid
                 val local_ma = new MouseAction(mma.getActionType, mma.getButton, local)
-                wid match {
-                  case f:FocusProperty[_] =>
-                    fm.switchTo(wid) match {
-                      case Some(sw) =>
-                      case None =>
+                wid.input(local_ma) match {
+                  case false =>
+                  case true =>
+                    wid match {
+                      case f:FocusProperty[_] =>
+                        fm.switchTo(wid) match {
+                          case Some(sw) =>
+                          case None =>
+                        }
+                      case _ =>
                     }
-                  case _ =>
                 }
-                wid.input(local_ma)
             }
         }
       case _ =>
