@@ -1,6 +1,8 @@
 package xyz.cofe.jtfm.gr
 
-import xyz.cofe.jtfm.gr.Symbols.{Style, StyledSide}
+import com.googlecode.lanterna.graphics.TextGraphics
+import xyz.cofe.jtfm.gr.HVLine.{h_side_d, h_side_s, v_side_d, v_side_s}
+import xyz.cofe.jtfm.gr.Symbols.{Connector, Style, StyledSide}
 
 case class HVLine( a:Point, b:Point, style:Style ) {
   lazy val horiz:Boolean = (a diff b).y == 0
@@ -64,5 +66,63 @@ case class HVLine( a:Point, b:Point, style:Style ) {
           None
       else
         None
+  }
+
+  lazy val horzConnector: Option[Connector] = this.horiz match {
+    case true  =>
+      this.style match {
+        case Style.Single => Connector.find(h_side_s).headOption
+        case Style.Double => Connector.find(h_side_d).headOption
+      }
+    case false => None
+  }
+  lazy val vertConnector: Option[Connector] = this.vert match {
+    case true  =>
+      this.style match {
+        case Style.Single => Connector.find(v_side_s).headOption
+        case Style.Double => Connector.find(v_side_d).headOption
+      }
+    case false => None
+  }
+  lazy val connector: Option[Connector] = horzConnector.orElse(vertConnector)
+}
+
+object HVLine {
+  protected val h_side_s = List(StyledSide.LeftSingle, StyledSide.RightSingle).sortBy(_.ordinal)
+  private val h_side_d = List(StyledSide.LeftDouble, StyledSide.RightDouble).sortBy(_.ordinal)
+  private val v_side_s = List(StyledSide.TopSingle, StyledSide.BottomSingle).sortBy(_.ordinal)
+  private val v_side_d = List(StyledSide.TopDouble, StyledSide.BottomDouble).sortBy(_.ordinal)
+  
+  implicit class HVLineDraw( val hvLine: HVLine ) {
+    def draw( gr:TextGraphics, chr:Char ):Unit = {
+      if hvLine.horiz then
+        ((hvLine.a.x min hvLine.b.x) to (hvLine.a.x max hvLine.b.x)).foreach { x =>
+          gr.setCharacter(x, hvLine.a.y, chr )
+        }
+      else if hvLine.vert then
+        ((hvLine.a.y min hvLine.b.y) to (hvLine.a.y max hvLine.b.y)).foreach { y =>
+          gr.setCharacter( hvLine.a.x, y, chr )
+        }
+    }
+    def draw( c:TextGraphics, ch:Connector ):Unit = draw(c, ch.chr)
+    def draw( c:TextGraphics ):Unit = draw(c, hvLine.connector.map(_.chr).getOrElse('+') )
+  }
+  
+  implicit class GridDraw( val lines:Seq[HVLine] ) {
+    def draw( gr:TextGraphics ):Unit = {
+      lines.foreach { line => line.draw(gr) }
+      val l_cnt = lines.length
+      for(
+        i <- 0 until l_cnt;
+        j <- i+1 until l_cnt
+      ) lines(i).intersection(lines(j)) match {
+        case Some(Intersection(p, side)) => {
+          Connector.find(side).foreach( ct => {
+            gr.setCharacter(p.x, p.y, ct.chr)
+          })
+        }
+        case _ =>
+      }
+    }
   }
 }

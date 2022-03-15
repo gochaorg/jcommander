@@ -11,7 +11,7 @@ class WidgetTreeRender[W <: Widget[_]]
   screen: Screen
 ) (
   implicit 
-    navigate: Navigate[W],
+    val navigate: Navigate[W],
 ) {
   var repaitRequestCount = 0
   

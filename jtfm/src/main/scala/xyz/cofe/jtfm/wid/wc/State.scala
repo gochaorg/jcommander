@@ -43,11 +43,10 @@ object State {
                    screen: Screen,
                    shutdown: List[Work=>Unit],
                    visibleNavigator: Navigate[Widget[?]],
-                   inputProcess: InputProcess = InputProcess.dummy( ks => List(KeyType.Escape, KeyType.Enter).contains(ks.getKeyType) ),
+                   inputProcess: InputProcess,
                    renderTree: WidgetTreeRender[Widget[_]],
                    throttling: Throttling = Throttling.Sleep(100),
                    ubHandler: UndefinedBehavior = UndefinedBehavior.TimeRateLimit(10000L, 8L),
-                   focused: Option[Widget[_]] = None,
                    jobs: Jobs
   ) extends State
 
@@ -78,6 +77,11 @@ object State {
 
       val visibleFilter: NavigateFilter[? <: Widget[?]] = NavigateFilter.create( { _.visible.value } )
       val visibleNavigator: Navigate[Widget[?]] = Navigate.deepOrder
+      
+      var inputs =
+        InputProcess
+          .dummy( ks => List(KeyType.Escape, KeyType.Enter).contains(ks.getKeyType) )
+          .focusManager(state.root, visibleNavigator)
 
       State.Work(
         state.terminal,
@@ -85,7 +89,8 @@ object State {
         shutdown,
         jobs = state.jobs,
         visibleNavigator = visibleNavigator,
-        renderTree = WidgetTreeRender(state.root, screen)(visibleNavigator).repaitRequest()
+        renderTree = WidgetTreeRender(state.root, screen)(visibleNavigator).repaitRequest(),
+        inputProcess = inputs.build()
       )
     }
   }

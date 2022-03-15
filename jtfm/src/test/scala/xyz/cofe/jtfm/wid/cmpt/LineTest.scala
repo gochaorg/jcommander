@@ -59,11 +59,6 @@ class LineTest {
   }
   
   implicit class HVLinePaint( hvLine: HVLine ) {
-    private val h_side_s = List(StyledSide.LeftSingle, StyledSide.RightSingle).sortBy(_.ordinal)
-    private val h_side_d = List(StyledSide.LeftDouble, StyledSide.RightDouble).sortBy(_.ordinal)
-    private val v_side_s = List(StyledSide.TopSingle, StyledSide.BottomSingle).sortBy(_.ordinal)
-    private val v_side_d = List(StyledSide.TopDouble, StyledSide.BottomDouble).sortBy(_.ordinal)
-    
     def draw( c: Canvas, chr:Char ):Unit = {
       if hvLine.horiz then
         ((hvLine.a.x min hvLine.b.x) to (hvLine.a.x max hvLine.b.x)).foreach { x =>
@@ -75,24 +70,7 @@ class LineTest {
         }
     }
     def draw( c:Canvas, ch:Connector ):Unit = draw(c, ch.chr)
-    def draw( c:Canvas ):Unit = draw( c, connector.map(_.chr).getOrElse('+') )
-    def horzConnector: Option[Connector] = hvLine.horiz match {
-      case true  =>
-        hvLine.style match {
-          case S => Connector.find(h_side_s).headOption
-          case D => Connector.find(h_side_d).headOption
-        }
-      case false => None
-    }
-    def vertConnector: Option[Connector] = hvLine.vert match {
-      case true  =>
-        hvLine.style match {
-          case S => Connector.find(v_side_s).headOption
-          case D => Connector.find(v_side_d).headOption
-        }
-      case false => None
-    }
-    def connector: Option[Connector] = horzConnector.orElse(vertConnector)
+    def draw( c:Canvas ):Unit = draw( c, hvLine.connector.map(_.chr).getOrElse('+') )
   }
   
   @Test

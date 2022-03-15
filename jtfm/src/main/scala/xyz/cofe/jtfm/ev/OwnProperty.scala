@@ -12,7 +12,7 @@ import scala.ref.WeakReference
  * @tparam OWNER тип владельца
  */
 class OwnProperty[VALUE,OWNER]
-(private var _value:VALUE, private var _owner:OWNER) extends Property[OwnProperty[VALUE,OWNER],VALUE]
+(private var _value:VALUE, private var _owner:OWNER) extends MutProperty[OwnProperty[VALUE,OWNER],VALUE]
 {
   type LISTENER=(OwnProperty[VALUE,OWNER],VALUE,VALUE)=>Unit
   private var listeners : List[LISTENER] = List()

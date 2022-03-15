@@ -33,7 +33,7 @@ class Session ( terminal: Terminal ):
   private def buildUi( wc:WidgetCycle ):Unit =
     val lbl1 = Label()
     wc.root.nested.append( lbl1 )
-    lbl1.rect.value = Rect(1,1).size(20,3)
+    lbl1.rect.value = Rect(1,1).size(15,3)
     lbl1.foreground.value = TextColor.ANSI.RED_BRIGHT
     lbl1.background.value = TextColor.ANSI.BLUE
     lbl1.text.value = "label_a"
@@ -48,6 +48,10 @@ class Session ( terminal: Terminal ):
     wc.root.rect.listen( (prop,old,cur)=>{
       lbl2.text.value = s"${cur.width} x ${cur.height}"
     })
+    
+    val brd1 = new Border()
+    wc.root.nested.append(brd1)
+    brd1.rect.value = Rect( 20,3 ).size(10,4)
     
     lbl2.rect.bind( wc.root ) { (_, src) => Rect( src.rightBottom.translate(-15,-4), src.rightBottom.translate(-1,-1) ) }
   

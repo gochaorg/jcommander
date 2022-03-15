@@ -12,15 +12,10 @@ class Label
     with OpaqueProperty[Label]
 {
   override def render( gr:TextGraphics ):Unit = {
+    this.renderOpaque(gr)
+    
     gr.setBackgroundColor(background.value)
     gr.setForegroundColor(foreground.value)
-
-    if( opaque.value ){
-      (0 until rect.height).foreach { y =>
-        gr.putString(0,y," ".repeat(rect.width))
-      }
-    }
-    
     gr.putString(0,0,text.value)
   }
 }

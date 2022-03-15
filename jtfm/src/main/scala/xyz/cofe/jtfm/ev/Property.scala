@@ -14,13 +14,6 @@ trait Property[SELF <: Property[SELF, VALUE], VALUE] {
   def value: VALUE
   
   /**
-   * Обновление значение свойства
-   *
-   * @param v новое значение
-   */
-  def value(v: VALUE): Unit
-  
-  /**
    * Подписка на уведомления о изменении значения
    *
    * @param l подписчик
