@@ -25,9 +25,9 @@ class FocusManager[W <: Widget[_]]
   private def visible( w:W ):Boolean = !w.widgetPath.map( _.visible.value ).contains( false )
   
   case class Switched( from:Option[W], to:Option[W] )
-  def switchTo( w:W ):Option[Switched] = {
+  def switchTo( w:W ):Either[String,Switched] = {
     (visible(w) && focusableFilter(w)) match {
-      case false => None
+      case false => Left("target is not visible or not focusable")
       case true =>
         val old_focus = focus_owner
         focus_owner = Some(w)
@@ -43,7 +43,7 @@ class FocusManager[W <: Widget[_]]
         }
         focusable.focus.onGain(old_focus)
         
-        Some(Switched(old_focus,focus_owner))
+        Right(Switched(old_focus,focus_owner))
     }
   }
   

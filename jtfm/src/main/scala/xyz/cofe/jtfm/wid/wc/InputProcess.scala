@@ -1,11 +1,12 @@
 package xyz.cofe.jtfm.wid.wc
 
-import xyz.cofe.jtfm.wid.Widget
+import xyz.cofe.jtfm.wid.{FocusProperty, Widget}
 import com.googlecode.lanterna.input.{KeyStroke, KeyType}
 import xyz.cofe.jtfm.Navigate
 
 trait InputProcess {
   def focusOwner:Option[Widget[_]] = None
+  def focusRequest( target:Widget[_] ):Either[String,Option[Widget[_]]] = Left("Not implement")
   def input( state:State.Work, ks:KeyStroke ):State
 }
 

@@ -10,6 +10,10 @@ import xyz.cofe.jtfm.LikeTreeOps
 class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
   override def focusOwner: Option[Widget[_]] = fm.focusOwner
   
+  override def focusRequest( target:Widget[_] ):Either[String,Option[Widget[_]]] = {
+    fm.switchTo(target).map(_.from)
+  }
+  
   override def exitIf( e:KeyStroke=>Boolean ):InputDummy2 = {
     super.exitIf(e)
     this
@@ -72,12 +76,6 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
                     case None => fm.root
                     case Some(fo) => fo
                   }
-//                  val findNext = if ks.getKeyType == KeyType.Tab then fm.next else fm.prev
-//                  findNext(from) match {
-//                    case None =>
-//                    case Some(next) =>
-//                      fm.switchTo(next)
-//                  }
                   
                   val fnext = if ks.getKeyType == KeyType.Tab then fm.nextCycle else fm.prevCycle
                   fnext(from).take(1).foreach { next =>

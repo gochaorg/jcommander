@@ -18,6 +18,19 @@ trait FocusProperty[SELF : RepaitRequest](repait:Boolean=false) {
     def contains:Boolean = {
       WidgetCycle.tryGet.flatMap( _.workState ).flatMap( _.inputProcess.focusOwner ).map( _.widgetPath ).contains(self)
     }
+    
+    def request():Unit = {
+      WidgetCycle.tryGet.flatMap( _.workState ).map( _.inputProcess ).foreach( inp => {
+        inp.focusOwner match {
+          case Some(fo) =>
+            if ( fo!=self ) {
+              inp.focusRequest(self)
+            }
+          case _ =>
+            inp.focusRequest(self)
+        }
+      })
+    }
   }
   
   lazy val focus : FocusProp = {
