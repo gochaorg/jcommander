@@ -52,6 +52,14 @@ class Session ( terminal: Terminal ):
     val brd1 = new Border()
     wc.root.nested.append(brd1)
     brd1.rect.value = Rect( 20,3 ).size(10,4)
+  
+    val brd2 = new Border()
+    wc.root.nested.append(brd2)
+    brd2.rect.value = Rect( 20,9 ).size(10,4)
+    
+    val brd3 = new Border()
+    wc.root.nested.append(brd3)
+    brd3.rect.value = Rect( 20,15 ).size(10,4)
     
     lbl2.rect.bind( wc.root ) { (_, src) => Rect( src.rightBottom.translate(-15,-4), src.rightBottom.translate(-1,-1) ) }
   

@@ -19,12 +19,12 @@ object InputProcess {
       new InputDummy().exitIf(exitIf)
     }
     
-    def focusManager[W <: Widget[_]]( fm:FocusManager[W] ):DummyBuilder1[W] = DummyBuilder1(this, fm)
-    def focusManager[W <: Widget[_]]( root:W, navigate:Navigate[W] ):DummyBuilder1[W] = DummyBuilder1(this, new FocusManager[W](root, navigate))
+    def focusManager( fm:FocusManager[Widget[_]] ):DummyBuilder1 = DummyBuilder1(this, fm)
+    def focusManager( root:Widget[_], navigate:Navigate[Widget[_]] ):DummyBuilder1 = DummyBuilder1(this, new FocusManager(root, navigate))
   }
   
-  case class DummyBuilder1[W <: Widget[_]]( val prnt: DummyBuilder0, val fm:FocusManager[W] ) extends DummyBuilder {
-    override def build(): InputDummy2[W] = {
+  case class DummyBuilder1( val prnt: DummyBuilder0, val fm:FocusManager[Widget[_]] ) extends DummyBuilder {
+    override def build(): InputDummy2 = {
       new InputDummy2(fm).exitIf(prnt.exitIf)
     }
   }

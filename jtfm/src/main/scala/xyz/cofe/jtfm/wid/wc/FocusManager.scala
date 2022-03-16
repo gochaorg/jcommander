@@ -46,4 +46,51 @@ class FocusManager[W <: Widget[_]]
         Some(Switched(old_focus,focus_owner))
     }
   }
+  
+  class Cycled( val from:W, val move:W=>Option[W], val continue:()=>Option[W] ) extends Iterator[W] {
+    private var continueCalled = false
+    private var cur:Option[W] = move(from) match {
+        case Some(w) if w!=from => Some(w)
+        case _ =>
+          continueCalled = true
+          continue()
+      }
+    
+    def hasNext:Boolean = cur.isDefined
+    def next():W = {
+      val r = cur
+      cur = move(r.get) match {
+        case Some(w) if w!=from =>
+          Some(w)
+        case _ if !continueCalled =>
+          continueCalled = true
+          continue()
+        case _ =>
+          None
+      }
+      r.get
+    }
+  }
+  
+  def nextCycle( from:W ):Cycled = Cycled( from, next, ()=>{
+    next(root) match {
+      case Some(first) if first!=from =>
+        Some(first)
+      case _ => None
+    }
+  })
+  def prevCycle( from:W ):Cycled = Cycled( from, prev, ()=>{
+    navigate.last(root) match {
+      case Some(last) =>
+        last match {
+          case _:FocusProperty[_] =>
+            if( from!=last ){
+              Some(last)
+            }else{
+              prev(last)
+            }
+        }
+      case None => None
+    }
+  })
 }
