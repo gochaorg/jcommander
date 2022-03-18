@@ -30,7 +30,24 @@ class Session ( terminal: Terminal ):
     if wc!=null then
       wc.stop().await()
       
-  private def buildUi( wc:WidgetCycle ):Unit =
+  private def buildUi(wc: WidgetCycle):Unit =
+    val mbar = new MenuBar
+    wc.root.nested.append(mbar)
+    
+    val mc1 = new MenuContainer
+    mc1.text.value = "File"
+    mbar.nested.append(mc1)
+  
+    val mc2 = new MenuContainer
+    mc2.text.value = "Help"
+    mbar.nested.append(mc2)
+
+    val brd1 = new Border()
+    wc.root.nested.append(brd1)
+    brd1.rect.value = Rect( 20,3 ).size(10,4)
+
+  
+  private def buildUi_1( wc:WidgetCycle ):Unit =
     val lbl1 = Label()
     wc.root.nested.append( lbl1 )
     lbl1.rect.value = Rect(1,1).size(15,3)
@@ -60,6 +77,10 @@ class Session ( terminal: Terminal ):
     val brd3 = new Border()
     wc.root.nested.append(brd3)
     brd3.rect.value = Rect( 20,15 ).size(10,4)
+    
+    val scr1 = new ScrollBar()
+    wc.root.nested.append(scr1)
+    scr1.rect.value = Rect(33,0).size(1,10)
     
     lbl2.rect.bind( wc.root ) { (_, src) => Rect( src.rightBottom.translate(-15,-4), src.rightBottom.translate(-1,-1) ) }
   

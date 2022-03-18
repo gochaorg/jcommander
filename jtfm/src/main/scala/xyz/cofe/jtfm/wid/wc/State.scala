@@ -76,12 +76,18 @@ object State {
       shutdown = shutdown :+ { w => screen.stopScreen() }
       shutdown = shutdown :+ { w => state.terminal.close() }
 
-      val visibleFilter: NavigateFilter[? <: Widget[?]] = NavigateFilter.create( { _.visible.value } )
+      val visibleFilter: NavigateFilter[? <: Widget[?]] = NavigateFilter.create( { w =>
+        println( s"DEBUG ${w} visible ${w.visible.value}" )
+        w.visible.value 
+      })
       val visibleNavigator: Navigate[Widget[?]] = Navigate.deepOrder
       
       var inputs =
         InputProcess
-          .dummy( ks => List(KeyType.Escape, KeyType.Enter).contains(ks.getKeyType) )
+          .dummy( ks =>
+            (ks.getKeyType==KeyType.Escape && ks.isCtrlDown) ||
+            (ks.getCharacter=='q' && ks.isCtrlDown)
+          )
           .focusManager(state.root, visibleNavigator)
 
       State.Work(

@@ -303,10 +303,14 @@ object Navigate {
       n.children.filter( filter.test ).headOption match {
         case Some(ch) => Some(ch)
         case None =>
-          next_sibPrnt(n).headOption match {
-            case Some(ch) => Some(ch)
-            case None => n.siblings.filter( filter.test ).headOption
-          }
+          n.siblings.filter(filter.test).headOption.orElse(
+            next_sibPrnt(n)
+          )
+//
+//          next_sibPrnt(n).headOption match {
+//            case Some(ch) => Some(ch)
+//            case None => n.siblings.filter( filter.test ).headOption
+//          }
       }
     }
   

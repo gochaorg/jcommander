@@ -29,6 +29,7 @@ class WidgetTreeRender[W <: Widget[_]]
       val zeroPoint = Point(0, 0)
       navigate.forwardIterator(root).foreach { w =>
         val lt = zeroPoint.toAbsolute(w)
+        //println(s"wc render ${w} at ${lt}")
         val loc_g = g.newTextGraphics(lt, w.rect.value.size)
         w.render(loc_g)
       }

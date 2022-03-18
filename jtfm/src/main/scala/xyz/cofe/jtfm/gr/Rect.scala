@@ -1,5 +1,7 @@
 package xyz.cofe.jtfm.gr
 
+import com.googlecode.lanterna.graphics.TextGraphics
+
 /**
  * Рамка с координатами (left,top,right,bottom)
  */
@@ -58,5 +60,16 @@ object Rect {
         
         def to( x:Int, y:Int ):Rect = Rect( p, Point(x,y) )
         def to( to:Point ):Rect = Rect( p, to )
+    }
+    
+    implicit class RectPaint( gr:TextGraphics ) {
+        def fill( rect:Rect, ch:Char=' ' ):Unit = {
+            if( rect.width>0 && rect.height>0 ){
+                for(
+                    y <- rect.top to rect.bottom;
+                    x <- rect.left to rect.right
+                ) gr.setCharacter(x,y,ch)
+            }
+        }
     }
 }

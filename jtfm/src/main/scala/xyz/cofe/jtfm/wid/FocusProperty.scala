@@ -2,7 +2,11 @@ package xyz.cofe.jtfm.wid
 
 import xyz.cofe.jtfm.ev.{EvalProperty, Property}
 
-trait FocusProperty[SELF : RepaitRequest](repait:Boolean=false) {
+trait FocusProperty[SELF : RepaitRequest]
+(
+  val repait:Boolean=false,
+  val historyMaxSize:Int=0
+) {
   self: Widget[_] =>
   
   class FocusProp extends EvalProperty[Boolean, SELF](
@@ -11,12 +15,55 @@ trait FocusProperty[SELF : RepaitRequest](repait:Boolean=false) {
     },
     initial = Some(false)
   ) {
+    import FocusProperty._
+    private var _history:List[HistoryAction] = List()
+    object history extends Iterable[HistoryAction] {
+      override def iterator: Iterator[HistoryAction] = _history.iterator
+      def lastGain:Option[Widget[_]] = _history.find { it => it match {
+        case HistoryAction.Gained( g ) if g.isDefined => false
+        case _ => false
+      }}.map( _.widget.get )
+      def lastLost:Option[Widget[_]] = _history.find { it => it match {
+        case HistoryAction.Lost( g ) if g.isDefined => false
+        case _ => false
+      }}.map( _.widget.get )
+    }
+
+    private var onGainListeners = List[Option[Widget[_]]=>Unit]()
   
-    def onGain( from:Option[Widget[_]] ):Unit = recompute()
-    def onLost( newOwner:Option[Widget[_]] ):Unit = recompute()
+    def onGain( from:Option[Widget[_]] ):Unit = {
+      if( historyMaxSize>0 ){
+        _history = HistoryAction.Gained(from) :: _history
+        if( _history.length>historyMaxSize ){
+          _history = _history.take(historyMaxSize)
+        }
+      }
+      recompute()
+      onGainListeners.foreach { _(from) }
+    }
+    def onGain( l:Option[Widget[_]]=>Unit ):Unit = {
+      onGainListeners = l :: onGainListeners
+    }
+
+    private var onLostListeners = List[Option[Widget[_]]=>Unit]()
+
+    def onLost( newOwner:Option[Widget[_]] ):Unit = {
+      if( historyMaxSize>0 ){
+        _history = HistoryAction.Lost(newOwner) :: _history
+        if( _history.length>historyMaxSize ){
+          _history = _history.take(historyMaxSize)
+        }
+      }
+      recompute()
+      onLostListeners.foreach { _(newOwner) }
+    }
+    def onLost( l:Option[Widget[_]]=>Unit ):Unit = {
+      onLostListeners = l :: onLostListeners
+    }
     
     def contains:Boolean = {
-      WidgetCycle.tryGet.flatMap( _.workState ).flatMap( _.inputProcess.focusOwner ).map( _.widgetPath ).contains(self)
+      val focusPath = WidgetCycle.tryGet.flatMap( _.workState ).flatMap( _.inputProcess.focusOwner ).map( _.widgetPath )
+      focusPath.map( _.contains(FocusProperty.this) ).getOrElse(false)
     }
     
     def request():Unit = {
@@ -44,5 +91,12 @@ trait FocusProperty[SELF : RepaitRequest](repait:Boolean=false) {
     } else {
       FocusProp()
     }
+  }
+}
+
+object FocusProperty {
+  enum HistoryAction( val widget:Option[Widget[_]] ){
+    case Gained( w:Option[Widget[_]] ) extends HistoryAction( w )
+    case Lost( w:Option[Widget[_]] ) extends HistoryAction( w )
   }
 }
