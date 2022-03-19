@@ -37,10 +37,24 @@ class Session ( terminal: Terminal ):
     val mc1 = new MenuContainer
     mc1.text.value = "File"
     mbar.nested.append(mc1)
-  
+
+    val mc1v = new MenuContainer
+    mc1v.text.value = "View"
+    //mc1v.visible.value = false
+    mc1.nested.append(mc1v)
+
+    val mc1e = new MenuContainer
+    mc1e.text.value = "Exit"
+    //mc1e.visible.value = false
+    mc1.nested.append(mc1e)
+
     val mc2 = new MenuContainer
-    mc2.text.value = "Help"
+    mc2.text.value = "Edit"
     mbar.nested.append(mc2)
+
+    val mc3 = new MenuContainer
+    mc3.text.value = "Help"
+    mbar.nested.append(mc3)
 
     val brd1 = new Border()
     wc.root.nested.append(brd1)

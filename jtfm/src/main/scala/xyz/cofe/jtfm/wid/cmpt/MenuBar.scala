@@ -36,7 +36,6 @@ class MenuBar
   })
 
   private def layoutItems():Unit=
-    println("layout!")
     var x = 0    
     nested.foreach { w =>
       w match {
@@ -44,23 +43,42 @@ class MenuBar
           w.visible.value = true
           w.rect.value = Rect(x,0).size(mi.text.value.length,1)
           x += w.rect.value.width + 1
-          println(s"layout mi ${mi.text.value} to ${w.rect.value}")
+          mi.nested.foreach { _.visible.value=false }
         case _ =>
           w.visible.value = false
-          println(s"layout skip mi ${w}")
       }
     }
   
   nested.listen( (lst,idx,old,cur)=>{
-    println("layout trigger")
     layoutItems()
   })
 
   private var lastFocused:Option[Widget[_]] = None
+  private def firstMenu:Option[MenuItem[_]] = nested.filter(_.isInstanceOf[MenuItem[_]]).map(_.asInstanceOf[MenuItem[_]]).headOption
+
   focus.onGain { lastFocusOwn => 
     lastFocused = lastFocusOwn
-    println( s"MenuBar accept focus from ${lastFocusOwn}")
     layoutItems()
+    firstMenu.foreach(_.focus.request())
+  }
+
+  // internal
+  def acceptFocusFrom( w:Widget[_] ):Unit = {
+    println(s"acceptFocusFrom $w")
+    lastFocused = Some(w)
+  }
+
+  // internal
+  def restoreInitialUI():Unit = {
+    layoutItems()
+    lastFocused match {
+      case None =>
+      case Some(w) => w match {
+        case fp:FocusProperty[_] =>
+          fp.focus.request()
+        case _ =>
+      }
+    }
   }
 
   override def render(gr: TextGraphics): Unit = {

@@ -5,6 +5,7 @@ import com.googlecode.lanterna.graphics.TextGraphics
 import xyz.cofe.jtfm.wid.FocusProperty
 import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.MouseAction
+import com.googlecode.lanterna.input.KeyType
 
 class MenuContainer
   extends Widget[MenuContainer]
@@ -12,12 +13,37 @@ class MenuContainer
   with TextProperty[MenuContainer]
   with MenuItem[MenuContainer]
 {
+  menuItemInit()
   override def input(ks:KeyStroke):Boolean = {
     ks match {
       case ma:MouseAction =>
         true
       case _ =>
-        false
+        ks.getKeyType match {
+          case KeyType.ArrowRight => switchNext()
+          case KeyType.ArrowLeft => switchPrev()
+          case KeyType.Escape => menuBar.flatMap { x => x.restoreInitialUI(); Some(true) }.getOrElse( false )
+          case _:AnyRef => false
+        }
+    }
+  }
+
+  private def switchNext():Boolean = {
+    nextMenu match {
+      case Some(nm) => nm.focus.request { _ =>
+          nested.foreach { _.visible.value = false }
+        }
+        true
+      case None => false
+    }
+  }
+  private def switchPrev():Boolean = {
+    prevMenu match {
+      case Some(nm) => nm.focus.request { _ =>
+          nested.foreach { _.visible.value = false }
+        }
+        true
+      case None => false
     }
   }
 
@@ -30,10 +56,9 @@ class MenuContainer
         }else{
           (mbar.foreground.value, mbar.background.value)
         }
-
-      //println(s"render mc ${text.value} at ${rect.value}")
       gr.setForegroundColor(fg)
       gr.setBackgroundColor(bg)
+      println("mc "+text.value+" visible"+visible.value)
       gr.putString(0,0,text.value)
     }
   }

@@ -78,6 +78,27 @@ trait FocusProperty[SELF : RepaitRequest]
         }
       })
     }
+
+    def request[Z]( accepted:Option[Widget[_]]=>Z ):Unit = {
+      WidgetCycle.tryGet.flatMap( _.workState ).map( _.inputProcess ).foreach( inp => {
+        inp.focusOwner match {
+          case Some(fo) =>
+            if ( fo!=self ) {
+              inp.focusRequest(self) match {
+                case Right(swt) =>
+                  accepted(swt)
+                case Left(_) =>
+              }
+            }
+          case _ =>
+            inp.focusRequest(self) match {
+              case Right(swt) =>
+                accepted(swt)
+              case Left(_) =>
+            }
+        }
+      })
+    }
   }
   
   lazy val focus : FocusProp = {
