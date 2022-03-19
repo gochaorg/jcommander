@@ -64,7 +64,6 @@ class MenuBar
 
   // internal
   def acceptFocusFrom( w:Widget[_] ):Unit = {
-    println(s"acceptFocusFrom $w")
     lastFocused = Some(w)
   }
 
