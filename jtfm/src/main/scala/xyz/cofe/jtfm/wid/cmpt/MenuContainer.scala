@@ -58,7 +58,6 @@ class MenuContainer
         }
       gr.setForegroundColor(fg)
       gr.setBackgroundColor(bg)
-      println("mc "+text.value+" visible"+visible.value)
       gr.putString(0,0,text.value)
     }
   }
