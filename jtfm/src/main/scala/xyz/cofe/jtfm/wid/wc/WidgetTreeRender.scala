@@ -25,8 +25,6 @@ class WidgetTreeRender[W <: Widget[_]]
     if( repaitRequestCount>0 ) {
       repaitRequestCount = 0
 
-      println( "WidgetTreeRender" )
-      
       val g = screen.newTextGraphics
       val zeroPoint = Point(0, 0)
       navigate.forwardIterator(root).foreach { w =>
