@@ -4,6 +4,8 @@ import xyz.cofe.jtfm.wid.Widget
 import xyz.cofe.jtfm.wid.TextProperty
 import com.googlecode.lanterna.graphics.TextGraphics
 import xyz.cofe.jtfm.wid.WidgetCycle
+import xyz.cofe.jtfm.wid.Widget.likeTree
+import xyz.cofe.jtfm.tree._
 
 trait MenuItem[SELF <: Widget[SELF]] 
   extends Widget[SELF]
@@ -17,8 +19,6 @@ trait MenuItem[SELF <: Widget[SELF]]
   // } yield ws.visibleNavigator
   
   def nextMenu:Option[MenuContainer|MenuAction] = {
-    import xyz.cofe.jtfm.wid.Widget.likeTree
-    import xyz.cofe.jtfm.LikeTreeOps
     val me:Widget[_] = this.asInstanceOf[Widget[_]]        
     ???
   }

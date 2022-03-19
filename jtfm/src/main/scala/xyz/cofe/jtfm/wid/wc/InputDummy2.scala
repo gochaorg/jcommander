@@ -5,7 +5,7 @@ import xyz.cofe.jtfm.wid.{FocusProperty, Widget}
 import xyz.cofe.jtfm.wid.Widget.*
 import xyz.cofe.jtfm.gr.Point
 import xyz.cofe.jtfm._
-import xyz.cofe.jtfm.LikeTreeOps
+import xyz.cofe.jtfm.tree._
 
 class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
   override def focusOwner: Option[Widget[_]] = fm.focusOwner
