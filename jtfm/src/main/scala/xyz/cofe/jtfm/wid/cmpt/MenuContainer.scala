@@ -53,6 +53,11 @@ class MenuContainer
   focus.onGain { _ =>
     doLayout()
   }
+  focus.onLost { _ =>
+    if( !focus.contains ){
+      nested.foreach { _.visible.value = false }
+    }
+  }
 
   override def input(ks:KeyStroke):Boolean = {
     ks match {
