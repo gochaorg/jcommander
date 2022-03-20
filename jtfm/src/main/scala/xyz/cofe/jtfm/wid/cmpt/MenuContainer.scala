@@ -65,7 +65,7 @@ class MenuContainer
         true
       case _ =>
         val lvl = nestedMenuLevel-1
-        println(s"mc (${text.value}) input $lvl")
+        //println(s"mc (${text.value}) input $lvl")
         ks.getKeyType match {
           case KeyType.ArrowRight if lvl==0 => switchNext()
           case KeyType.ArrowLeft  if lvl==0 => switchPrev()
