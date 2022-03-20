@@ -33,6 +33,14 @@ trait MenuItem[SELF <: Widget[SELF]]
     }}.map( _.asInstanceOf[MenuContainer|MenuAction] )
   }
 
+  protected def nestedMenuLevel:Int = widgetPath.reverse.filter( it => { 
+    it match {
+      case _:MenuItem[_] => true
+      case _:MenuBar => true
+      case _ => false
+    }
+  }).takeWhile( it => !(it.isInstanceOf[MenuBar]) ).size
+
   protected def menuItemInit():Unit = {
     focus.onGain(from => {
       from.foreach { wfrom => 

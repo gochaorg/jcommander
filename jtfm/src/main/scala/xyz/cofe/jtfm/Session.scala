@@ -31,6 +31,9 @@ class Session ( terminal: Terminal ):
       wc.stop().await()
       
   private def buildUi(wc: WidgetCycle):Unit =
+    wc.root.background.value = TextColor.ANSI.BLACK
+    wc.root.opaque.value = true
+
     val mbar = new MenuBar
     wc.root.nested.append(mbar)
     

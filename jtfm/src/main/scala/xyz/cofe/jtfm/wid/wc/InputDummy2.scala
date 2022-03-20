@@ -25,26 +25,40 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
   }
   
   override def input(state: State.Work, ks: KeyStroke): State = {
+    //println(s"input")
     ks match {
       case ma: MouseAction =>
         // обход в обратном порядке рендере
         fm.navigate.last(fm.root) match {
           case None =>
           case Some(last_w) =>
+            /*
+            fm.navigate.forwardIterator(fm.root).foreach { wid =>
+              println(wid.widgetPath.map(_.toString).mkString("/"))
+            }
+            println("- - - - - -")
+            fm.navigate.backwardIterator(last_w).foreach { wid =>
+              println(s" x ${wid}")
+            }
+            println("- - - - - -")
+            */
             val widInputProcessed = fm.navigate.backwardIterator(last_w).map { wid =>
               val mma : MouseAction = ma
               val abs : Point = Point(mma.getPosition)
               val local : Point = abs toLocal wid
               val x = wid.rect.value.size.include(local)
+              //println(s"input ${wid} ${wid.rect.value} / abs=${abs} local=${local} include=${x}")
               // вычисление локальных координат
               (x, wid, local)
             }.filter { case(matched,wid,local) =>
+              //println(s"input matched=${matched} ${wid}")
               matched
             }.map { case(matched,wid,local) =>
               val mma : MouseAction = ma
               val local_ma = new MouseAction(mma.getActionType, mma.getButton, local)
               // посылка сигнала в виджет
               val x = wid.input(local_ma)
+              //println(s"input matched=${matched} ${wid} click(${local})=${x}")
               (x, wid)
             }.find( _._1 ).map( _._2 )
 

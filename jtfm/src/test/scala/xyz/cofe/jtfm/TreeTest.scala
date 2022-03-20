@@ -9,7 +9,7 @@ class TreeTest {
     override def toString: String = s"$text"
   }
   
-  @Test
+  //@Test
   def test01():Unit = {
     val w1 = Wid("w1")
     val w2 = Wid("w2")
@@ -88,5 +88,32 @@ class TreeTest {
     
     val fEl3 = fItr.next()
     println(s"next(3) = ${fEl3}")
+  }
+
+  @Test
+  def test02():Unit = {
+    val w0 = Wid("virtualRoot")
+    val w1 = Wid("menuBar")
+    val w2 = Wid("File")
+    val w3 = Wid("View")
+    val w4 = Wid("Exit")
+    val w5 = Wid("Edit")
+    val w6 = Wid("Help")
+    val w7 = Wid("Border")
+
+    w0.nested.append(w1)
+    w1.nested.append(w2)
+    w2.nested.append(w3)
+    w2.nested.append(w4)
+    w1.nested.append(w5)
+    w1.nested.append(w6)
+    w0.nested.append(w7)
+
+    import Widget._
+    import NavigateFilter.any
+    val nav = Navigate.deepOrder
+    nav.backwardIterator(w7).foreach { w =>
+      println(s"$w")
+    }
   }
 }

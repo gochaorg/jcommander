@@ -120,16 +120,18 @@ object Navigate {
   
     private def last_child_or_self_visible1(n:N):Option[N] = {
       if( !filter.test(n) ){
+        //println(s"last_child_or_self_visible1#filter => None")
         None
       }else{
         if( n.childrenCount<1 ){
+          //println(s"last_child_or_self_visible1#Some($n) - no child")
           Some(n)
         }else {
           val from = n.children.reverse
             .filter { filter.test }
             .headOption
           
-          combine(
+          val x = combine(
             from, visible =>
               if( visible.childrenCount<1 ) {
                 Some(List(visible))
@@ -137,20 +139,28 @@ object Navigate {
                 Some(visible.children.reverse.headOption)
               }
           ).headOption
+
+          val xx = x.orElse( Some(n) )
+          //println(s"last_child_or_self_visible1#xx = $xx")
+          xx
         }
       }
     }
     
     def prev( n:N ):Option[N] = {
+      //println(s"prev($n)")
       n.sib(-1) match {
         case Some(sib) =>
           val r1 = last_child_or_self_visible1(sib)
+          //println(s"prev#last_child_or_self_visible1($sib)=$r1")
           r1
         case _ =>
           n.parent match {
             case Some(prt) if filter.test(prt) =>
+              //println(s"prev#prnt($prt)")
               Some(prt)
             case _ =>
+              //println(s"prev#none")
               None
           }
       }
