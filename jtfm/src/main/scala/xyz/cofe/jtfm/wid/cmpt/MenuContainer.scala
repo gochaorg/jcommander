@@ -7,7 +7,14 @@ import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.MouseAction
 import com.googlecode.lanterna.input.KeyType
 import xyz.cofe.jtfm.gr.Rect
+import xyz.cofe.jtfm.gr.Point
+import xyz.cofe.jtfm.gr.HVLine
+import xyz.cofe.jtfm.gr.HVLineOps
+import com.googlecode.lanterna.TextColor
 
+/**
+ * Меню контейнер, содержит вложенные пункты меню
+ */
 class MenuContainer
   extends Widget[MenuContainer]
   with FocusProperty[MenuContainer](true)
@@ -29,17 +36,45 @@ class MenuContainer
       gr.setBackgroundColor(bg)
       gr.putString(0,0,text.value)
     }
+
+    if( focus.contains & nestedItemsRect.isDefined ){
+      // import xyz.cofe.jtfm.gr.Symbols.Style.{Single=>S, Double=>D}
+      // nestedItemsRect.foreach { rect =>
+      //   val lt = rect.leftTop.translate(-1,-1)
+      //   val rt = rect.rightBottom.translate(1,-1)
+      //   val lb = rect.leftBottom.translate(-1,1)
+      //   val rb = rect.rightBottom.translate(1,1)
+
+      //   gr.setForegroundColor(TextColor.ANSI.WHITE)
+      //   gr.setBackgroundColor(TextColor.ANSI.GREEN)
+
+      //   val lines = HVLine(lt,rt,S) :: HVLine(rt,rb,S) :: HVLine(lb,rb,S) :: HVLine(lt,lb,S) :: Nil
+      //   lines.draw(gr)
+      // }
+    }
   }
+
+  private val border:Border = new Border()
+  nested.append( border )
+  border.visible.value = false
 
   private def nestedMenuItems = nested.filter { _.isInstanceOf[MenuItem[_]] }.map { _.asInstanceOf[MenuItem[_]] }
 
+  /** Рамка в пределах которой расположены пункты меню */
+  private var nestedItemsRect:Option[Rect] = None
+
+  /**
+   * При получении фокуса, 
+   * раставляет вложенные пункты меню
+   */
   private def doLayout( f_mi:MenuItem[_]=>Unit=_=>() ):Unit = {
-    var x=0
-    var y=1
+    var x=1
+    var y=2
+
     val (_mitems, others) = nested.partition { _.isInstanceOf[MenuItem[_]] }
     others.foreach { _.visible.value = false }
+    
     val mitems = _mitems.map { _.asInstanceOf[MenuItem[_]] }
-
     val maxWidth = mitems.map { _.text.value.length }.maxOption.getOrElse { 0 }
 
     nestedMenuItems.foldLeft( y )( (_y,mi) =>
@@ -48,14 +83,31 @@ class MenuContainer
       f_mi(mi)
       _y + 1
     )
+
+    nestedItemsRect = if( nestedMenuItems.isEmpty ) None else {
+      Some( nestedMenuItems.map( _.rect.value ).foldLeft( nestedMenuItems.head.rect.value )( (a,b) => {
+        Rect( a.left min b.left, a.top min b.top ).to( a.right max b.right, a.bottom max b.bottom )
+      }))
+    }
+
+    nestedItemsRect.foreach { rect => 
+      val lt = rect.leftTop.translate(-1,-1)
+      //val rt = rect.rightBottom.translate(1,-1)
+      //val lb = rect.leftBottom.translate(-1,1)
+      val rb = rect.rightBottom.translate(1,1)
+      border.rect.value = Rect(lt,rb)
+    }
   }
 
   focus.onGain { _ =>
     doLayout()
+    border.visible.value = nestedItemsRect.isDefined
+    //border.visible.value = false
   }
   focus.onLost { _ =>
     if( !focus.contains ){
       nested.foreach { _.visible.value = false }
+      border.visible.value = false
     }
   }
 
@@ -64,39 +116,22 @@ class MenuContainer
       case ma:MouseAction =>
         true
       case _ =>
-        val lvl = nestedMenuLevel-1
-        //println(s"mc (${text.value}) input $lvl")
-        ks.getKeyType match {
-          case KeyType.ArrowRight if lvl==0 => switchNext()
-          case KeyType.ArrowLeft  if lvl==0 => switchPrev()
-          case KeyType.ArrowDown  if lvl==0 => switchSubMenu()
-          case KeyType.ArrowDown  if lvl>0 => switchNext()
-          case KeyType.ArrowUp    if lvl>0 => switchPrev()
-          case KeyType.ArrowRight if lvl>0 => switchSubMenu()
-          case KeyType.Escape => menuBar.flatMap { x => x.restoreInitialUI(); Some(true) }.getOrElse( false )
-          case _:AnyRef => false
+        MenuKey.what(ks) match {
+          case None => false
+          case Some(k_a) => k_a match {
+            case MenuKey.Next => switchNextMenu()
+            case MenuKey.Prev => switchPrevMenu()
+            case MenuKey.GoSub => switchSubMenu()
+            case MenuKey.Esc => menuBar.flatMap { 
+              x => x.restoreInitialUI(); 
+              Some(true) 
+            }.getOrElse( false )
+            case _ => false
+          }
         }
     }
   }
-
-  private def switchNext():Boolean = {
-    nextMenu match {
-      case Some(nm) => nm.focus.request { _ =>
-          nested.foreach { _.visible.value = false }
-        }
-        true
-      case None => false
-    }
-  }
-  private def switchPrev():Boolean = {
-    prevMenu match {
-      case Some(nm) => nm.focus.request { _ =>
-          nested.foreach { _.visible.value = false }
-        }
-        true
-      case None => false
-    }
-  }
+  
   private def switchSubMenu():Boolean = {
     val mi = nestedMenuItems.headOption
     mi.map { x => x.focus.request(); true }.getOrElse( false )

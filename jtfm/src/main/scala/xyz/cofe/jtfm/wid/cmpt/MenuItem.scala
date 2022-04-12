@@ -7,6 +7,8 @@ import xyz.cofe.jtfm.wid.WidgetCycle
 import xyz.cofe.jtfm.wid.Widget.likeTree
 import xyz.cofe.jtfm.tree._
 import xyz.cofe.jtfm.wid.FocusProperty
+import com.googlecode.lanterna.input.KeyStroke
+import com.googlecode.lanterna.input.KeyType
 
 trait MenuItem[SELF <: Widget[SELF]] 
   extends Widget[SELF]
@@ -40,6 +42,47 @@ trait MenuItem[SELF <: Widget[SELF]]
       case _ => false
     }
   }).takeWhile( it => !(it.isInstanceOf[MenuBar]) ).size
+
+  enum MenuKey {
+    case Next, Prev, GoSub, GoUp, Esc    
+  }
+
+  object MenuKey {
+    def what(ks:KeyStroke):Option[MenuKey] = {
+      val lvl = nestedMenuLevel-1
+      ks.getKeyType match {
+        case KeyType.ArrowRight if lvl==0 => Some(Next)
+        case KeyType.ArrowLeft  if lvl==0 => Some(Prev)
+        case KeyType.ArrowDown  if lvl==0 => Some(GoSub)
+        case KeyType.ArrowDown  if lvl>0 => Some(Next)
+        case KeyType.ArrowUp    if lvl>0 => Some(Prev)
+        case KeyType.ArrowRight if lvl>0 => Some(GoSub)
+        case KeyType.Escape => Some(Esc)
+        case KeyType.Enter => Some(GoSub)
+        case _:AnyRef => None
+      }
+    }
+  }
+
+  protected def switchNextMenu():Boolean = {
+    nextMenu match {
+      case Some(nm) => nm.focus.request { _ =>
+          nested.foreach { _.visible.value = false }
+        }
+        true
+      case None => false
+    }
+  }
+  
+  protected def switchPrevMenu():Boolean = {
+    prevMenu match {
+      case Some(nm) => nm.focus.request { _ =>
+          nested.foreach { _.visible.value = false }
+        }
+        true
+      case None => false
+    }
+  }
 
   protected def menuItemInit():Unit = {
     focus.onGain(from => {

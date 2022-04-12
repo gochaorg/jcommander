@@ -2,7 +2,17 @@ package xyz.cofe.jtfm.gr
 
 import xyz.cofe.jtfm.gr.Symbols.Style
 
-case class Line( a:Point, b:Point, style: Style ) {
+/**
+ * Линия
+ * @param a исходная точка
+ * @param b целевая точка
+ * @param style тип линии
+ */
+case class Line( 
+  a:Point, 
+  b:Point, 
+  style: Style 
+) {
   lazy val diagonal: Boolean = {
     val d = a diff b
     !( d.x!=0 && d.y!=0 )

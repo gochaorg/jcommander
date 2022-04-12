@@ -4,11 +4,15 @@ import com.googlecode.lanterna.graphics.TextGraphics
 import xyz.cofe.jtfm.gr.HVLine.{h_side_d, h_side_s, v_side_d, v_side_s}
 import xyz.cofe.jtfm.gr.Symbols.{Connector, Style, StyledSide}
 
+/** Горизонтальная/Вертикальная линиия определенной толщины */
 case class HVLine( a:Point, b:Point, style:Style ) {
   lazy val horiz:Boolean = (a diff b).y == 0
   lazy val vert:Boolean = (a diff b).x == 0
   def map[B]( f:HVLine => B )=f(this)
   
+  /**
+   * Нахождение пересечения с другой линией
+   */
   def intersection( line: HVLine ):Option[Intersection] = {
     def pOrder : HVLine=>HVLine = l =>
       HVLine(

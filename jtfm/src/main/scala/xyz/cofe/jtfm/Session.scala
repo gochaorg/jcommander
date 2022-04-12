@@ -41,7 +41,7 @@ class Session ( terminal: Terminal ):
     mc1.text.value = "File"
     mbar.nested.append(mc1)
 
-    val mc1v = new MenuContainer
+    val mc1v = new MenuAction( (_,_)=>{println("view!action")} )
     mc1v.text.value = "View"
     //mc1v.visible.value = false
     mc1.nested.append(mc1v)

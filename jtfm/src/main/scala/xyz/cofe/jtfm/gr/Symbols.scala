@@ -52,9 +52,20 @@ object Symbols {
     override lazy val hort2down: Char = '\u2566'
     override lazy val hort2up: Char = '\u2569'
   
+  /**
+   * Толщина линии
+   * 
+   * - Single - Одиничная линия
+   * - Double - Двойная линия
+   */
   enum Style:
     case Single, Double
   
+  /**
+   * Сторона соединения линий внутри блока символа
+   * 
+   * Например комбинация Left+Top это уголок ┘
+   */
   enum Side:
     case Left, Right, Top, Bottom
   
@@ -70,6 +81,9 @@ object Symbols {
   
   import StyledSide.*
   
+  /**
+   * Тип соединения двух линиий
+   */
   enum Connector(val sides: List[StyledSide], val chr: Char):
     case LeftTopSingle extends Connector(List(RightSingle, BottomSingle).sortBy(_.ordinal), SingleThin.leftTop)
     case RightTopSingle extends Connector(List(LeftSingle, BottomSingle).sortBy(_.ordinal), SingleThin.rightTop)
