@@ -25,15 +25,25 @@ class MenuContainer
 
   override def render(gr:TextGraphics):Unit = {
     menuBar.foreach { mbar =>
-      val (fg,bg) = if( focus.value ){
-          (mbar.focusForeground.value, mbar.focusBackground.value)
-        }else if( mbar.focus.contains ){        
-          (mbar.activeForeground.value, mbar.activeBackground.value)
+      val (fg,bg,bFg,bBg) = if( focus.value ){
+          (mbar.focusForeground.value, mbar.focusBackground.value,
+           mbar.activeForeground.value, mbar.activeBackground.value
+          )
+        }else if( mbar.focus.contains ){
+          (mbar.activeForeground.value, mbar.activeBackground.value,
+           mbar.activeForeground.value, mbar.activeBackground.value
+          )
         }else{
-          (mbar.foreground.value, mbar.background.value)
+          (mbar.foreground.value, mbar.background.value,
+           mbar.foreground.value, mbar.background.value
+          )
         }
       gr.setForegroundColor(fg)
       gr.setBackgroundColor(bg)
+
+      border.foreground.value = bFg
+      border.background.value = bBg
+
       gr.putString(0,0,text.value)
     }
   }

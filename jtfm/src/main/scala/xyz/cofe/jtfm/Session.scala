@@ -10,6 +10,9 @@ import xyz.cofe.jtfm.wid.wc.{InputDummy, InputProcess, Jobs}
 
 import java.util.concurrent.atomic.AtomicReference
 
+/**
+ * Сессия пользователя - текущий экземпляр
+ */
 class Session ( terminal: Terminal ):
   private val wc_atom : AtomicReference[WidgetCycle] = new AtomicReference[WidgetCycle](null)
   
@@ -106,7 +109,7 @@ class Session ( terminal: Terminal ):
       case Some(j) =>
         j.add( ()=>{
           wc.workState match {
-            case Some(ws) =>
+            case Some(ws) =>        
               ws.inputProcess match {
                 case d: InputDummy =>
                   val d2: InputDummy = d

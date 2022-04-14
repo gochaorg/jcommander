@@ -14,6 +14,13 @@ import xyz.cofe.jtfm.wid.Widget
 
 import java.net.SocketTimeoutException
 
+/**
+ * Состоние цикла обработки
+ * 
+ * - Init - Начальное состояние
+ * - Work - Рабочее состояние
+ * - End - Завершенное состояние
+ */
 sealed trait State {
   /**
    * Переход в состояние Завершено
