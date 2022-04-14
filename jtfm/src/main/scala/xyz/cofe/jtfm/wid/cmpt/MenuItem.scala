@@ -35,6 +35,14 @@ trait MenuItem[SELF <: Widget[SELF]]
     }}.map( _.asInstanceOf[MenuContainer|MenuAction] )
   }
 
+  def upMenu:Option[MenuContainer] = {
+    val me:Widget[SELF] = this.asInstanceOf[Widget[SELF]]
+    me.widgetPath.reverse.drop(1).find ( w => w match {
+      case m:MenuContainer => true
+      case _ => false
+    }).map( _.asInstanceOf[MenuContainer] )
+  }
+
   protected def nestedMenuLevel:Int = widgetPath.reverse.filter( it => { 
     it match {
       case _:MenuItem[_] => true
@@ -48,7 +56,7 @@ trait MenuItem[SELF <: Widget[SELF]]
   }
 
   object MenuKey {
-    def what(ks:KeyStroke):Option[MenuKey] = {
+    def what(ks:KeyStroke):Option[MenuKey] = {      
       val lvl = nestedMenuLevel-1
       ks.getKeyType match {
         case KeyType.ArrowRight if lvl==0 => Some(Next)
@@ -74,14 +82,22 @@ trait MenuItem[SELF <: Widget[SELF]]
     }
   }
   
-  protected def switchPrevMenu():Boolean = {
+  protected def switchPrevMenu():Boolean = {    
     prevMenu match {
       case Some(nm) => nm.focus.request { _ =>
           nested.foreach { _.visible.value = false }
         }
         true
-      case None => false
+      case None => 
+        switchUpMenu()
     }
+  }
+
+  private def switchUpMenu():Boolean = {
+    upMenu.map { menu => 
+      menu.focus.request()
+      true
+    }.getOrElse( false )
   }
 
   protected def menuItemInit():Unit = {

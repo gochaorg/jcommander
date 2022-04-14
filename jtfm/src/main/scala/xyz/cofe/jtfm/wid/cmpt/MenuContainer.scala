@@ -36,22 +36,6 @@ class MenuContainer
       gr.setBackgroundColor(bg)
       gr.putString(0,0,text.value)
     }
-
-    if( focus.contains & nestedItemsRect.isDefined ){
-      // import xyz.cofe.jtfm.gr.Symbols.Style.{Single=>S, Double=>D}
-      // nestedItemsRect.foreach { rect =>
-      //   val lt = rect.leftTop.translate(-1,-1)
-      //   val rt = rect.rightBottom.translate(1,-1)
-      //   val lb = rect.leftBottom.translate(-1,1)
-      //   val rb = rect.rightBottom.translate(1,1)
-
-      //   gr.setForegroundColor(TextColor.ANSI.WHITE)
-      //   gr.setBackgroundColor(TextColor.ANSI.GREEN)
-
-      //   val lines = HVLine(lt,rt,S) :: HVLine(rt,rb,S) :: HVLine(lb,rb,S) :: HVLine(lt,lb,S) :: Nil
-      //   lines.draw(gr)
-      // }
-    }
   }
 
   private val border:Border = new Border()
@@ -92,8 +76,6 @@ class MenuContainer
 
     nestedItemsRect.foreach { rect => 
       val lt = rect.leftTop.translate(-1,-1)
-      //val rt = rect.rightBottom.translate(1,-1)
-      //val lb = rect.leftBottom.translate(-1,1)
       val rb = rect.rightBottom.translate(1,1)
       border.rect.value = Rect(lt,rb)
     }
@@ -102,7 +84,6 @@ class MenuContainer
   focus.onGain { _ =>
     doLayout()
     border.visible.value = nestedItemsRect.isDefined
-    //border.visible.value = false
   }
   focus.onLost { _ =>
     if( !focus.contains ){
@@ -117,7 +98,8 @@ class MenuContainer
         true
       case _ =>
         MenuKey.what(ks) match {
-          case None => false
+          case None => 
+            false
           case Some(k_a) => k_a match {
             case MenuKey.Next => switchNextMenu()
             case MenuKey.Prev => switchPrevMenu()
@@ -126,7 +108,8 @@ class MenuContainer
               x => x.restoreInitialUI(); 
               Some(true) 
             }.getOrElse( false )
-            case _ => false
+            case _ => 
+              false
           }
         }
     }
