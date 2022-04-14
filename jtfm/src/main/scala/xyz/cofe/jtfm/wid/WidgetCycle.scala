@@ -25,6 +25,8 @@ class WidgetCycle(
 
   @volatile
   private var _state_ : State = State.Init(root, terminal)
+
+  /** Текщее состояние */
   def state:State = _state_
   private def state_= (s:State) = _state_ = s
   
