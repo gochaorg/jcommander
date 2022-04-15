@@ -6,6 +6,10 @@ import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.input.MouseAction
 import xyz.cofe.jtfm.wid.Shortcut
+import xyz.cofe.jtfm.wid.wc.BroadcastReciver
+import xyz.cofe.jtfm.wid.Shortcut.FunShortcut
+import xyz.cofe.jtfm.wid.Shortcut.ChrShortcut
+import xyz.cofe.jtfm.wid.Shortcut.SeqShortcut
 
 class MenuAction( 
   val action:(MenuAction)=>Unit,
@@ -14,6 +18,7 @@ class MenuAction(
   extends Widget[MenuAction]
   with TextProperty[MenuAction]
   with MenuItem[MenuAction]
+  with BroadcastReciver
 {
   override def renderableWidth:Int = text.value.length + shortcut.map( _.toString.length+1 ).getOrElse(0)
 
@@ -71,6 +76,21 @@ class MenuAction(
               false
           }
         }
+    }
+  }
+
+  def reciveBroadcast( ks:KeyStroke ):Unit = {
+    shortcut match {
+      case None =>
+      case Some(sct) => sct match {
+        case sc:FunShortcut =>
+          if sc.test(ks) then
+            action(this)
+        case sc:ChrShortcut =>
+          if sc.test(ks) then
+            action(this)
+        case sc:SeqShortcut =>
+      }
     }
   }
 }

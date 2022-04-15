@@ -6,6 +6,7 @@ import xyz.cofe.jtfm.ev.OwnProperty
 import xyz.cofe.jtfm.gr.Rect
 import xyz.cofe.jtfm.wid.{BackgroundProperty, FocusProperty, ForegroundProperty, OpaqueProperty, Widget}
 import xyz.cofe.jtfm.gr.Symbols.{DoubleThin, SingleThin, Border as BorderSym}
+import com.googlecode.lanterna.input.MouseAction
 
 class Border
   extends Widget[Border]
@@ -20,9 +21,10 @@ class Border
   }
   
   override def input(ev: KeyStroke): Boolean = {
-    val res = !List(KeyType.Tab, KeyType.ReverseTab).contains(ev.getKeyType)
-    //println(s"Border.input($ev) = $res")
-    res
+    ev match {
+      case m:MouseAction => true
+      case _ => false
+    }
   }
   
   override def render( gr:TextGraphics ):Unit = {

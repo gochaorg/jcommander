@@ -5,9 +5,17 @@ import xyz.cofe.jtfm.wid.{FocusProperty, Widget}
 import xyz.cofe.jtfm.wid.Widget.*
 import xyz.cofe.jtfm.*
 
+/**
+ * Менеджер фокуса ввода
+ */
 class FocusManager[W <: Widget[_]]
 (
+  /**
+   * корневой виджет
+   */
   val root: W,
+
+  /** навигация по дереву */
   val navigate: Navigate[W]
 ) {
   private var focus_owner:Option[W] = None
@@ -25,6 +33,8 @@ class FocusManager[W <: Widget[_]]
   private def visible( w:W ):Boolean = !w.widgetPath.map( _.visible.value ).contains( false )
   
   case class Switched( from:Option[W], to:Option[W] )
+
+  /** Переключение фокуса */
   def switchTo( w:W ):Either[String,Switched] = {
     (visible(w) && focusableFilter(w)) match {
       case false => Left("target is not visible or not focusable")

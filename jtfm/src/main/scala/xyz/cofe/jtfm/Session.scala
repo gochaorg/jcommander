@@ -49,7 +49,7 @@ class Session ( terminal: Terminal ):
       action= (_)=>{
         println("view!action")
       },
-      shortcut = Some(Shortcut.parse("C+t").get)
+      shortcut = Some(Shortcut.parse("C+u").get)
     )
 
     mc1v.text.value = "View"

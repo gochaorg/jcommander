@@ -25,40 +25,26 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
   }
   
   override def input(state: State.Work, ks: KeyStroke): State = {
-    //println(s"input")
     ks match {
       case ma: MouseAction =>
         // обход в обратном порядке рендере
         fm.navigate.last(fm.root) match {
           case None =>
           case Some(last_w) =>
-            /*
-            fm.navigate.forwardIterator(fm.root).foreach { wid =>
-              println(wid.widgetPath.map(_.toString).mkString("/"))
-            }
-            println("- - - - - -")
-            fm.navigate.backwardIterator(last_w).foreach { wid =>
-              println(s" x ${wid}")
-            }
-            println("- - - - - -")
-            */
             val widInputProcessed = fm.navigate.backwardIterator(last_w).map { wid =>
               val mma : MouseAction = ma
               val abs : Point = Point(mma.getPosition)
               val local : Point = abs toLocal wid
               val x = wid.rect.value.size.include(local)
-              //println(s"input ${wid} ${wid.rect.value} / abs=${abs} local=${local} include=${x}")
               // вычисление локальных координат
               (x, wid, local)
             }.filter { case(matched,wid,local) =>
-              //println(s"input matched=${matched} ${wid}")
               matched
             }.map { case(matched,wid,local) =>
               val mma : MouseAction = ma
               val local_ma = new MouseAction(mma.getActionType, mma.getButton, local)
               // посылка сигнала в виджет
               val x = wid.input(local_ma)
-              //println(s"input matched=${matched} ${wid} click(${local})=${x}")
               (x, wid)
             }.find( _._1 ).map( _._2 )
 
@@ -102,13 +88,46 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
                 }
             }
           case _ =>
+            // посылка события нажатия в виджет содержащий фокус
             fm.focusOwner match {
               case None =>
               case Some(fo) =>
-                fo.input(ks)
+                var w:Widget[?] = fo
+                var stop = false
+                var consumed = false
+                while( !stop ){
+                  if w.input(ks) then
+                    consumed = true
+                    stop = true
+                  else
+                    w.parent.value match {
+                      case Some(prt) =>
+                        w = prt
+                        stop = false                  
+                      case None =>
+                        stop = true
+                    }
+                }
+                if !consumed then {
+                  broadcast(ks)
+                }
             }
             super.input(state, ks)
         }
+    }
+  }
+
+  /** Рассылка необработанного нажатия клавиш во все видимые и принимающие Broadcast */
+  private def broadcast( ks:KeyStroke ):Unit = {
+    var ws:List[Widget[?]] = List(fm.root)
+    while( !ws.isEmpty ){
+      val w = ws.head
+      ws = ws.tail
+      ws = w.nested.toList ::: ws
+      w match {
+        case rcv:BroadcastReciver => rcv.reciveBroadcast( ks )
+        case _ =>
+      }
     }
   }
 }
