@@ -16,6 +16,8 @@ trait MenuItem[SELF <: Widget[SELF]]
   with FocusProperty[SELF]
 {
   def menuBar:Option[MenuBar] = widgetPath.reverse.find( _.isInstanceOf[MenuBar] ).map( _.asInstanceOf[MenuBar] )
+
+  def renderableWidth:Int = text.value.length
     
   def nextMenu:Option[MenuContainer|MenuAction] = {
     val me:Widget[SELF] = this.asInstanceOf[Widget[SELF]]

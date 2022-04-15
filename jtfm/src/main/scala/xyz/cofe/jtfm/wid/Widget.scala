@@ -44,6 +44,28 @@ trait Widget[SELF <: Widget[SELF]]
       case _ => None
     }
   }
+
+  // /** Поиск первого попавшегося предка */
+  // def parentFirst[N]( matcher:Any=>Option[N] ):Option[N] = {
+  //   var w: Widget[?] = this
+  //   var stop = false
+  //   var res:Option[N] = None
+  //   while( !stop ){
+  //     val m = matcher(w)
+  //     if( m.isDefined ){
+  //       stop = true
+  //       res = m
+  //     }else{
+  //       val (stop1, w1) = (w.parent.value match {
+  //         case Some(prt) => (false, prt)
+  //         case None => (true,w)
+  //       })
+  //       stop = stop1
+  //       w = w1
+  //     }
+  //   }
+  //   res
+  // }
 }
 
 object Widget {

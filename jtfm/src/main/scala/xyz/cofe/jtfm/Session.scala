@@ -9,6 +9,7 @@ import xyz.cofe.jtfm.wid.cmpt.*
 import xyz.cofe.jtfm.wid.wc.{InputDummy, InputProcess, Jobs}
 
 import java.util.concurrent.atomic.AtomicReference
+import xyz.cofe.jtfm.wid.Shortcut
 
 /**
  * Сессия пользователя - текущий экземпляр
@@ -44,14 +45,18 @@ class Session ( terminal: Terminal ):
     mc1.text.value = "File"
     mbar.nested.append(mc1)
 
-    val mc1v = new MenuAction( (_,_)=>{println("view!action")} )
+    val mc1v = new MenuAction( 
+      action= (_)=>{
+        println("view!action")
+      },
+      shortcut = Some(Shortcut.parse("C+t").get)
+    )
+
     mc1v.text.value = "View"
-    //mc1v.visible.value = false
     mc1.nested.append(mc1v)
 
     val mc1e = new MenuContainer
     mc1e.text.value = "Exit"
-    //mc1e.visible.value = false
     mc1.nested.append(mc1e)
 
     val mc2 = new MenuContainer

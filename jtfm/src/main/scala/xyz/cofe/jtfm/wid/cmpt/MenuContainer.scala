@@ -57,6 +57,9 @@ class MenuContainer
   /** Рамка в пределах которой расположены пункты меню */
   private var nestedItemsRect:Option[Rect] = None
 
+  /** Рамка в пределах которой расположены пункты меню */
+  def nestedItemsBound:Option[Rect] = nestedItemsRect
+
   /**
    * При получении фокуса, 
    * раставляет вложенные пункты меню
@@ -69,7 +72,7 @@ class MenuContainer
     others.foreach { _.visible.value = false }
     
     val mitems = _mitems.map { _.asInstanceOf[MenuItem[_]] }
-    val maxWidth = mitems.map { _.text.value.length }.maxOption.getOrElse { 0 }
+    val maxWidth = mitems.map { _.renderableWidth }.maxOption.getOrElse { 0 }
 
     nestedMenuItems.foldLeft( y )( (_y,mi) =>
       mi.rect.value = Rect(x,_y).size(maxWidth,1)

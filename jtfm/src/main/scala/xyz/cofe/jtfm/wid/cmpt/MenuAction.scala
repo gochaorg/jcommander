@@ -5,12 +5,18 @@ import com.googlecode.lanterna.graphics.TextGraphics
 import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.input.MouseAction
+import xyz.cofe.jtfm.wid.Shortcut
 
-class MenuAction( val action:(MenuAction,KeyStroke)=>Unit )
+class MenuAction( 
+  val action:(MenuAction)=>Unit,
+  val shortcut:Option[Shortcut] = None
+)
   extends Widget[MenuAction]
   with TextProperty[MenuAction]
   with MenuItem[MenuAction]
 {
+  override def renderableWidth:Int = text.value.length + shortcut.map( _.toString.length+1 ).getOrElse(0)
+
   override def render(gr:TextGraphics):Unit = {
     menuBar.foreach { mbar =>
       val (fg,bg) = if( focus.value ){
@@ -22,7 +28,20 @@ class MenuAction( val action:(MenuAction,KeyStroke)=>Unit )
         }
       gr.setForegroundColor(fg)
       gr.setBackgroundColor(bg)
+
+      for {
+        mc <- upMenu
+        bnd <- mc.nestedItemsBound
+      } gr.putString(0,0," ".repeat(bnd.width))
+      
       gr.putString(0,0,text.value)
+
+      for {
+        sh <- shortcut
+        mc <- upMenu
+        bnd <- mc.nestedItemsBound
+        shTxt = sh.toString
+      } gr.putString( bnd.width - shTxt.length, 0, shTxt )
     }
   }
 
@@ -31,7 +50,7 @@ class MenuAction( val action:(MenuAction,KeyStroke)=>Unit )
       case ma:MouseAction =>
         ma.getButton() match {
           case 1 if ma.isMouseDown =>
-            action(this,ma)
+            action(this)
             menuBar.foreach { x => x.restoreInitialUI() }
             true
           case _ =>
@@ -42,7 +61,7 @@ class MenuAction( val action:(MenuAction,KeyStroke)=>Unit )
           case None => false
           case Some(_x) => _x match {
             case MenuKey.GoSub =>
-              action(this,ks)
+              action(this)
               menuBar.foreach { x => x.restoreInitialUI() }
               true
             case MenuKey.Next => switchNextMenu()
