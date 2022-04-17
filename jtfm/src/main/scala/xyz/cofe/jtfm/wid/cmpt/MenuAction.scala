@@ -11,6 +11,11 @@ import xyz.cofe.jtfm.wid.Shortcut.FunShortcut
 import xyz.cofe.jtfm.wid.Shortcut.ChrShortcut
 import xyz.cofe.jtfm.wid.Shortcut.SeqShortcut
 
+/**
+ * Пункт меню - действие
+ * @param action - действие выполняемое при выборе пункта меню
+ * @param shortcut - клавиатурное сокращение
+ */
 class MenuAction( 
   val action:(MenuAction)=>Unit,
   val shortcut:Option[Shortcut] = None
@@ -20,6 +25,9 @@ class MenuAction(
   with MenuItem[MenuAction]
   with BroadcastReciver
 {
+  menuItemInit()
+
+  /** ширина пункта меню с учетом отображения shortcut */
   override def renderableWidth:Int = text.value.length + shortcut.map( _.toString.length+1 ).getOrElse(0)
 
   override def render(gr:TextGraphics):Unit = {

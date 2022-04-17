@@ -1,6 +1,10 @@
 package xyz.cofe.jtfm.wid
 
+/** Запрос перерисовки виджета */
 trait RepaitRequest[SELF] {
+  /** Запрос перерисовки виджета 
+   * @param self - виджет
+   */
   def repaitRequest( self:SELF ):Unit
 }
 

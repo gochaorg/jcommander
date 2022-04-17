@@ -91,6 +91,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
             // посылка события нажатия в виджет содержащий фокус
             fm.focusOwner match {
               case None =>
+                broadcast(ks)
               case Some(fo) =>
                 var w:Widget[?] = fo
                 var stop = false

@@ -128,7 +128,10 @@ class MenuContainer
     }
   }
   
-  private def switchSubMenu():Boolean = {
+  /**
+   * Переходит во вложенное меню
+   */
+  protected  def switchSubMenu():Boolean = {
     val mi = nestedMenuItems.headOption
     mi.map { x => x.focus.request(); true }.getOrElse( false )
   }

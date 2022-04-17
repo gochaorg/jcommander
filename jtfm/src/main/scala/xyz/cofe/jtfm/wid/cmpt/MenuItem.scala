@@ -10,15 +10,21 @@ import xyz.cofe.jtfm.wid.FocusProperty
 import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.KeyType
 
+/**
+ * Пункт меню
+ */
 trait MenuItem[SELF <: Widget[SELF]] 
   extends Widget[SELF]
   with TextProperty[SELF]
   with FocusProperty[SELF]
 {
+  /** ссылка на главное меню */
   def menuBar:Option[MenuBar] = widgetPath.reverse.find( _.isInstanceOf[MenuBar] ).map( _.asInstanceOf[MenuBar] )
 
+  /** Какая ширина отображаемого пункта меню */
   def renderableWidth:Int = text.value.length
     
+  /** Следующие меню за текущим */
   def nextMenu:Option[MenuContainer|MenuAction] = {
     val me:Widget[SELF] = this.asInstanceOf[Widget[SELF]]
     LikeTreeOps(me)(Widget.likeTree).siblings.find { _ match {
@@ -28,6 +34,7 @@ trait MenuItem[SELF <: Widget[SELF]]
     }}.map( _.asInstanceOf[MenuContainer|MenuAction] )
   }
 
+  /** Предыдущее меню перед текущим */
   def prevMenu:Option[MenuContainer|MenuAction] = {
     val me:Widget[SELF] = this.asInstanceOf[Widget[SELF]]
     LikeTreeOps(me)(Widget.likeTree).siblings.reverse.find { _ match {
@@ -37,6 +44,7 @@ trait MenuItem[SELF <: Widget[SELF]]
     }}.map( _.asInstanceOf[MenuContainer|MenuAction] )
   }
 
+  /** Родительское меню */
   def upMenu:Option[MenuContainer] = {
     val me:Widget[SELF] = this.asInstanceOf[Widget[SELF]]
     me.widgetPath.reverse.drop(1).find ( w => w match {
@@ -53,11 +61,21 @@ trait MenuItem[SELF <: Widget[SELF]]
     }
   }).takeWhile( it => !(it.isInstanceOf[MenuBar]) ).size
 
+  /** Расшифрока нажатий на пункты меню 
+   *  - Next - переход к следующему пункту меню
+   *  - Prev - переход к предыдущему пункту меню
+   *  - GoSub - переход во вложенное меню
+   *  - GoUp - переход к родительскому меню
+   *  - Esc - выход их меню
+   */
   enum MenuKey {
     case Next, Prev, GoSub, GoUp, Esc    
   }
-
+  
   object MenuKey {
+    /**
+     * Определяет тип перехода к пунктам меню в зависимости от клавиши и текущего уровня вложенности меню
+     */
     def what(ks:KeyStroke):Option[MenuKey] = {      
       val lvl = nestedMenuLevel-1
       ks.getKeyType match {
@@ -74,6 +92,10 @@ trait MenuItem[SELF <: Widget[SELF]]
     }
   }
 
+  /**
+   * Переход к следующему пункту меню
+   * @return успешно или нет
+   */
   protected def switchNextMenu():Boolean = {
     nextMenu match {
       case Some(nm) => nm.focus.request { _ =>
@@ -84,6 +106,10 @@ trait MenuItem[SELF <: Widget[SELF]]
     }
   }
   
+  /**
+   * Переход к предыдущему пункту меню
+   * @return успешно или нет
+   */
   protected def switchPrevMenu():Boolean = {    
     prevMenu match {
       case Some(nm) => nm.focus.request { _ =>
@@ -95,6 +121,10 @@ trait MenuItem[SELF <: Widget[SELF]]
     }
   }
 
+  /**
+   * Переход к родительскому пункту меню
+   * @return успешно или нет
+   */
   private def switchUpMenu():Boolean = {
     upMenu.map { menu => 
       menu.focus.request()
@@ -102,6 +132,10 @@ trait MenuItem[SELF <: Widget[SELF]]
     }.getOrElse( false )
   }
 
+  /**
+   * Добавляет подписчика на фокус
+   * При получении фокуса от виджета который не входит в меню, уведомляет MenuBar куда вохвращать фокус
+   */
   protected def menuItemInit():Unit = {
     focus.onGain(from => {
       from.foreach { wfrom => 

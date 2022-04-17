@@ -2,6 +2,7 @@ package xyz.cofe.jtfm.wid
 
 import com.googlecode.lanterna.TextColor
 
+/** Предопределенные цвета */
 enum Color( val textColor: TextColor ) {
   case Black extends Color( TextColor.ANSI.BLACK )
   case Red extends Color( TextColor.ANSI.RED )

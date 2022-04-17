@@ -9,6 +9,10 @@ import xyz.cofe.jtfm.wid.FocusProperty
 import com.googlecode.lanterna.input.MouseAction
 import com.googlecode.lanterna.input.KeyStroke
 
+/**
+ * Главное меню,
+ * расположается в верхней части
+ */
 class MenuBar
   extends Widget[MenuBar]
   with BackgroundProperty[MenuBar]
@@ -23,7 +27,8 @@ class MenuBar
   
   background.value = TextColor.ANSI.BLACK_BRIGHT
   foreground.value = TextColor.ANSI.WHITE_BRIGHT
-  
+
+  // Прикрепляет себя (menuBar) к верхней части родительского контейнера  
   parent.listen( (prop,old,cur)=>{
     cur match {
       case None =>
@@ -35,13 +40,14 @@ class MenuBar
     }
   })
 
+  // Компоновка: расстанавливает дочерние пункты меню, скрывает остальные элементы
   private def layoutItems():Unit=
     var x = 0    
     nested.foreach { w =>
       w match {
         case mi: MenuItem[_] =>
           w.visible.value = true
-          w.rect.value = Rect(x,0).size(mi.text.value.length,1)
+          w.rect.value = Rect(x,0).size(mi.renderableWidth,1)
           x += w.rect.value.width + 1
           mi.nested.foreach { _.visible.value=false }
         case _ =>
@@ -62,12 +68,18 @@ class MenuBar
     firstMenu.foreach(_.focus.request())
   }
 
-  // internal
+  /** length
+   * internal
+   * запоминает куда возвращать фокус после выбора пункта меню
+   */
   def acceptFocusFrom( w:Widget[_] ):Unit = {
     lastFocused = Some(w)
   }
 
-  // internal
+  /**
+   * internal
+   * восстанавливает первоначальный вид, возвращает фокус ввода на ранее сфокусированный элемент вне меню
+   */
   def restoreInitialUI():Unit = {
     layoutItems()
     lastFocused match {

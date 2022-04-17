@@ -3,9 +3,11 @@ package xyz.cofe.jtfm.wid
 import com.googlecode.lanterna.graphics.TextGraphics
 import xyz.cofe.jtfm.ev.OwnProperty
 
+/** Свойство: "укрывитость" - закрашивать фон виджета или нет */
 trait OpaqueProperty[SELF : RepaitRequest] {
   self: Widget[_] =>
   
+  /** Свойство: "укрывитость" - закрашивать фон виджета или нет */
   lazy val opaque:OwnProperty[Boolean,SELF] =
     OwnProperty(true,self.asInstanceOf[SELF])
       .observe( (prop,old,cur)=>{
