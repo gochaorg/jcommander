@@ -47,57 +47,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
       case ma: MouseAction =>
         processMouseAction(state,ma)
       case _ =>
-        ks.getKeyType match {
-          // Смена фокуса
-          case KeyType.Tab | KeyType.ReverseTab =>
-            fm.focusOwner match {
-              case None => super.input(state, ks)
-              case Some(fo) =>
-                if( !fo.input(ks) ){
-                  
-                  val from = fm.focusOwner match {
-                    case None => fm.root
-                    case Some(fo) => fo
-                  }
-                  
-                  val fnext = if ks.getKeyType == KeyType.Tab then fm.nextCycle else fm.prevCycle
-                  fnext(from).take(1).foreach { next =>
-                    fm.switchTo(next)
-                  }
-                  
-                  super.input(state, ks)
-                }else{
-                  super.input(state, ks)
-                }
-            }
-          case _ =>
-            // посылка события нажатия в виджет содержащий фокус
-            fm.focusOwner match {
-              case None =>
-                broadcast(ks)
-              case Some(fo) =>
-                var w:Widget[?] = fo
-                var stop = false
-                var consumed = false
-                while( !stop ){
-                  if w.input(ks) then
-                    consumed = true
-                    stop = true
-                  else
-                    w.parent.value match {
-                      case Some(prt) =>
-                        w = prt
-                        stop = false                  
-                      case None =>
-                        stop = true
-                    }
-                }
-                if !consumed then {
-                  broadcast(ks)
-                }
-            }
-            super.input(state, ks)
-        }
+        processKeyboard(state, ks)
     }
   }
 
@@ -144,9 +94,62 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
   }
 
   /**
-  */
+   * обработка события клавиатуры
+   */
   private def processKeyboard( state:State.Work, ks:KeyStroke ):State = {
+    val hist = collect(ks)
 
+    ks.getKeyType match {
+      // Смена фокуса
+      case KeyType.Tab | KeyType.ReverseTab =>
+        fm.focusOwner match {
+          case None => super.input(state, ks)
+          case Some(fo) =>
+            if( !fo.input(ks) ){
+              
+              val from = fm.focusOwner match {
+                case None => fm.root
+                case Some(fo) => fo
+              }
+              
+              val fnext = if ks.getKeyType == KeyType.Tab then fm.nextCycle else fm.prevCycle
+              fnext(from).take(1).foreach { next =>
+                fm.switchTo(next)
+              }
+              
+              super.input(state, ks)
+            }else{
+              super.input(state, ks)
+            }
+        }
+      case _ =>
+        // посылка события нажатия в виджет содержащий фокус
+        fm.focusOwner match {
+          case None =>
+            broadcast(ks)
+          case Some(fo) =>
+            var w:Widget[?] = fo
+            var stop = false
+            var consumed = false
+            while( !stop ){
+              if w.input(ks) then
+                consumed = true
+                stop = true
+              else
+                w.parent.value match {
+                  case Some(prt) =>
+                    w = prt
+                    stop = false                  
+                  case None =>
+                    stop = true
+                }
+            }
+            if !consumed then {
+              broadcast(ks)
+            }
+        }
+        super.input(state, ks)
+    }
   }
 
   /** Рассылка необработанного нажатия клавиш во все видимые и принимающие Broadcast */

@@ -8,10 +8,14 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class Jobs {
   private val queue = new ConcurrentLinkedQueue[() => Unit]()
 
+  /**
+   * Добавление задачи в очередь
+   */
   def add( job: ()=>Unit ):Unit = {
     queue.add(job)
   }
   
+  /** Обработка очереди задач */
   def run( state: State.Work ):State = {
     var cnt = 0
     var stop = false
