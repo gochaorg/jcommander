@@ -19,19 +19,25 @@ class FocusManager[W <: Widget[_]]
   val navigate: Navigate[W]
 ) {
   private var focus_owner:Option[W] = None
+
+  /** возвращает владельца фокуса */
   def focusOwner:Option[Widget[_]] = focus_owner
   
   private val focusableFilter: W=>Boolean = w => w.isInstanceOf[FocusProperty[_]] // && w.asInstanceOf[Focusable].focusable
   private def findInitialFocus:Option[W] =
     navigate.forwardIterator(root).find( focusableFilter )
   
+  /** находит следующий элемент принимающий фокус */
   def next( wid:W ):Option[W] =
     navigate.forwardIterator(wid).drop(1).find( focusableFilter )
+
+  /** находит предыдущий элемент принимающий фокус */
   def prev( wid:W ):Option[W] =
     navigate.backwardIterator(wid).drop(1).find( focusableFilter )
   
   private def visible( w:W ):Boolean = !w.widgetPath.map( _.visible.value ).contains( false )
   
+  /** Событие смены фокуса */
   case class Switched( from:Option[W], to:Option[W] )
 
   /** Переключение фокуса */
@@ -57,6 +63,7 @@ class FocusManager[W <: Widget[_]]
     }
   }
   
+  /** цикл смены фокуса */
   class Cycled( val from:W, val move:W=>Option[W], val continue:()=>Option[W] ) extends Iterator[W] {
     private var continueCalled = false
     private var cur:Option[W] = move(from) match {
