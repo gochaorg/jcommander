@@ -69,6 +69,7 @@ object State {
                    inputProcess: InputProcess,
                    renderTree: WidgetTreeRender[Widget[_]],
                    throttling: Throttling = Throttling.Sleep(100),
+                   keyInterceptor: KeyboardInterceptor = new KeyboardInterceptor,
                    ubHandler: UndefinedBehavior = UndefinedBehavior.PanicFirst(),
                       //UndefinedBehavior.TimeRateLimit(10000L, 8L),
                    jobs: Jobs

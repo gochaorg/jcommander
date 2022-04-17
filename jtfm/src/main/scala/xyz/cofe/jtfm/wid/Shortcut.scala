@@ -3,9 +3,23 @@ package xyz.cofe.jtfm.wid
 import com.googlecode.lanterna.input.KeyType
 import java.util.regex.Pattern
 import com.googlecode.lanterna.input.KeyStroke
+import xyz.cofe.jtfm.wid.Shortcut.FunShortcut
+import xyz.cofe.jtfm.wid.Shortcut.ChrShortcut
+import xyz.cofe.jtfm.wid.Shortcut.SeqShortcut
 
 /** клавиатурные комбинации */
-sealed trait Shortcut
+sealed trait Shortcut:
+  def test(hist:Seq[KeyStroke]):Boolean = {
+    hist.size match {
+      case 0 => false
+      case _ => this match {
+        case s: FunShortcut => s.test(hist.head)
+        case s: ChrShortcut => s.test(hist.head)
+        case s: SeqShortcut => s.matchBegin(hist)
+      }
+    }
+  }
+
 object Shortcut {
   case class FunShortcut( keyType:KeyType, ctrl:Boolean=false, alt:Boolean=false, shift:Boolean=false ) extends Shortcut:
     def test( ke:KeyStroke ):Boolean =

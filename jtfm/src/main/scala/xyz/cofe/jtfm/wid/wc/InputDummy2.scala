@@ -6,6 +6,7 @@ import xyz.cofe.jtfm.wid.Widget.*
 import xyz.cofe.jtfm.gr.Point
 import xyz.cofe.jtfm._
 import xyz.cofe.jtfm.tree._
+import xyz.cofe.jtfm.wid.wc.FocusManager.Switched
 
 /**
  * Обработка ввода
@@ -93,63 +94,85 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
     super.input(state, ma)
   }
 
+  /** Переключение фокуса на следующий элемент */
+  def focusSwitchNext():Either[String,FocusManager.Switched[_]] = {
+    fm.nextCycle( fm.focusOwner.getOrElse( fm.root ) ).take(1).nextOption match {
+      case None => Left("can't take focus owner")
+      case Some(w) => fm.switchTo(w)
+    }
+  }
+
+  /** Переключение фокуса на следующий элемент */
+  def focusSwitchPrev():Either[String,FocusManager.Switched[_]] = {
+    fm.prevCycle( fm.focusOwner.getOrElse( fm.root ) ).take(1).nextOption match {
+      case None => Left("can't take focus owner")
+      case Some(w) => fm.switchTo(w)
+    }
+  }
+
   /**
    * обработка события клавиатуры
    */
   private def processKeyboard( state:State.Work, ks:KeyStroke ):State = {
-    val hist = collect(ks)
+    val defProc: ()=> State = ()=>{ InputDummy2.super.input(state,ks) }
+    val proc : ()=>State = ()=>{
+      ks.getKeyType match {
+        // Смена фокуса
+        case KeyType.Tab | KeyType.ReverseTab =>
+          fm.focusOwner match {
+            case None => defProc()
+            case Some(fo) =>
+              if( !fo.input(ks) ){
 
-    ks.getKeyType match {
-      // Смена фокуса
-      case KeyType.Tab | KeyType.ReverseTab =>
-        fm.focusOwner match {
-          case None => super.input(state, ks)
-          case Some(fo) =>
-            if( !fo.input(ks) ){
-              
-              val from = fm.focusOwner match {
-                case None => fm.root
-                case Some(fo) => fo
+                if ks.getKeyType == KeyType.Tab then
+                  focusSwitchNext()
+                else
+                  focusSwitchPrev()
+                
+                defProc()
+              }else{
+                defProc()
               }
-              
-              val fnext = if ks.getKeyType == KeyType.Tab then fm.nextCycle else fm.prevCycle
-              fnext(from).take(1).foreach { next =>
-                fm.switchTo(next)
-              }
-              
-              super.input(state, ks)
-            }else{
-              super.input(state, ks)
-            }
-        }
-      case _ =>
-        // посылка события нажатия в виджет содержащий фокус
-        fm.focusOwner match {
-          case None =>
-            broadcast(ks)
-          case Some(fo) =>
-            var w:Widget[?] = fo
-            var stop = false
-            var consumed = false
-            while( !stop ){
-              if w.input(ks) then
-                consumed = true
-                stop = true
-              else
-                w.parent.value match {
-                  case Some(prt) =>
-                    w = prt
-                    stop = false                  
-                  case None =>
-                    stop = true
-                }
-            }
-            if !consumed then {
+          }
+        case _ =>
+          // посылка события нажатия в виджет содержащий фокус
+          fm.focusOwner match {
+            case None =>
               broadcast(ks)
-            }
-        }
-        super.input(state, ks)
+            case Some(fo) =>
+              var w:Widget[?] = fo
+              var stop = false
+              var consumed = false
+              while( !stop ){
+                if w.input(ks) then
+                  consumed = true
+                  stop = true
+                else
+                  w.parent.value match {
+                    case Some(prt) =>
+                      w = prt
+                      stop = false                  
+                    case None =>
+                      stop = true
+                  }
+              }
+              if !consumed then {
+                broadcast(ks)
+              }
+          }
+          defProc()
+      }
     }
+
+    val hist = collect(ks)    
+    if hist.nonEmpty then
+      state.keyInterceptor.accept( state, hist ) match {
+        case Some(newState) => newState
+        case None =>
+          proc()
+      }
+    else
+      proc()
   }
 
   /** Рассылка необработанного нажатия клавиш во все видимые и принимающие Broadcast */

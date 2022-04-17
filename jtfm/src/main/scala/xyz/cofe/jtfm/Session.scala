@@ -10,6 +10,7 @@ import xyz.cofe.jtfm.wid.wc.{InputDummy, InputProcess, Jobs}
 
 import java.util.concurrent.atomic.AtomicReference
 import xyz.cofe.jtfm.wid.Shortcut
+import xyz.cofe.jtfm.wid.wc.KeyboardInterceptor
 
 /**
  * Сессия пользователя - текущий экземпляр
@@ -51,6 +52,10 @@ class Session ( terminal: Terminal ):
       },
       shortcut = Some(Shortcut.parse("C+u").get)
     )
+
+    KeyboardInterceptor.bind(Shortcut.parse("C+y").get).eat {
+      println("!! accept shortcut! ")
+    }
 
     mc1v.text.value = "View"
     mc1.nested.append(mc1v)

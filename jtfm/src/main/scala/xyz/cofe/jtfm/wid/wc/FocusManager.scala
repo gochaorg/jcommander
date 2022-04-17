@@ -37,11 +37,8 @@ class FocusManager[W <: Widget[_]]
   
   private def visible( w:W ):Boolean = !w.widgetPath.map( _.visible.value ).contains( false )
   
-  /** Событие смены фокуса */
-  case class Switched( from:Option[W], to:Option[W] )
-
   /** Переключение фокуса */
-  def switchTo( w:W ):Either[String,Switched] = {
+  def switchTo( w:W ):Either[String,FocusManager.Switched[W]] = {
     (visible(w) && focusableFilter(w)) match {
       case false => Left("target is not visible or not focusable")
       case true =>
@@ -59,7 +56,7 @@ class FocusManager[W <: Widget[_]]
         }
         focusable.focus.onGain(old_focus)
         
-        Right(Switched(old_focus,focus_owner))
+        Right(FocusManager.Switched(old_focus,focus_owner))
     }
   }
   
@@ -110,4 +107,9 @@ class FocusManager[W <: Widget[_]]
       case None => None
     }
   })
+}
+
+object FocusManager {
+  /** Событие смены фокуса */
+  case class Switched[W <: Widget[_]]( from:Option[W], to:Option[W] )
 }
