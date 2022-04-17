@@ -39,6 +39,24 @@ class Session ( terminal: Terminal ):
     wc.root.background.value = TextColor.ANSI.BLACK
     wc.root.opaque.value = true
 
+    val files = List(
+      SomeFile("abc",123), SomeFile("bcd",234), SomeFile("cde",345), SomeFile("def",345), SomeFile("efg",345),
+      SomeFile("qwe",123), SomeFile("wer",234), SomeFile("qwerty",345), SomeFile("ert",345), SomeFile("rt y",345),
+      SomeFile("azx",123), SomeFile("qaed",234), SomeFile("eedd",345), SomeFile("zaq",345), SomeFile("xswedc",345),
+      SomeFile("eedc",123), SomeFile("Tyuu",234), SomeFile("xDcf",345), SomeFile("rfVV",345), SomeFile("fggRR",345),
+      SomeFile("r z c",123), SomeFile("a s d",234), SomeFile("yyUUi",345), SomeFile("s76d",345), SomeFile("muuU",345),
+    )
+
+    val tbl = new Table[SomeFile]()
+    wc.root.nested.append(tbl)
+    tbl.rect.value = Rect( 1,1 ).size( 40, 20 )
+    tbl.data = files
+    tbl.background.value = TextColor.ANSI.BLACK_BRIGHT
+    tbl.columns = List(
+      Column("name", _.name, _.toString ),
+      Column("size", _.size, _.toString ),
+    )
+
     val mbar = new MenuBar
     wc.root.nested.append(mbar)
     
@@ -72,9 +90,11 @@ class Session ( terminal: Terminal ):
     mc3.text.value = "Help"
     mbar.nested.append(mc3)
 
-    val brd1 = new Border()
-    wc.root.nested.append(brd1)
-    brd1.rect.value = Rect( 20,3 ).size(10,4)
+    // val brd1 = new Border()
+    // wc.root.nested.append(brd1)
+    // brd1.rect.value = Rect( 20,3 ).size(10,4)
+
+  case class SomeFile( val name:String, size:Long )
 
   
   private def buildUi_1( wc:WidgetCycle ):Unit =

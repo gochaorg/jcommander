@@ -39,6 +39,19 @@ final case class Rect(left:Int, top:Int, right:Int, bottom:Int) {
     def include( x:Int, y:Int ):Boolean = 
         include( x,y,false )
     def include( p:Point ):Boolean = include(p.x, p.y)
+
+    //def move( p:Point ):Rect = Rect(leftTop.translate(p)).size(width,height)
+    //def move( x:Int, y:Int ):Rect = Rect( x,y ).size( width, height )
+    def translate( x:Int, y:Int ):Rect = Rect( left+x, top+y ).size( width, height )
+    object reSize {
+        def extend( w:Int, h:Int ):Rect = Rect(leftTop).size( (width+w) max 0, (height+h) max 0 )
+        def extend( p:Point ):Rect = extend( p.x, p.y )
+        def height_=( h:Int ):Rect = Rect(leftTop).size(width, h max 0)
+        def setHeight( h:Int ):Rect = Rect(leftTop).size(width, h max 0)
+        def width_=( w:Int ):Rect = Rect(leftTop).size(w max 0, height)
+        def setWidth( w:Int ):Rect = Rect(leftTop).size(w max 0, height)
+        def set( w:Int, h:Int ):Rect = Rect(leftTop).size( w max 0, h max 0 )
+    }
 }
 
 object Rect {

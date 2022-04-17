@@ -22,6 +22,59 @@ final case class Size2D(width: Int, height:Int) {
     }
   
   def include( p:Point ):Boolean = include(p, false, false)
+
+  def align( str:String, halign:Align ):Seq[String] = {
+    str.split("\\r\\n|\\n").map { s => 
+      if( s.length<width ){
+        halign match {
+          case Align.Begin =>
+            val rr:Int = (width) - s.length
+            s + " ".repeat(rr)
+          case Align.Center =>
+            val rr:Int = (width) - s.length
+            val la:Int = rr / 2
+            val ra:Int = rr - la
+            " ".repeat(la) + s + " ".repeat(ra)
+          case Align.End =>
+            val rr:Int = (width) - s.length
+            " ".repeat(rr) + s
+        }
+      }else if( s.length>width ){
+        s.substring(0, width)
+      }else{
+        s
+      }
+    }
+  }
+
+  def align( str:String, halign:Align, valign:Align ):Seq[String] = {
+    if height<=0 then
+      List()
+    else
+      val lines = align(str,halign)
+      if lines.length<height then
+        var res = List[String]()
+        valign match {
+          case Align.Begin =>
+            res = lines.toList
+            (0 until (height - lines.length)).foreach { _ =>
+              res = res :+ " ".repeat(width)
+            }
+            res
+          case Align.Center =>
+          case Align.End =>
+            (0 until (height - lines.length)).foreach { _ =>
+              res = res :+ " ".repeat(width)
+            }
+            res = lines.toList
+            res
+        }
+        res
+      else if lines.length==height then
+        lines
+      else
+        lines.take(height)
+  }
 }
 
 object Size2D {
