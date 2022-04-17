@@ -44,6 +44,10 @@ trait FocusProperty[SELF : RepaitRequest]
 
     private var onGainListeners = List[Option[Widget[_]]=>Unit]()
   
+    /** 
+     * Вызывается при получении фокуса
+     * @param from кто ранее владел фокусом
+     */
     def onGain( from:Option[Widget[_]] ):Unit = {
       if( historyMaxSize>0 ){
         _history = HistoryAction.Gained(from) :: _history
@@ -54,12 +58,21 @@ trait FocusProperty[SELF : RepaitRequest]
       recompute()
       onGainListeners.foreach { _(from) }
     }
+
+    /** 
+     * Добавляет подписчика на событие получения фокуса 
+     * @param l:Option[Widget[_]]=>Unit - функция(лямбда) где параметр - кто ранее владел фокусом
+     */
     def onGain( l:Option[Widget[_]]=>Unit ):Unit = {
       onGainListeners = l :: onGainListeners
     }
 
     private var onLostListeners = List[Option[Widget[_]]=>Unit]()
 
+    /** 
+     * Вызывается при потере фокуса
+     * @param newOwner кто сейчас фладеет фокусом
+     */
     def onLost( newOwner:Option[Widget[_]] ):Unit = {
       if( historyMaxSize>0 ){
         _history = HistoryAction.Lost(newOwner) :: _history
@@ -70,6 +83,11 @@ trait FocusProperty[SELF : RepaitRequest]
       recompute()
       onLostListeners.foreach { _(newOwner) }
     }
+
+    /** 
+     * Добавляет подписчика на событие потери фокуса 
+     * @param l:Option[Widget[_]]=>Unit - функция(лямбда) где параметр - кто сейчас фладеет фокусом
+     */
     def onLost( l:Option[Widget[_]]=>Unit ):Unit = {
       onLostListeners = l :: onLostListeners
     }

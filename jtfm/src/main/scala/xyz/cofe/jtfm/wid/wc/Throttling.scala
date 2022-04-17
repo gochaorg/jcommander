@@ -1,6 +1,9 @@
 package xyz.cofe.jtfm.wid.wc
 
-/** Дросселирование тактов (тротлинг) */
+/** 
+ * Дросселирование тактов (тротлинг) 
+ * Пропуск тактов процессора, что не перегревался
+ */
 sealed trait Throttling {
   def apply( state:State ):State
 }

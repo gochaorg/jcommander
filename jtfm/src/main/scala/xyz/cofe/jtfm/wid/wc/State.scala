@@ -37,14 +37,30 @@ sealed trait State {
 }
 
 object State {
-  /** Начальное состояние */
+  /** 
+   * Начальное состояние 
+   * @param root - корневой виджет
+   * @param terminal - терминал
+   * @param jobs - задания
+   */
   case class Init(
     root: VirtualWidgetRoot,
     terminal: Terminal,
     jobs: Jobs = Jobs()
   ) extends State
 
-  /** Рабочее состояние */
+  /** 
+   * Рабочее состояние 
+   * @param root - корневой виджет
+   * @param terminal - терминал
+   * @param jobs - задания
+   * @param shutdown - задачи которые будут выполненые при завершении работы
+   * @param visibleNavigator - навигация по видимым (visible=true) виджетам
+   * @param inputProcess - обработка нажатий мыши, клавиатуры
+   * @param throttling - пропуск тактов CPU
+   * @param ubHandler - поведение при ошибках
+   * @param renderTree - рендер дерева виджетов
+   */
   case class Work(
                    terminal: Terminal,
                    screen: Screen,
@@ -120,10 +136,13 @@ object State {
   }
 
   implicit class WorkState( val state:State.Work ) {
+    // обработка изменения размера
     val screenResize:DoWork = w => {
       w.screen.doResizeIfNecessary()
       w
     }
+
+    // рендер виджетов
     val render:DoWork = w => {
       try {
         w.renderTree.apply()
@@ -132,9 +151,13 @@ object State {
         case e:Throwable => w.ubHandler(w,e)
       }
     }
+
+    // пропуск CPU (охлаждение)
     val throttling:DoWork = w => {
       w.throttling(w)
     }
+
+    // обработка ввода
     val inputs:DoWork = w => {
       try {
         val input = state.terminal.pollInput()
@@ -147,7 +170,11 @@ object State {
         case e:Throwable => w.ubHandler(w, e)
       }
     }
+
+    // обновление экрана терминала
     val screenRefresh:DoWork = w => { w.screen.refresh(); w }
+
+    // обработка задач очереди
     val jobRunner:DoWork = w => {
       w.jobs.run(w)
     }

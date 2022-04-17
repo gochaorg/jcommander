@@ -2,6 +2,9 @@ package xyz.cofe.jtfm.wid.wc
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
+/**
+ * Задачи обрабатываемые в цикле обработки
+ */
 class Jobs {
   private val queue = new ConcurrentLinkedQueue[() => Unit]()
 
