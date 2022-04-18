@@ -28,6 +28,12 @@ class Table[A]
   var columns:Seq[Column[A,_]] = List()
 
   val headerForeground: OwnProperty[TextColor,Table[A]] = OwnProperty( TextColor.ANSI.YELLOW_BRIGHT,this)
+  
+  val focusForeground: OwnProperty[TextColor,Table[A]] = OwnProperty( TextColor.ANSI.YELLOW_BRIGHT,this)
+  val focusBackground: OwnProperty[TextColor,Table[A]] = OwnProperty( TextColor.ANSI.BLACK,this)
+
+  val selectedForeground: OwnProperty[Option[TextColor],Table[A]] = OwnProperty( Some(TextColor.ANSI.GREEN_BRIGHT),this)
+  val selectedBackground: OwnProperty[Option[TextColor],Table[A]] = OwnProperty( Some(TextColor.ANSI.WHITE),this)
 
   private def columnsWidths:Seq[(Column[A,_],Int)] = {
     var widths:List[(Column[A,_],Int)] = List()
@@ -77,10 +83,15 @@ class Table[A]
     val rt = Point(rb.x, 0)
     val lb = Point(0, rb.y)
 
-    hvLines = HVLine(lt, rt, Style.Single) :: hvLines
-    hvLines = HVLine(lb, rb, Style.Single) :: hvLines
-    hvLines = HVLine(lt, lb, Style.Single) :: hvLines
-    hvLines = HVLine(rt, rb, Style.Single) :: hvLines
+    val style = focus.contains match {
+      case true => Style.Double
+      case false => Style.Single
+    }
+
+    hvLines = HVLine(lt, rt, style) :: hvLines
+    hvLines = HVLine(lb, rb, style) :: hvLines
+    hvLines = HVLine(lt, lb, style) :: hvLines
+    hvLines = HVLine(rt, rb, style) :: hvLines
 
     cols.drop(1).foreach { (c,r) => 
       val a = Point(r.left-1, lt.y)
@@ -92,6 +103,15 @@ class Table[A]
 
     hvLines
   }
+
+  private var focusedRow:Option[A] = None
+  private var focusedRowIdx:Option[Int] = Some(0)
+
+  private def isFocused( row:A, rowIdx:Int ):Boolean =
+    focusedRowIdx.isDefined && focusedRowIdx.get==rowIdx
+
+  private def isSelected( row:A, rowIdx:Int ):Boolean =
+    false
 
   override def render( gr:TextGraphics ):Unit = {
     this.renderOpaque(gr)
@@ -121,13 +141,30 @@ class Table[A]
         None
     } filter { _.isDefined } map { _.get }
 
+    val rowIndexes = (0 until data.size)
     val visibleRows = data.take( dataRects.head._2.height )
-    (0 until visibleRows.size).zip( visibleRows ).foreach { (y,row) =>
+
+    // data cells
+    (0 until visibleRows.size).zip( visibleRows.zip(rowIndexes) ).foreach { (y,rowWidx) =>
       dataRects.foreach { (col,rct) =>
+        val row = rowWidx._1
+        val ridx = rowWidx._2
         val str = col.asString(row)
         val cell = rct.reSize.setHeight(1).translate(0,y)
-        gr.setForegroundColor( foreground.value )
-        gr.setBackgroundColor( background.value )
+
+        val (fg,bg) = {
+          if( focus.contains && isFocused(row,ridx) )
+            ( focusForeground.value, focusBackground.value )
+          else if( isSelected(row,ridx) )
+            ( selectedForeground.value.getOrElse(foreground.value)
+            , selectedBackground.value .getOrElse(background.value)
+            )
+          else
+            ( foreground.value, background.value )
+        }
+
+        gr.setForegroundColor( fg )
+        gr.setBackgroundColor( bg )
         gr.draw( cell, str, Align.Begin )
       }
     }
