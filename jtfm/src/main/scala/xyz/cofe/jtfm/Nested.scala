@@ -9,5 +9,6 @@ import xyz.cofe.jtfm.ev.BasicCollection
  * @tparam N Тип дочеерних узлов
  */
 trait Nested[SELF,N] {
+  /** Список узлов с поддержкой уведомления */
   lazy val nested = BasicCollection[N]()
 }

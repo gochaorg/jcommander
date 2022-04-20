@@ -19,6 +19,9 @@ trait RectProperty[SELF : RepaitRequest] {
       ._1
 }
 
+/** 
+ * Дополнение к поддержке свойства расположения объекта
+ */
 object RectProperty {
   /** Дополнительные функции к свойству Rect */
   implicit class RectProp[SELF](val prop: OwnProperty[Rect,SELF]) {
@@ -67,6 +70,7 @@ object RectProperty {
       def absolute( p:Point ):Unit = absolute(p.x, p.y)
     }
 
+    /** Отвязать подписчика */
     trait Binds {
       /** убрать связь с другим виджетом */
       def unbind():Unit
@@ -92,5 +96,9 @@ object RectProperty {
     /** привязать расположение, относительно другого виджета */
     def bind[SOME <: Widget[SOME]]( src: Widget[SOME] )( eval: (OwnProperty[Rect,SELF], Rect)=>Rect ):Binds =
       bind( src.rect )(eval)
+
+    /** привязать расположение, относительно другого виджета */
+    def bindTo( src: Widget[_] )( eval: Rect=>Rect ):Binds = 
+      bind( src.rect ) { (_,r) => eval(r) }
   }
 }

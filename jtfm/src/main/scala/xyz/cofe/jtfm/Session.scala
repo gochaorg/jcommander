@@ -56,6 +56,7 @@ class Session ( terminal: Terminal ):
       Column("name", _.name, _.toString ),
       Column("size", _.size, _.toString ),
     )
+    tbl.rect.bindTo( wc.root ) { r => Rect(2,2).size(r.width-4, r.height-4) }
 
     val mbar = new MenuBar
     wc.root.nested.append(mbar)

@@ -2,6 +2,12 @@ package xyz.cofe.jtfm.ev
 
 import scala.ref.WeakReference
 
+/**
+ * Кешируемое вычисляемое свойство
+ * @param compute вычисление значения
+ * @param initial начальное значение
+ * @param changeNotify передает функцию для сброса кеша
+ */
 class EvalProperty[VALUE,SELF]
 (
   val compute: ()=>VALUE,
@@ -10,11 +16,11 @@ class EvalProperty[VALUE,SELF]
 )
 extends Property[EvalProperty[VALUE,SELF],VALUE]
 {
+  /** кешированное значение */
   private var currentValue:Option[VALUE] = initial
   
   /**
    * Чтение значения свойства
-   *
    * @return значение
    */
   override def value: VALUE = {
@@ -33,8 +39,12 @@ extends Property[EvalProperty[VALUE,SELF],VALUE]
   protected def fire( old:VALUE, cur:VALUE ) = {
     listeners.foreach { _(this,old,cur) }
   }
+
+  def dropCache():Unit = {
+    currentValue = None
+  }
   
-  protected def recompute():Unit = currentValue match {
+  def recompute():Unit = currentValue match {
     case Some(old) =>
       val newVal = compute()
       currentValue = Some(newVal)
