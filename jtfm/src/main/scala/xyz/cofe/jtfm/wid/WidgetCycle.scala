@@ -111,4 +111,9 @@ object WidgetCycle {
     val x = currentCycle.get
     if (x != null) Some(x) else None
   }
+
+  def jobs: Option[Jobs] = for { 
+    wc <- tryGet
+    j <- wc.jobs
+  } yield(j)
 }

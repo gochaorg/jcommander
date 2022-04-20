@@ -16,6 +16,8 @@ object RepaitRequest {
   implicit def currentCycle[S]: RepaitRequest[S] = new RepaitRequest[S] {
     import wc.State
     override def repaitRequest(self: S): Unit = {
+      //val stack = Thread.currentThread.getStackTrace
+      //println(s"repaitRequest from ${self} stack: ${ stack.take(15).mkString("|") }")
       WidgetCycle.tryGet match {
         case Some(wc) =>
           val rq: ()=>Unit = ()=>{

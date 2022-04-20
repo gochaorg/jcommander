@@ -8,10 +8,10 @@ import xyz.cofe.jtfm.ev.{EvalProperty, Property}
 trait FocusProperty[SELF : RepaitRequest]
 (
   /** перерисовывать при получении фокуса */
-  val repait:Boolean=false,
+  private val repait:Boolean=false,
 
   /** максимальная длина истории смены фокуса */
-  val historyMaxSize:Int=0
+  private val historyMaxSize:Int=0
 ) {
   self: Widget[_] =>
   

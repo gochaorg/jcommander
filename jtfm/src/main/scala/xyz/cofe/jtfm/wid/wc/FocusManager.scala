@@ -4,6 +4,8 @@ import xyz.cofe.jtfm.Navigate
 import xyz.cofe.jtfm.wid.{FocusProperty, Widget}
 import xyz.cofe.jtfm.wid.Widget.*
 import xyz.cofe.jtfm.*
+import xyz.cofe.jtfm.wid.WidgetCycle
+import scala.ref.WeakReference
 
 /**
  * Менеджер фокуса ввода
@@ -36,7 +38,21 @@ class FocusManager[W <: Widget[_]]
     navigate.backwardIterator(wid).drop(1).find( focusableFilter )
   
   private def visible( w:W ):Boolean = !w.widgetPath.map( _.visible.value ).contains( false )
-  
+
+  private var listeners:List[(FocusManager.Switched[W])=>Unit] = List()
+  def onChange( ls:(FocusManager.Switched[W])=>Unit ):()=>Unit = {
+    listeners = ls :: listeners
+    val wr = WeakReference(ls)
+    () => {
+      wr.get match {
+        case Some(r) =>
+          listeners = listeners.filterNot( l => l==r )
+          wr.clear
+        case None =>
+      }      
+    }
+  }
+
   /** Переключение фокуса */
   def switchTo( w:W ):Either[String,FocusManager.Switched[W]] = {
     (visible(w) && focusableFilter(w)) match {
@@ -56,7 +72,10 @@ class FocusManager[W <: Widget[_]]
         }
         focusable.focus.onGain(old_focus)
         
-        Right(FocusManager.Switched(old_focus,focus_owner))
+        val event = FocusManager.Switched(old_focus,focus_owner)
+        listeners.foreach( ls => ls(event) )
+
+        Right(event)
     }
   }
   
@@ -112,4 +131,15 @@ class FocusManager[W <: Widget[_]]
 object FocusManager {
   /** Событие смены фокуса */
   case class Switched[W <: Widget[_]]( from:Option[W], to:Option[W] )
+  def tryGet:Option[FocusManager[_]] = {
+    println("FocusManager tryGet")
+    for {
+      wc <- WidgetCycle.tryGet
+      ws <- wc.workState
+      in1 <- ws.inputProcess match {
+        case e:InputDummy2 =>  Some(e.fm)
+        case _ => None
+      }
+    } yield (in1)
+  }
 }

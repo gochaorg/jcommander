@@ -15,6 +15,7 @@ import com.googlecode.lanterna.input.MouseAction
 import xyz.cofe.jtfm.gr.Align
 import com.googlecode.lanterna.input.KeyType
 import xyz.cofe.jtfm.ev.EvalProperty
+import xyz.cofe.jtfm.wid.RepaitRequest
 
 /**
  * Таблица
@@ -24,7 +25,7 @@ class Table[A]
   with BackgroundProperty[Table[A]]
   with ForegroundProperty[Table[A]]
   with OpaqueProperty[Table[A]]
-  with FocusProperty[Table[A]]()
+  with FocusProperty[Table[A]](repait=true)
 {
   /** Данные таблицы */
   private var _data:Seq[A] = List()
@@ -37,6 +38,10 @@ class Table[A]
     _data=v
     dataListeners.foreach(l=>l())
   }
+
+  private val repeaitReq = RepaitRequest.currentCycle[Table[A]]
+  private def repaint():Unit = repeaitReq.repaitRequest(this)
+
 
   private var dataListeners:List[()=>Unit] = List()
   private def onData( ls: =>Unit ):Unit = { dataListeners = (()=>{ls}) :: dataListeners }
@@ -118,7 +123,10 @@ class Table[A]
   /** Высота колонки с данными */
   val anyDataRectsHeight:EvalProperty[Option[Int],Table[A]] = EvalProperty(()=>{
       val reducedHeight = rect.height - 2 - 1
-      if reducedHeight<1 then None else Some(reducedHeight)
+      if reducedHeight<1 then 
+        None 
+      else 
+        Some(reducedHeight)
   })
   rect.listen( (_,_,_)=>{ anyDataRectsHeight.recompute() } )
 
@@ -126,26 +134,40 @@ class Table[A]
   def scrollOffset:Int = _scrollOffset
   protected def scrollOffset_=( v:Int ):Unit = {
     _scrollOffset = v
+    scrollOffsetListeners.foreach(l=>l())
   }
+
+  private var scrollOffsetListeners:List[()=>Unit] = List()
+  private def onScrollOffset( ls: =>Unit ):Unit = { scrollOffsetListeners = (()=>{ls}) :: scrollOffsetListeners }
 
   /** Индексы видимых строк */
   val visibleRowIndexesBounds:EvalProperty[Option[(Int,Int)],Table[A]] = EvalProperty(()=>{
     anyDataRectsHeight.value match {
-      case None => None
+      case None =>         
+        None
       case Some(size) => 
-        Some( (_scrollOffset, (_scrollOffset + size) max data.length ) )
+        val x = Some( (_scrollOffset, (_scrollOffset + size) min data.length ) )
+        x
     }
   })
+  onScrollOffset {
+    visibleRowIndexesBounds.recompute()
+  }
 
-  /** Видимые строки с индексами */
-  val visibleRowWithIndexes:EvalProperty[Seq[(A,Int)],Table[A]] = EvalProperty(()=>{
+  /** 
+   * Видимые строки с индексами: Строка, Индекс строки в data, y координата в dataRect
+   */
+  val visibleRowWithIndexes:EvalProperty[Seq[(A,Int,Int)],Table[A]] = EvalProperty(()=>{
     visibleRowIndexesBounds.value match {
       case None => List()
       case Some( (from,toExc) )=>
         if from>=toExc then
           List()
         else
-          data.drop(from).take(toExc-from).zip(from until toExc)
+          data.drop(from).take(toExc-from)
+            .zip(from until toExc)
+            .zip(0 until (toExc - from))
+            .map(x=>(x._1._1,x._1._2,x._2))
     }
   })
   visibleRowIndexesBounds.listen( (_,_,_)=>visibleRowWithIndexes.recompute() )
@@ -158,7 +180,7 @@ class Table[A]
       case Some(reducedHeight) =>
         columnsRect.value.map { (col,rect) => 
         if reducedHeight>0 then
-          Some( (col, rect.translate(0,2).reSize.extend(0,-3) ) )
+          Some( (col, rect.translate(0,2).reSize.extend(0,-reducedHeight) ) )
         else
           None
       } filter { _.isDefined } map { _.get }
@@ -217,9 +239,9 @@ class Table[A]
     }
 
     // data
-    visibleRowWithIndexes.value.foreach { (row,ridx) =>
+    visibleRowWithIndexes.value.foreach { (row,ridx,yOffset) =>
+      //println(s"render row=${row} ridx=${ridx} yOffset=${yOffset}")
       dataRects.value.foreach { (col,rct) => 
-        val yOffset = ridx - scrollOffset
         val str = col.asString(row)
         val (fg,bg) = {
           if( focus.contains && isFocused(row,ridx) )
@@ -250,6 +272,18 @@ class Table[A]
       case Some(idx) if idx< data.length-1 => 
         focusedRowIdx = Some(idx+1)
         focusedRow = Some(data(focusedRowIdx.get))
+        visibleRowIndexesBounds.value match {          
+          case None =>
+          case Some( (from,toExc) ) => anyDataRectsHeight.value match {
+            case None =>
+            case Some( dataHeight ) =>
+              scrollOffset = 
+                if focusedRowIdx.get >= toExc then
+                  focusedRowIdx.get - dataHeight + 1
+                else
+                  scrollOffset
+          }
+        }
         true
       case _ => false
     }
@@ -261,6 +295,18 @@ class Table[A]
       case Some(idx) if idx>0 => 
         focusedRowIdx = Some(idx-1)
         focusedRow = Some(data(focusedRowIdx.get))
+        visibleRowIndexesBounds.value match {          
+          case None =>
+          case Some( (from,toExc) ) => anyDataRectsHeight.value match {
+            case None =>
+            case Some( dataHeight ) =>
+              scrollOffset = 
+                if focusedRowIdx.get < from then
+                  focusedRowIdx.get
+                else
+                  scrollOffset
+          }
+        }
         true
       case _ => false
     }
@@ -268,11 +314,16 @@ class Table[A]
 
   /** Обработка событий клавиатуры */
   protected def inputKeyboard(ks:KeyStroke):Boolean = {
-    ks.getKeyType match {
-      case KeyType.ArrowUp => switchPrev()      
-      case KeyType.ArrowDown => switchNext()
+    val x = ks.getKeyType match {
+      case KeyType.ArrowUp => 
+        switchPrev()      
+      case KeyType.ArrowDown => 
+        switchNext()
       case _ => false
     }
+
+    if( x )repaint()
+    x
   }
 
   override def input( ks: KeyStroke ):Boolean = {

@@ -11,6 +11,9 @@ import xyz.cofe.jtfm.gr.Point
 import xyz.cofe.jtfm.gr.HVLine
 import xyz.cofe.jtfm.gr.HVLineOps
 import com.googlecode.lanterna.TextColor
+import xyz.cofe.jtfm.ev.EvalProperty
+import xyz.cofe.jtfm.wid.wc.FocusManager
+import xyz.cofe.jtfm.wid.WidgetCycle
 
 /**
  * Меню контейнер, содержит вложенные пункты меню
@@ -23,34 +26,76 @@ class MenuContainer
 {
   menuItemInit()
 
-  override def render(gr:TextGraphics):Unit = {
-    menuBar.foreach { mbar =>
-      val (fg,bg,bFg,bBg) = if( focus.value ){
-          (mbar.focusForeground.value, mbar.focusBackground.value,
-           mbar.activeForeground.value, mbar.activeBackground.value
-          )
+  private val renderColors:EvalProperty[ (TextColor,TextColor,TextColor,TextColor), MenuContainer ] = 
+    EvalProperty( ()=>{
+      menuBar.map( mbar => 
+        if( focus.value ){
+            (mbar.focusForeground.value, mbar.focusBackground.value,
+            mbar.activeForeground.value, mbar.activeBackground.value
+            )
         }else if( mbar.focus.contains ){
           (mbar.activeForeground.value, mbar.activeBackground.value,
-           mbar.activeForeground.value, mbar.activeBackground.value
+            mbar.activeForeground.value, mbar.activeBackground.value
           )
         }else{
           (mbar.foreground.value, mbar.background.value,
-           mbar.foreground.value, mbar.background.value
+            mbar.foreground.value, mbar.background.value
           )
         }
-      gr.setForegroundColor(fg)
-      gr.setBackgroundColor(bg)
+      ).getOrElse( (TextColor.ANSI.WHITE,TextColor.ANSI.BLACK,TextColor.ANSI.WHITE,TextColor.ANSI.BLACK) )
+    })
 
-      border.foreground.value = bFg
-      border.background.value = bBg
+  WidgetCycle.jobs.foreach { jbs => 
+    jbs.add( ()=>{
+      FocusManager.tryGet.foreach { fm => {
+          println("FM inst")
+          fm.onChange( (_) => {
+            println("recompute menu colors")
+            renderColors.recompute() 
+          })
+        }
+      }
+    })
+  }
 
-      gr.putString(0,0,text.value)
-    }
+  override def render(gr:TextGraphics):Unit = {
+    // menuBar.foreach { mbar =>
+    //   val (fg,bg,bFg,bBg) = if( focus.value ){
+    //       (mbar.focusForeground.value, mbar.focusBackground.value,
+    //        mbar.activeForeground.value, mbar.activeBackground.value
+    //       )
+    //     }else if( mbar.focus.contains ){
+    //       (mbar.activeForeground.value, mbar.activeBackground.value,
+    //        mbar.activeForeground.value, mbar.activeBackground.value
+    //       )
+    //     }else{
+    //       (mbar.foreground.value, mbar.background.value,
+    //        mbar.foreground.value, mbar.background.value
+    //       )
+    //     }
+    //   gr.setForegroundColor(fg)
+    //   gr.setBackgroundColor(bg)
+
+    //   //border.foreground.value = bFg
+    //   //border.background.value = bBg
+
+    //   gr.putString(0,0,text.value)
+    // }
+
+    gr.setForegroundColor(renderColors.value._1)
+    gr.setBackgroundColor(renderColors.value._2)
+    
+    gr.putString(0,0,text.value)
   }
 
   private val border:Border = new Border()
   nested.append( border )
   border.visible.value = false
+
+  renderColors.listen( (_,_,cur) => {
+    border.foreground.value = cur._3
+    border.background.value = cur._4
+  })
 
   private def nestedMenuItems = nested.filter { _.isInstanceOf[MenuItem[_]] }.map { _.asInstanceOf[MenuItem[_]] }
 
