@@ -52,6 +52,8 @@ final case class Rect(left:Int, top:Int, right:Int, bottom:Int) {
         def setWidth( w:Int ):Rect = Rect(leftTop).size(w max 0, height)
         def set( w:Int, h:Int ):Rect = Rect(leftTop).size( w max 0, h max 0 )
     }
+
+    override def toString():String = s"Rect{ lt=($left,$top), rb=($right,$bottom) sz=$size}"
 }
 
 object Rect {

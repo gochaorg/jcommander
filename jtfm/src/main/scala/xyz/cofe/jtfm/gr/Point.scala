@@ -1,6 +1,7 @@
 package xyz.cofe.jtfm.gr
 
 import com.googlecode.lanterna.TerminalPosition
+import com.googlecode.lanterna.input.MouseAction
 
 /**
  * Точка в прострастве
@@ -76,4 +77,8 @@ object Point {
 
     implicit def terminalPosition2Point( p:TerminalPosition ):Point =
         Point(p.getColumn, p.getRow)
-}
+
+    implicit def mouseAction2Point( ma:MouseAction ):Point =
+        Point(ma.getPosition.getColumn, ma.getPosition.getRow)
+
+    }

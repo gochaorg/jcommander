@@ -48,9 +48,9 @@ class MenuContainer
   WidgetCycle.jobs.foreach { jbs => 
     jbs.add( ()=>{
       FocusManager.tryGet.foreach { fm => {
-          println("FM inst")
+          //println("FM inst")
           fm.onChange( (_) => {
-            println("recompute menu colors")
+            //println("recompute menu colors")
             renderColors.recompute() 
           })
         }
@@ -59,29 +59,6 @@ class MenuContainer
   }
 
   override def render(gr:TextGraphics):Unit = {
-    // menuBar.foreach { mbar =>
-    //   val (fg,bg,bFg,bBg) = if( focus.value ){
-    //       (mbar.focusForeground.value, mbar.focusBackground.value,
-    //        mbar.activeForeground.value, mbar.activeBackground.value
-    //       )
-    //     }else if( mbar.focus.contains ){
-    //       (mbar.activeForeground.value, mbar.activeBackground.value,
-    //        mbar.activeForeground.value, mbar.activeBackground.value
-    //       )
-    //     }else{
-    //       (mbar.foreground.value, mbar.background.value,
-    //        mbar.foreground.value, mbar.background.value
-    //       )
-    //     }
-    //   gr.setForegroundColor(fg)
-    //   gr.setBackgroundColor(bg)
-
-    //   //border.foreground.value = bFg
-    //   //border.background.value = bBg
-
-    //   gr.putString(0,0,text.value)
-    // }
-
     gr.setForegroundColor(renderColors.value._1)
     gr.setBackgroundColor(renderColors.value._2)
     

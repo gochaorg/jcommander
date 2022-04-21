@@ -7,6 +7,7 @@ import xyz.cofe.jtfm.gr.TextGraphicsOps
 import xyz.cofe.jtfm.gr.HVLine
 import xyz.cofe.jtfm.gr.HVLineOps
 import xyz.cofe.jtfm.gr.Point
+//import xyz.cofe.jtfm.gr.Point._
 import xyz.cofe.jtfm.gr.Symbols.Style
 import com.googlecode.lanterna.TextColor
 import xyz.cofe.jtfm.ev.OwnProperty
@@ -180,13 +181,27 @@ class Table[A]
       case Some(reducedHeight) =>
         columnsRect.value.map { (col,rect) => 
         if reducedHeight>0 then
-          Some( (col, rect.translate(0,2).reSize.extend(0,-reducedHeight) ) )
+          Some( (col, rect.translate(0,2).reSize.setHeight(reducedHeight) ) )
         else
           None
       } filter { _.isDefined } map { _.get }
     }    
   })
   columnsRect.listen( (_,_,_) => dataRects.recompute() )
+
+  /** Вычисление ячейки для заданной координаты */
+  def dataCell( pt:Point ):Option[(A,Column[A,_])] = {
+    dataRects.value.filter { (column, rect) => 
+      val x = rect.include(pt)
+      x
+    }.map { (column, rect) =>
+      (column, (pt.y - rect.top) + scrollOffset)
+    }.filter { (column, rowIdx) =>
+      val x = rowIdx >= 0 && rowIdx < data.length
+      x
+    }.map { (column,ridx) => ( data(ridx), column ) }
+    .headOption
+  }
 
   private def grid( cols:Seq[(Column[A,_],Rect)] ):List[HVLine] = {
     var hvLines = List[HVLine]()
@@ -263,6 +278,16 @@ class Table[A]
 
   /** Обработка событий мыши */
   protected def inputMouseAction(ma:MouseAction):Boolean = {
+    dataCell( ma ) match {
+      case None =>
+      case Some( (dataRow, dataColumn) ) =>
+        data.indexOf(dataRow) match {
+          case ridx:Int if ridx>=0 =>
+            focusedRow = Some(dataRow)
+            focusedRowIdx = Some(ridx)
+          case _ =>
+        }
+    }
     true
   }
 
@@ -314,22 +339,23 @@ class Table[A]
 
   /** Обработка событий клавиатуры */
   protected def inputKeyboard(ks:KeyStroke):Boolean = {
-    val x = ks.getKeyType match {
+    ks.getKeyType match {
       case KeyType.ArrowUp => 
         switchPrev()      
       case KeyType.ArrowDown => 
         switchNext()
       case _ => false
     }
-
-    if( x )repaint()
-    x
   }
 
   override def input( ks: KeyStroke ):Boolean = {
-    ks match {
-      case ma:MouseAction => inputMouseAction(ma)
-      case _ => inputKeyboard(ks)
+    val x = ks match {
+      case ma:MouseAction => 
+        inputMouseAction(ma)
+      case _ => 
+        inputKeyboard(ks)
     }
+    if( x )repaint()
+    x
   }
 }

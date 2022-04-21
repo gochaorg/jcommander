@@ -132,7 +132,6 @@ object FocusManager {
   /** Событие смены фокуса */
   case class Switched[W <: Widget[_]]( from:Option[W], to:Option[W] )
   def tryGet:Option[FocusManager[_]] = {
-    println("FocusManager tryGet")
     for {
       wc <- WidgetCycle.tryGet
       ws <- wc.workState
