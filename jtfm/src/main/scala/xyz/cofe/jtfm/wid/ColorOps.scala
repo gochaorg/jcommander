@@ -11,3 +11,6 @@ object ColorOps {
     }
   }
 }
+
+implicit def colorProp2Color[S]( colorProp: OwnProperty[TextColor,S] ):TextColor =
+  colorProp.value

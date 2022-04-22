@@ -16,6 +16,7 @@ import xyz.cofe.jtfm.gr.Align
 import com.googlecode.lanterna.input.KeyType
 import xyz.cofe.jtfm.ev.EvalProperty
 import xyz.cofe.jtfm.wid.RepaitRequest
+import xyz.cofe.jtfm.ev.BasicCollection
 
 /**
  * Таблица
@@ -38,9 +39,6 @@ class Table[A]
     _data=v
     dataListeners.foreach(l=>l())
   }
-
-  private val repeaitReq = RepaitRequest.currentCycle[Table[A]]
-  private def repaint():Unit = repeaitReq.repaitRequest(this)
 
   private var dataListeners:List[()=>Unit] = List()
   private def onData( ls: =>Unit ):Unit = { dataListeners = (()=>{ls}) :: dataListeners }
@@ -226,11 +224,41 @@ class Table[A]
   /** Индекс строки содержащей фокус */
   val focusedRowIndex:OwnProperty[Option[Int],Table[A]] = new OwnProperty(None,this)
 
+  /** Выбранные объекты */
+  val selection:BasicCollection[A] = new BasicCollection()
+
   private def isFocused( row:A, rowIdx:Int ):Boolean =
     focusedRowIndex.value.isDefined && focusedRowIndex.value.get==rowIdx
 
   private def isSelected( row:A, rowIdx:Int ):Boolean =
     false
+
+  val vertScrollBar:VScrollBar = new VScrollBar()
+  nested.append(vertScrollBar)
+  vertScrollBar.visible.value = false
+  vertScrollBar.rect.bindTo( this ){ rect =>
+    Rect(rect.width-1,2).size( 1, (rect.height-3) max 0 )
+  }
+
+  visibleRowIndexesBounds.listen( (prop, _, range1) => {
+    range1 match {
+      case None => vertScrollBar.visible.value = false
+      case Some( (from,to) ) =>
+        val yBegin = from
+        val yEnd = data.length - to
+        if( yBegin>=0 & yEnd>=0 && (yEnd + yBegin)>0 ) {
+          val tot = yEnd + yBegin
+          vertScrollBar.value.value = ( yBegin.toDouble / tot.toDouble )
+          vertScrollBar.visible.value = true
+        }
+    }
+  })
+  
+  vertScrollBar.background.value = background.value
+  background.listen( (_,_,c) => vertScrollBar.background.value = c )
+
+  vertScrollBar.foreground.value = foreground.value
+  foreground.listen( (_,_,c) => vertScrollBar.foreground.value = c )
 
   override def render( gr:TextGraphics ):Unit = {
     this.renderOpaque(gr)

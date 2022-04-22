@@ -16,6 +16,9 @@ trait Widget[SELF <: Widget[SELF]]
     , Render                  // Рендер
     , UserInput[KeyStroke]    // События пользовательского ввода
 {
+  private val repeaitReq = RepaitRequest.currentCycle[SELF]
+  def repaint():Unit = repeaitReq.repaitRequest(this.asInstanceOf[SELF])
+
   private val me = this.asInstanceOf[Widget[_]]
   nested.listen((coll, idx, old, cur) => {
     cur match {
