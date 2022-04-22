@@ -7,7 +7,6 @@ import xyz.cofe.jtfm.gr.TextGraphicsOps
 import xyz.cofe.jtfm.gr.HVLine
 import xyz.cofe.jtfm.gr.HVLineOps
 import xyz.cofe.jtfm.gr.Point
-//import xyz.cofe.jtfm.gr.Point._
 import xyz.cofe.jtfm.gr.Symbols.Style
 import com.googlecode.lanterna.TextColor
 import xyz.cofe.jtfm.ev.OwnProperty
@@ -42,7 +41,6 @@ class Table[A]
 
   private val repeaitReq = RepaitRequest.currentCycle[Table[A]]
   private def repaint():Unit = repeaitReq.repaitRequest(this)
-
 
   private var dataListeners:List[()=>Unit] = List()
   private def onData( ls: =>Unit ):Unit = { dataListeners = (()=>{ls}) :: dataListeners }
@@ -221,11 +219,15 @@ class Table[A]
     hvLines
   }
 
-  private var focusedRow:Option[A] = None
-  private var focusedRowIdx:Option[Int] = Some(0)
+  /** Строка содержащая фокус */
+  def focusedRow:Option[A] = 
+    focusedRowIndex.value.flatMap { ridx => if( data!=null && ridx>=0 && ridx<data.length ) Some(data(ridx)) else None }
+
+  /** Индекс строки содержащей фокус */
+  val focusedRowIndex:OwnProperty[Option[Int],Table[A]] = new OwnProperty(None,this)
 
   private def isFocused( row:A, rowIdx:Int ):Boolean =
-    focusedRowIdx.isDefined && focusedRowIdx.get==rowIdx
+    focusedRowIndex.value.isDefined && focusedRowIndex.value.get==rowIdx
 
   private def isSelected( row:A, rowIdx:Int ):Boolean =
     false
@@ -275,7 +277,7 @@ class Table[A]
         data.indexOf(dataRow) match {
           case ridx:Int if ridx>=0 =>
             focusedRow = Some(dataRow)
-            focusedRowIdx = Some(ridx)
+            focusedRowIndex.value = Some(ridx)
           case _ =>
         }
     }
@@ -284,18 +286,18 @@ class Table[A]
 
   /** Переход к следующей строке */
   protected def switchNext():Boolean = {
-    focusedRowIdx match {
+    focusedRowIndex.value match {
       case Some(idx) if idx< data.length-1 => 
-        focusedRowIdx = Some(idx+1)
-        focusedRow = Some(data(focusedRowIdx.get))
+        focusedRowIndex.value = Some(idx+1)
+        focusedRow = Some(data(focusedRowIndex.value.get))
         visibleRowIndexesBounds.value match {          
           case None =>
           case Some( (from,toExc) ) => anyDataRectsHeight.value match {
             case None =>
             case Some( dataHeight ) =>
               scrollOffset.value = 
-                if focusedRowIdx.get >= toExc then
-                  focusedRowIdx.get - dataHeight + 1
+                if focusedRowIndex.value.get >= toExc then
+                  focusedRowIndex.value.get - dataHeight + 1
                 else
                   scrollOffset.value
           }
@@ -307,18 +309,18 @@ class Table[A]
 
   /** Переход к предыдущей строке */
   protected def switchPrev():Boolean = {
-    focusedRowIdx match {
+    focusedRowIndex.value match {
       case Some(idx) if idx>0 => 
-        focusedRowIdx = Some(idx-1)
-        focusedRow = Some(data(focusedRowIdx.get))
+        focusedRowIndex.value = Some(idx-1)
+        focusedRow = Some(data(focusedRowIndex.value.get))
         visibleRowIndexesBounds.value match {          
           case None =>
           case Some( (from,toExc) ) => anyDataRectsHeight.value match {
             case None =>
             case Some( dataHeight ) =>
               scrollOffset.value = 
-                if focusedRowIdx.get < from then
-                  focusedRowIdx.get
+                if focusedRowIndex.value.get < from then
+                  focusedRowIndex.value.get
                 else
                   scrollOffset.value
           }
