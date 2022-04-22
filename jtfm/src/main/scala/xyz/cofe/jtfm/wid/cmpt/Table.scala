@@ -276,7 +276,6 @@ class Table[A]
       case Some( (dataRow, dataColumn) ) =>
         data.indexOf(dataRow) match {
           case ridx:Int if ridx>=0 =>
-            focusedRow = Some(dataRow)
             focusedRowIndex.value = Some(ridx)
           case _ =>
         }
@@ -289,7 +288,6 @@ class Table[A]
     focusedRowIndex.value match {
       case Some(idx) if idx< data.length-1 => 
         focusedRowIndex.value = Some(idx+1)
-        focusedRow = Some(data(focusedRowIndex.value.get))
         visibleRowIndexesBounds.value match {          
           case None =>
           case Some( (from,toExc) ) => anyDataRectsHeight.value match {
@@ -312,7 +310,6 @@ class Table[A]
     focusedRowIndex.value match {
       case Some(idx) if idx>0 => 
         focusedRowIndex.value = Some(idx-1)
-        focusedRow = Some(data(focusedRowIndex.value.get))
         visibleRowIndexesBounds.value match {          
           case None =>
           case Some( (from,toExc) ) => anyDataRectsHeight.value match {
