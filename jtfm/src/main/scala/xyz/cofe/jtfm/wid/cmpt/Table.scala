@@ -131,15 +131,8 @@ class Table[A]
   })
   rect.listen( (_,_,_)=>{ anyDataRectsHeight.recompute() } )
 
-  private var _scrollOffset = 0
-  def scrollOffset:Int = _scrollOffset
-  protected def scrollOffset_=( v:Int ):Unit = {
-    _scrollOffset = v
-    scrollOffsetListeners.foreach(l=>l())
-  }
-
-  private var scrollOffsetListeners:List[()=>Unit] = List()
-  private def onScrollOffset( ls: =>Unit ):Unit = { scrollOffsetListeners = (()=>{ls}) :: scrollOffsetListeners }
+  /** смещение индекса отображаемой строки */
+  val scrollOffset: OwnProperty[Int,Table[A]] = new OwnProperty[Int,Table[A]](0,this)
 
   /** Индексы видимых строк */
   val visibleRowIndexesBounds:EvalProperty[Option[(Int,Int)],Table[A]] = EvalProperty(()=>{
@@ -147,13 +140,11 @@ class Table[A]
       case None =>         
         None
       case Some(size) => 
-        val x = Some( (_scrollOffset, (_scrollOffset + size) min data.length ) )
+        val x = Some( (scrollOffset.value, (scrollOffset.value + size) min data.length ) )
         x
     }
   })
-  onScrollOffset {
-    visibleRowIndexesBounds.recompute()
-  }
+  scrollOffset.listen( (_,_,_)=>visibleRowIndexesBounds.recompute() )
 
   /** 
    * Видимые строки с индексами: Строка, Индекс строки в data, y координата в dataRect
@@ -195,7 +186,7 @@ class Table[A]
       val x = rect.include(pt)
       x
     }.map { (column, rect) =>
-      (column, (pt.y - rect.top) + scrollOffset)
+      (column, (pt.y - rect.top) + scrollOffset.value)
     }.filter { (column, rowIdx) =>
       val x = rowIdx >= 0 && rowIdx < data.length
       x
@@ -302,11 +293,11 @@ class Table[A]
           case Some( (from,toExc) ) => anyDataRectsHeight.value match {
             case None =>
             case Some( dataHeight ) =>
-              scrollOffset = 
+              scrollOffset.value = 
                 if focusedRowIdx.get >= toExc then
                   focusedRowIdx.get - dataHeight + 1
                 else
-                  scrollOffset
+                  scrollOffset.value
           }
         }
         true
@@ -325,11 +316,11 @@ class Table[A]
           case Some( (from,toExc) ) => anyDataRectsHeight.value match {
             case None =>
             case Some( dataHeight ) =>
-              scrollOffset = 
+              scrollOffset.value = 
                 if focusedRowIdx.get < from then
                   focusedRowIdx.get
                 else
-                  scrollOffset
+                  scrollOffset.value
           }
         }
         true

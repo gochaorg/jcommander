@@ -4,6 +4,9 @@ import xyz.cofe.jtfm.ev._
 
 import scala.ref.WeakReference
 
+/** 
+ * Мутабельная коллекция (список) с уведомлениями
+ */
 class BasicCollection[N]
   extends Collection[N]
     with MutCollection[N]
@@ -12,17 +15,25 @@ class BasicCollection[N]
   private var list:List[N] = List()
   private var listeners:List[LISTENER] = List()
   
+  /** Кол-во элементов в списке */
   override def size: Int = list.size
+
+  /** Получение элемента списка */
   override def apply(idx: Int): N = list(idx)
   
+  /** Добавление элемента в конец списка */
   override def append(n: N): Unit = {
     list = list ::: List(n)
     inserted(list.size-1,n)
   }
+
+  /** Добавление элемента в начало списка */
   override def prepend(n: N): Unit = {
     list = n :: list
     inserted(0,n)
   }
+
+  /** Удаление элемента по его индексу из списка */
   override def removeAt(idx: Int): Unit = {
     var what = List[(Int,N)]()
     list = list.zip(0 until list.size).filter((n,ni)=>{
@@ -35,6 +46,8 @@ class BasicCollection[N]
     }).map(_._1)
     what.foreach( x => deleted(x._1, x._2) )
   }
+
+  /** Замена элемента в списке */
   override def set(idx: Int, n: N): Unit = {
     var what = List[(Int,N,N)]()
     list = list.zip(0 until list.size).
