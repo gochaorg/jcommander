@@ -47,6 +47,19 @@ class BasicCollection[N]
     what.foreach( x => deleted(x._1, x._2) )
   }
 
+  def remove(item:N):Unit = {
+    var what = List[(Int,N)]()
+    list = list.zip(0 until list.size).filter((n,ni)=>{
+      if( item==n ){
+        what = (ni,n) :: what
+        false
+      }else{
+        true
+      }
+    }).map(_._1)
+    what.foreach( x => deleted(x._1, x._2) )
+  }
+
   /** Замена элемента в списке */
   override def set(idx: Int, n: N): Unit = {
     var what = List[(Int,N,N)]()

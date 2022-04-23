@@ -1,6 +1,7 @@
 package xyz.cofe.jtfm.wid.wc
 
 import java.util.concurrent.ConcurrentLinkedQueue
+import xyz.cofe.jtfm.wid.WidgetCycle
 
 /**
  * Задачи обрабатываемые в цикле обработки
@@ -34,5 +35,25 @@ class Jobs {
       }
     }
     state
+  }
+}
+
+/**
+ * Добавление задач в очередь исполнения
+ */
+object Jobs {
+  /**
+   * Добавление задачи в очередь
+   * @param job задача
+   */
+  def add( job: => Unit ):Unit = {
+    WidgetCycle.tryGet match {
+      case None =>
+      case Some(wc) => wc.jobs match {
+        case None =>
+        case Some(jobs) =>
+          jobs.add( ()=>{ job } )
+      }
+    }
   }
 }

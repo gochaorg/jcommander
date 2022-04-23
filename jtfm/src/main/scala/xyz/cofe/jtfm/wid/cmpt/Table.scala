@@ -17,6 +17,7 @@ import com.googlecode.lanterna.input.KeyType
 import xyz.cofe.jtfm.ev.EvalProperty
 import xyz.cofe.jtfm.wid.RepaitRequest
 import xyz.cofe.jtfm.ev.BasicCollection
+import xyz.cofe.jtfm.wid.wc.Jobs
 
 /**
  * Таблица
@@ -231,7 +232,7 @@ class Table[A]
     focusedRowIndex.value.isDefined && focusedRowIndex.value.get==rowIdx
 
   private def isSelected( row:A, rowIdx:Int ):Boolean =
-    false
+    selection.exists( itm => itm==row )
 
   val vertScrollBar:VScrollBar = new VScrollBar()
   nested.append(vertScrollBar)
@@ -259,6 +260,10 @@ class Table[A]
 
   vertScrollBar.foreground.value = foreground.value
   foreground.listen( (_,_,c) => vertScrollBar.foreground.value = c )
+
+  Jobs.add {
+    visibleRowIndexesBounds.recompute()
+  }
 
   override def render( gr:TextGraphics ):Unit = {
     this.renderOpaque(gr)
@@ -355,13 +360,31 @@ class Table[A]
     }
   }
 
+  protected def invertSelectFocused():Boolean = {
+    focusedRow match {
+      case None => false
+      case Some(it) =>
+        if selection.exists(a => a==it) then
+          selection.remove(it)
+        else
+          selection.append(it)
+        true
+    }
+  }
+
   /** Обработка событий клавиатуры */
   protected def inputKeyboard(ks:KeyStroke):Boolean = {
     ks.getKeyType match {
-      case KeyType.ArrowUp => 
-        switchPrev()      
-      case KeyType.ArrowDown => 
-        switchNext()
+      case KeyType.ArrowUp   => switchPrev()      
+      case KeyType.ArrowDown => switchNext()
+      case KeyType.Insert    => invertSelectFocused()
+      case KeyType.Character => ks.getCharacter() match {
+        case ' ' => 
+          val a = invertSelectFocused() 
+          val b = switchNext()
+          a || b
+        case _ => false
+      }
       case _ => false
     }
   }
