@@ -52,9 +52,12 @@ class Session ( terminal: Terminal ):
     tbl.rect.value = Rect( 1,1 ).size( 40, 20 )
     tbl.data = files
     tbl.background.value = TextColor.ANSI.BLACK_BRIGHT
+
+    val sizeCol = Column[SomeFile,Long]("size", _.size, _.toString )
+    sizeCol.width.prefect = Some(6)
     tbl.columns = List(
       Column("name", _.name, _.toString ),
-      Column("size", _.size, _.toString ),
+      sizeCol,
     )
     tbl.rect.bindTo( wc.root ) { r => Rect(2,2).size(r.width-4, r.height-4) }
 

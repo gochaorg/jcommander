@@ -75,31 +75,27 @@ class Table[A]
 
   /** Ширина колонок */
   val columnsWidths:EvalProperty[List[(Column[A,_],Int)],Table[A]] = EvalProperty(()=>{ 
+    val undefWidths:List[(Column[A,_],Option[Int])] = columns.map { col =>  (col, col.width.prefect) }.toList
+    val fixWidthSummary:Int = undefWidths.filter { (col,wOpt) => wOpt.isDefined }.map { (col,w) => w.get }.sum
+    val visibleWidthSummary = rect.width - columns.size - 2
+
+    val freeWidthSummary = (visibleWidthSummary - fixWidthSummary) max 0
+    val freeColCount = undefWidths.filter { _._2.isEmpty }.length
+    val autoSize = if( freeColCount>0 ){ (freeWidthSummary / freeColCount) max 1 } else { 1 }
+    
+    var restWidth = visibleWidthSummary
+
     var widths:List[(Column[A,_],Int)] = List()
-    
-    val total = rect.width
-    var restWidth = total - columns.size - 2
-    
-    val freeWidthCols = columns
-    if freeWidthCols.size>0 then
-      val freeWperCol = (restWidth / freeWidthCols.size) max 1
-      val l = (freeWidthCols.map { c =>
-        val w = (
-          if restWidth>0 then
-            if restWidth>=freeWperCol then
-              freeWperCol
-            else
-              restWidth
-          else
-            0
-          )
-        if w>0 then
-          restWidth -= w
-          Some( (c,w) )
-        else
-          None
-      } filter { _.isDefined } map { _.get })      
-      widths = widths ::: l.toList
+    for( (col,wOpt) <- undefWidths ) {
+      if( restWidth>0 ){
+        val w = (wOpt match {
+          case Some(w2) => w2
+          case None => autoSize
+        }) min restWidth
+        restWidth -= w
+        widths = widths :+ (col,w)
+      }
+    }
 
     widths
   })
