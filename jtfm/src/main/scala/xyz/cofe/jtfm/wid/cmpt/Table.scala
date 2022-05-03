@@ -257,16 +257,6 @@ class Table[A]
   vertScrollBar.foreground.value = foreground.value
   foreground.listen( (_,_,c) => vertScrollBar.foreground.value = c )
 
-  vertScrollBar.onScrollUp   { 
-    println( "scroll up") 
-  }
-  vertScrollBar.onScrollDown { 
-    println("scroll down") 
-  }
-  vertScrollBar.onScrollTo { v => 
-    println(s"scroll to $v") 
-  }
-
   Jobs.add {
     visibleRowIndexesBounds.recompute()
   }
@@ -412,6 +402,26 @@ class Table[A]
         else
           selection.append(it)
         true
+    }
+  }
+
+  vertScrollBar.onScrollUp { 
+    //println( "scroll up") 
+    switchPrevPage()
+    repaint()
+  }
+  vertScrollBar.onScrollDown { 
+    //println("scroll down")
+    switchNextPage()
+    repaint()
+  }
+  vertScrollBar.onScrollTo { v => 
+    //println(s"scroll to $v")
+    val normal_v = (v min 1.0) max 0.0
+    if( data.length>1 ){
+      focusedRowIndex.value = Some( (normal_v * data.length).toInt )
+      scrollToVisible(focusedRowIndex.value.get)
+      repaint()
     }
   }
 
