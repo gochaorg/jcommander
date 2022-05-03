@@ -63,8 +63,9 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
         val widInputProcessed = fm.navigate.backwardIterator(last_w).map { wid =>
           val mma : MouseAction = ma
           val abs : Point = Point(mma.getPosition)
-          val local : Point = abs toLocal wid
+          val local : Point = abs toLocal wid          
           val x = wid.rect.value.size.include(local)
+          // println( s"$wid $x abs=$abs local=$local rect=${wid.rect}" ) 
           // вычисление локальных координат
           (x, wid, local)
         }.filter { case(matched,wid,local) =>

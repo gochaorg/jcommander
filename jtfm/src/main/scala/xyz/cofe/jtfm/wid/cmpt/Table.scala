@@ -257,6 +257,16 @@ class Table[A]
   vertScrollBar.foreground.value = foreground.value
   foreground.listen( (_,_,c) => vertScrollBar.foreground.value = c )
 
+  vertScrollBar.onScrollUp   { 
+    println( "scroll up") 
+  }
+  vertScrollBar.onScrollDown { 
+    println("scroll down") 
+  }
+  vertScrollBar.onScrollTo { v => 
+    println(s"scroll to $v") 
+  }
+
   Jobs.add {
     visibleRowIndexesBounds.recompute()
   }
@@ -312,22 +322,52 @@ class Table[A]
     true
   }
 
+  protected def scrollToVisible( row:Int ):Unit = {
+    visibleRowIndexesBounds.value match {
+      case None =>
+      case Some( (from,toExc) ) => 
+        if( row >= toExc ){
+          // строка ниже видимых строк, 
+          // скролировать к границе toExc
+          anyDataRectsHeight.value match {
+            case None =>
+            case Some( dataHeight ) =>
+              scrollOffset.value = row - dataHeight + 1
+          }
+        }else if( row<from ){
+          // строка выше видимых строк, 
+          // скролировать к границе from
+          anyDataRectsHeight.value match {
+            case None =>
+            case Some( dataHeight ) =>
+              scrollOffset.value = row
+          }
+        }
+      }
+    }
+
   /** Переход к следующей строке */
   protected def switchNext():Boolean = {
     focusedRowIndex.value match {
       case Some(idx) if idx< data.length-1 => 
         focusedRowIndex.value = Some(idx+1)
-        visibleRowIndexesBounds.value match {          
+        scrollToVisible(focusedRowIndex.value.get)
+        true
+      case _ => false
+    }
+  }
+
+  /** Переход через блок видимых строк (page down) */
+  protected def switchNextPage():Boolean = {
+    focusedRowIndex.value match {
+      case Some(idx) if idx< data.length-1 => 
+        visibleRowIndexesBounds.value match {
           case None =>
-          case Some( (from,toExc) ) => anyDataRectsHeight.value match {
-            case None =>
-            case Some( dataHeight ) =>
-              scrollOffset.value = 
-                if focusedRowIndex.value.get >= toExc then
-                  focusedRowIndex.value.get - dataHeight + 1
-                else
-                  scrollOffset.value
-          }
+          case Some( (from,toExc) ) =>
+            if( (toExc-from)>0 ) {
+              focusedRowIndex.value = Some( (idx+(toExc-from)) min (data.length-1) )
+              scrollToVisible(focusedRowIndex.value.get)
+            }
         }
         true
       case _ => false
@@ -339,23 +379,30 @@ class Table[A]
     focusedRowIndex.value match {
       case Some(idx) if idx>0 => 
         focusedRowIndex.value = Some(idx-1)
-        visibleRowIndexesBounds.value match {          
+        scrollToVisible(focusedRowIndex.value.get)
+        true
+      case _ => false
+    }
+  }
+
+  /** Переход через блок видимых строк (page up) */
+  protected def switchPrevPage():Boolean = {
+    focusedRowIndex.value match {
+      case Some(idx) if idx>0 => 
+        visibleRowIndexesBounds.value match {
           case None =>
-          case Some( (from,toExc) ) => anyDataRectsHeight.value match {
-            case None =>
-            case Some( dataHeight ) =>
-              scrollOffset.value = 
-                if focusedRowIndex.value.get < from then
-                  focusedRowIndex.value.get
-                else
-                  scrollOffset.value
-          }
+          case Some( (from,toExc) ) =>
+            if( (toExc-from)>0 ) {
+              focusedRowIndex.value = Some( (idx-(toExc-from)) max 0 )
+              scrollToVisible(focusedRowIndex.value.get)
+            }
         }
         true
       case _ => false
     }
   }
 
+  /** Инверсия выделенной строки */
   protected def invertSelectFocused():Boolean = {
     focusedRow match {
       case None => false
@@ -373,6 +420,8 @@ class Table[A]
     ks.getKeyType match {
       case KeyType.ArrowUp   => switchPrev()      
       case KeyType.ArrowDown => switchNext()
+      case KeyType.PageDown  => switchNextPage()
+      case KeyType.PageUp    => switchPrevPage()
       case KeyType.Insert    => invertSelectFocused()
       case KeyType.Character => ks.getCharacter() match {
         case ' ' => 
