@@ -406,17 +406,14 @@ class Table[A]
   }
 
   vertScrollBar.onScrollUp { 
-    //println( "scroll up") 
     switchPrevPage()
     repaint()
   }
   vertScrollBar.onScrollDown { 
-    //println("scroll down")
     switchNextPage()
     repaint()
   }
   vertScrollBar.onScrollTo { v => 
-    //println(s"scroll to $v")
     val normal_v = (v min 1.0) max 0.0
     if( data.length>1 ){
       focusedRowIndex.value = Some( (normal_v * data.length).toInt )
