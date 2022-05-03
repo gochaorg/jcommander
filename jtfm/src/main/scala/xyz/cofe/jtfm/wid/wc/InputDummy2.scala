@@ -56,10 +56,25 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
    * обработка события мыши
    */
   private def processMouseAction( state:State.Work, ma:MouseAction ):State = {
+    // println("tree")
+    // fm.root.widgetTree.foreach { w =>       
+    //   println( 
+    //     "..".repeat(w.widgetPath.length-1) +
+    //     w+":"+w.getClass.getName +
+    //     " "+w.rect.value+
+    //     " visible="+w.visible.value+
+    //     " parent="+w.parent.value
+    //   )
+    // }
+
     // обход в обратном порядке рендере
     fm.navigate.last(fm.root) match {
       case None =>
       case Some(last_w) =>
+        // println("last "+last_w)
+        // println("----")
+        // fm.navigate.backwardIterator(last_w).foreach { w => println(w) }
+        // println("----")
         val widInputProcessed = fm.navigate.backwardIterator(last_w).map { wid =>
           val mma : MouseAction = ma
           val abs : Point = Point(mma.getPosition)

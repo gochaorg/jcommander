@@ -63,67 +63,33 @@ class Session ( terminal: Terminal ):
     )
     tbl.rect.bindTo( wc.root ) { r => Rect(2,2).size(r.width-4, r.height-4) }
 
-    val mbar = new MenuBar
-    wc.root.nested.append(mbar)
-    
-    val mc1 = new MenuContainer
-    mc1.text.value = "File"
-    mbar.nested.append(mc1)
+    // val mc1v = new MenuAction( 
+    //   action= (_)=>{
+    //     println("view!action")
+    //   },
+    //   shortcut = Some(Shortcut.parse("C+u").get)
+    // )
 
-    val mc1v = new MenuAction( 
-      action= (_)=>{
-        println("view!action")
-      },
-      shortcut = Some(Shortcut.parse("C+u").get)
-    )
-
-    KeyboardInterceptor.bind(Shortcut.parse("C+y").get).eat {
-      println("!! accept shortcut! ")
-    }
-
-    mc1v.text.value = "View"
-    mc1.nested.append(mc1v)
-
-    val mc1e = new MenuAction(
-      action = (_)=>{
-        println("do exit")        
-        wc.stop()
-      }
-    )
-    mc1e.text.value = "Exit"
-    mc1.nested.append(mc1e)
-
-    val mc2 = new MenuContainer
-    mc2.text.value = "Edit"
-    mbar.nested.append(mc2)
-
-    val mc3 = new MenuContainer
-    mc3.text.value = "Help"
-    mbar.nested.append(mc3)
-
-    // val mb = menubar {
-    //   menu("File") {
-    //     action {
-    //       text("Exit")
-    //       click {
-    //         println("do exit")
-    //       }
-    //     }
-    //   }
-    //   menu("View") {
-    //     action {
-    //       click {
-    //         println("a")
-    //       }
-    //     }
-    //   }
+    // KeyboardInterceptor.bind(Shortcut.parse("C+y").get).eat {
+    //   println("!! accept shortcut! ")
     // }
 
-    // wc.root.nested.append( mb )
+    val mb = menubar {
+      menu( "File" ) {
+        action {
+          text( "Exit" )
+          click{ wc.stop() }
+        }
+      }
+      menu( "View" ) {        
+        action {
+          text( "Sample" )
+          click { println("a") }
+        }
+      }
+    }
 
-    // val brd1 = new Border()
-    // wc.root.nested.append(brd1)
-    // brd1.rect.value = Rect( 20,3 ).size(10,4)
+    wc.root.nested.append( mb )
 
   case class SomeFile( val name:String, size:Long )
 

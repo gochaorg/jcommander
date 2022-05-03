@@ -3,6 +3,8 @@ package xyz.cofe.jtfm.wid
 import xyz.cofe.jtfm.{LikeTree, Nested, Parent}
 import com.googlecode.lanterna.input.KeyStroke
 import xyz.cofe.jtfm.gr.Point
+import xyz.cofe.jtfm.Navigate
+import xyz.cofe.jtfm.NavigateFilter
 
 /**
  * Виджет - визуальный элемент для рендера и управления данными
@@ -46,6 +48,26 @@ trait Widget[SELF <: Widget[SELF]]
       case w: Widget[_] => Some(w)
       case _ => None
     }
+  }
+
+  private val self1 = this
+
+  def widgetTree: Iterator[Widget[_]] = new Iterator[Widget[_]] {
+    given navFilter:NavigateFilter[Widget[_]] = NavigateFilter.any
+    val nav = Navigate.deepOrder[Widget[_]]
+    var from = self1.asInstanceOf[Widget[_]]
+
+    def next: Widget[_] = {
+      val res = from
+      if( from!=null ){
+        from = nav.next(from) match {
+          case Some(next_w) => next_w            
+          case None => null
+        }
+      }
+      res
+    }
+    def hasNext: Boolean = from!=null
   }
 }
 

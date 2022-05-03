@@ -167,20 +167,46 @@ object Navigate {
     }
     
     def last( from:N ):Option[N] = {
-      var n = from
-      var stop = false
-      while( !stop ){
-        val cc = n.childrenCount
-        if( cc>0 ){
-          n.child(cc-1) match {
-            case Some(nc) => n = nc
-            case None => stop = true
+      if( filter.test(from) ){
+        var x = from
+        var stop = false
+        while( !stop ){
+          x = next(x) match {
+            case Some(nc) if filter.test(nc) => nc
+            case _ => stop = true; x
           }
-        }else{
-          stop = true
         }
+        Some(x)
+        // var n = from
+        // var stop = false
+        // while( !stop ){
+        //   val cc = n.childrenCount
+        //   if( cc>0 ){
+        //     var i=cc
+        //     var stop2 = false
+        //     while( !stop2 ){
+        //       i-=1
+        //       if( i<0 ){
+        //         stop2 = true
+        //       }else{
+        //         n.child(i) match {
+        //           case Some(nc) if filter.test(nc) => n = nc; stop2 = true
+        //           case None => 
+        //         }
+        //       }
+        //     }
+        //     n.child(cc-1) match {
+        //       case Some(nc) => n = nc
+        //       case None => stop = true
+        //     }
+        //   }else{
+        //     stop = true
+        //   }
+        // }
+        // Some(n)
+      }else{
+        None
       }
-      Some(n)
-    }
+    }    
   }
 }

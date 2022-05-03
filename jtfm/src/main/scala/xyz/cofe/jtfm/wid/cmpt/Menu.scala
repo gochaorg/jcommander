@@ -15,6 +15,7 @@ object Menu {
   def menu( text:String )( init:MenuContainer ?=> Unit )(using mb:MenuBar):MenuContainer = {
     given mc:MenuContainer = MenuContainer()
     mc.text.value = text
+    mc.visible.value = false
     mb.nested.append(mc)
     init
     mc
@@ -31,6 +32,7 @@ object Menu {
           action   = (_)=>call(),
           shortcut = shortcut
         )
+        text.foreach { txt => ma.text.value = txt }
         Some(ma)
       case None => None
     }
@@ -40,6 +42,7 @@ object Menu {
     given ma:MABuild = MABuild()
     init
     ma.tryMenuAction.map( m => {
+      m.visible.value = false
       mc.nested.append(m)
       m
     })
