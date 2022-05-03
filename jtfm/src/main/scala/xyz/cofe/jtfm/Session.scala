@@ -36,6 +36,8 @@ class Session ( terminal: Terminal ):
       wc.stop().await()
       
   private def buildUi(wc: WidgetCycle):Unit =
+    import wid.cmpt.Menu._
+
     wc.root.background.value = TextColor.ANSI.BLACK
     wc.root.opaque.value = true
 
@@ -82,7 +84,12 @@ class Session ( terminal: Terminal ):
     mc1v.text.value = "View"
     mc1.nested.append(mc1v)
 
-    val mc1e = new MenuContainer
+    val mc1e = new MenuAction(
+      action = (_)=>{
+        println("do exit")        
+        wc.stop()
+      }
+    )
     mc1e.text.value = "Exit"
     mc1.nested.append(mc1e)
 
@@ -93,6 +100,26 @@ class Session ( terminal: Terminal ):
     val mc3 = new MenuContainer
     mc3.text.value = "Help"
     mbar.nested.append(mc3)
+
+    // val mb = menubar {
+    //   menu("File") {
+    //     action {
+    //       text("Exit")
+    //       click {
+    //         println("do exit")
+    //       }
+    //     }
+    //   }
+    //   menu("View") {
+    //     action {
+    //       click {
+    //         println("a")
+    //       }
+    //     }
+    //   }
+    // }
+
+    // wc.root.nested.append( mb )
 
     // val brd1 = new Border()
     // wc.root.nested.append(brd1)
