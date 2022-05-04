@@ -62,6 +62,7 @@ object State {
    * @param renderTree - рендер дерева виджетов
    */
   case class Work(
+                   root: VirtualWidgetRoot,
                    terminal: Terminal,
                    screen: Screen,
                    shutdown: List[Work=>Unit],
@@ -115,6 +116,7 @@ object State {
           .focusManager(state.root, visibleNavigator)
 
       State.Work(
+        state.root,
         state.terminal,
         screen,
         shutdown,

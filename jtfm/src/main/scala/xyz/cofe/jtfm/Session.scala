@@ -83,8 +83,17 @@ class Session ( terminal: Terminal ):
       }
       menu( "View" ) {        
         action {
-          text( "Sample" )
-          click { println("a") }
+          text( "Dialog 1" )
+          click {  
+            val dlg = Dialog()
+            dlg.title.value = "Some dlg 1"
+            dlg.rect.value = Rect(4,4).size(30,10)
+            dlg.background.value = TextColor.ANSI.RED
+            dlg.foreground.value = TextColor.ANSI.WHITE_BRIGHT
+            Dialog.show(dlg){
+              println("closed dlg")
+            }
+          }
         }
       }
     }

@@ -7,6 +7,8 @@ import xyz.cofe.jtfm.gr.Point
 import xyz.cofe.jtfm._
 import xyz.cofe.jtfm.tree._
 import xyz.cofe.jtfm.wid.wc.FocusManager.Switched
+import xyz.cofe.jtfm.wid.cmpt.Dialog
+import xyz.cofe.jtfm.wid.VirtualWidgetRoot
 
 /**
  * Обработка ввода
@@ -52,10 +54,30 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
     }
   }
 
+  private def isVisible(widget:Widget[_]):Boolean = {
+    val wpath = widget.widgetPath
+    val allVisible = wpath.map(_.visible.value).foldLeft(true)((a,b)=>a&&b)
+    val prntIsRoot = wpath.headOption.map { w => w.isInstanceOf[VirtualWidgetRoot] }.getOrElse( false )
+    allVisible && prntIsRoot
+  }
+
+  /** Текущий диалог */
+  private def dialogHolder:Option[Dialog] = 
+    fm.focusOwner.flatMap { fowner =>
+      fowner.widgetPath.reverse.find( w => w.isInstanceOf[Dialog] && isVisible(w) )
+      .map( _.asInstanceOf[Dialog] )      
+    }
+
   /** 
-   * обработка события мыши
+   * Обработка события мыши.
+   * 
+   * - События мыши должны попадать в видимые элементы
+   * - Если есть диалог сожержащий фокус ввода, 
+   *     то события не должны попадать в элементы которые вне этого диалога
    */
   private def processMouseAction( state:State.Work, ma:MouseAction ):State = {
+    val dlgHolder = dialogHolder
+
     // println("tree")
     // fm.root.widgetTree.foreach { w =>       
     //   println( 
@@ -79,10 +101,15 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
           val mma : MouseAction = ma
           val abs : Point = Point(mma.getPosition)
           val local : Point = abs toLocal wid          
-          val x = wid.rect.value.size.include(local)
+          val mouseAtWidget = wid.rect.value.size.include(local)
+          val dialogMatch = dlgHolder match {
+            case Some(dlg) if dlg.visible.value =>
+              wid.widgetPath.exists(w => w==dlg)
+            case _ => true
+          }
           // println( s"$wid $x abs=$abs local=$local rect=${wid.rect}" ) 
           // вычисление локальных координат
-          (x, wid, local)
+          (mouseAtWidget && dialogMatch, wid, local)
         }.filter { case(matched,wid,local) =>
           matched
         }.map { case(matched,wid,local) =>

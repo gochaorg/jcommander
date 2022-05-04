@@ -24,6 +24,17 @@ U+21Fx	⇰	⇱	⇲	⇳	⇴	⇵	⇶	⇷	⇸	⇹	⇺	⇻	⇼	⇽	⇾	⇿
 U+2BCx	⯀	⯁	⯂	⯃	⯄	⯅	⯆	⯇	⯈	⯉	⯊	⯋	⯌	⯍	⯎	⯏
 */
 object Symbols {
+  object Round {
+    val leftTop  :Char = '\u256d'
+    val rightTop :Char = '\u256e'
+    val leftBottom :Char = '\u2570'
+    val rightBottom:Char = '\u256f'
+  }
+
+  object Action {
+    val Close:Char = '\u2573'
+  }
+
   trait Border {
     lazy val leftTop: Char
     lazy val rightTop: Char

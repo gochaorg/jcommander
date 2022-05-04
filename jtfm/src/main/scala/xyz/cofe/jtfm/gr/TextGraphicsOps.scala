@@ -12,3 +12,6 @@ implicit class TextGraphicsOps( gr:TextGraphics ):
     val lines = rect.size.align(str,halign)
     (0 until rect.height).zip(lines).foreach { (y,line) => gr.putString(rect.left, rect.top+y, line) }
   }
+
+  def draw( p0:Point, chr:Char ):Unit =
+    gr.putString(p0.x, p0.y, ""+chr)

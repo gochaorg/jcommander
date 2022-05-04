@@ -1,6 +1,7 @@
 package xyz.cofe.jtfm.wid
 
 import xyz.cofe.jtfm.ev.{EvalProperty, Property}
+import scala.ref.WeakReference
 
 /**
  * Свойство - наличие фокуса в виджете
@@ -26,20 +27,30 @@ trait FocusProperty[SELF : RepaitRequest]
   ) {
     import FocusProperty._
     private var _history:List[HistoryAction] = List()
+    private var _historyNonChild:List[HistoryAction] = List()
 
     /**
      * история получения/потери фокуса
      */
     object history extends Iterable[HistoryAction] {
       override def iterator: Iterator[HistoryAction] = _history.iterator
+
+      /** От кого получил фокус */
       def lastGain:Option[Widget[_]] = _history.find { it => it match {
-        case HistoryAction.Gained( g ) if g.isDefined => false
+        case HistoryAction.Gained( g ) if g.isDefined => true
         case _ => false
-      }}.map( _.widget.get )
+      }}.flatMap( _.widget.get.get )
+
+      /** Кто захватил фокус */
       def lastLost:Option[Widget[_]] = _history.find { it => it match {
-        case HistoryAction.Lost( g ) if g.isDefined => false
+        case HistoryAction.Lost( g ) if g.isDefined => true
         case _ => false
-      }}.map( _.widget.get )
+      }}.flatMap( _.widget.get.get )
+
+      def lastGainNonChild:Option[Widget[_]] = _historyNonChild.find { it => it match {
+        case HistoryAction.Gained( g ) if g.isDefined => true
+        case _ => false
+      }}.flatMap( _.widget.get.get )
     }
 
     private var onGainListeners = List[Option[Widget[_]]=>Unit]()
@@ -50,11 +61,25 @@ trait FocusProperty[SELF : RepaitRequest]
      */
     def onGain( from:Option[Widget[_]] ):Unit = {
       if( historyMaxSize>0 ){
-        _history = HistoryAction.Gained(from) :: _history
+        _history = HistoryAction.Gained(from.map(w => Some(WeakReference(w))).getOrElse(None) ) :: _history
         if( _history.length>historyMaxSize ){
           _history = _history.take(historyMaxSize)
         }
       }
+
+      if( historyMaxSize>0 ){
+        from match {
+          case Some(widFrom) =>
+            if( !widFrom.widgetPath.reverse.exists( w => w==self ) ){
+              _historyNonChild = HistoryAction.Gained(Some(WeakReference(widFrom))) :: _historyNonChild
+            }
+          case _ =>
+        }
+        if( _historyNonChild.length>historyMaxSize ){
+          _historyNonChild = _historyNonChild.take(historyMaxSize)
+        }
+      }
+
       recompute()
       onGainListeners.foreach { _(from) }
     }
@@ -75,11 +100,25 @@ trait FocusProperty[SELF : RepaitRequest]
      */
     def onLost( newOwner:Option[Widget[_]] ):Unit = {
       if( historyMaxSize>0 ){
-        _history = HistoryAction.Lost(newOwner) :: _history
+        _history = HistoryAction.Lost( newOwner.map( wid => Some(WeakReference(wid)) ).getOrElse(None) ) :: _history
         if( _history.length>historyMaxSize ){
           _history = _history.take(historyMaxSize)
         }
       }
+
+      if( historyMaxSize>0 ){
+        newOwner match {
+          case Some(wid) =>
+            if( !wid.widgetPath.reverse.exists( w => w==self ) ){
+              _historyNonChild = HistoryAction.Lost(Some(WeakReference(wid))) :: _historyNonChild
+            }
+          case _ =>
+        }
+        if( _historyNonChild.length>historyMaxSize ){
+          _historyNonChild = _historyNonChild.take(historyMaxSize)
+        }
+      }
+
       recompute()
       onLostListeners.foreach { _(newOwner) }
     }
@@ -159,8 +198,8 @@ trait FocusProperty[SELF : RepaitRequest]
 }
 
 object FocusProperty {
-  enum HistoryAction( val widget:Option[Widget[_]] ){
-    case Gained( w:Option[Widget[_]] ) extends HistoryAction( w )
-    case Lost( w:Option[Widget[_]] ) extends HistoryAction( w )
+  enum HistoryAction( val widget:Option[WeakReference[Widget[_]]] ){
+    case Gained( w:Option[WeakReference[Widget[_]]] ) extends HistoryAction( w )
+    case Lost( w:Option[WeakReference[Widget[_]]] ) extends HistoryAction( w )
   }
 }

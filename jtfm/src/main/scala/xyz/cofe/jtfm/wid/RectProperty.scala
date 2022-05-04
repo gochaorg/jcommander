@@ -25,6 +25,11 @@ trait RectProperty[SELF : RepaitRequest] {
 object RectProperty {
   /** Дополнительные функции к свойству Rect */
   implicit class RectProp[SELF](val prop: OwnProperty[Rect,SELF]) {
+    def leftTop:Point = prop.value.leftTop
+    def rightTop:Point = prop.value.rightTop
+    def leftBottom:Point = prop.value.leftBottom
+    def rightBottom:Point = prop.value.rightBottom
+
     /** ширина */
     def width:Int = prop.value.width
 

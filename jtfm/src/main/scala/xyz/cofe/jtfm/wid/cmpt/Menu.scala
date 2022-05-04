@@ -5,7 +5,6 @@ import xyz.cofe.jtfm.wid.Shortcut
 /**
  * Создание меню
  */
-@Deprecated
 object Menu {
   def menubar( init:MenuBar ?=> Unit ):MenuBar = {
     given mb:MenuBar = MenuBar()
