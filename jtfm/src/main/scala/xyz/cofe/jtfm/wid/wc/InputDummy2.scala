@@ -17,7 +17,15 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
   override def focusOwner: Option[Widget[_]] = fm.focusOwner
   
   override def focusRequest( target:Widget[_] ):Either[String,Option[Widget[_]]] = {
-    fm.switchTo(target).map(_.from)
+    dialogHolder match {
+      case None => fm.switchTo(target).map(_.from)
+      case Some(dlg) =>
+        if( !target.widgetPath.exists( w => w==target ) ){
+          Left("can't switch outside dialog")
+        }else{
+          fm.switchTo(target).map(_.from)
+        }
+    }
   }
   
   override def exitIf( e:KeyStroke=>Boolean ):InputDummy2 = {
@@ -141,7 +149,14 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
   def focusSwitchNext():Either[String,FocusManager.Switched[_]] = {
     fm.nextCycle( fm.focusOwner.getOrElse( fm.root ) ).take(1).nextOption match {
       case None => Left("can't take focus owner")
-      case Some(w) => fm.switchTo(w)
+      case Some(w) => 
+        dialogHolder match {
+          case Some(dlg) => w.widgetPath.exists(w2 => w2==dlg) match {
+            case true => fm.switchTo(w)
+            case false => Left("can't switch outside border")
+          }
+          case _ => fm.switchTo(w)
+        }
     }
   }
 
@@ -149,7 +164,14 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
   def focusSwitchPrev():Either[String,FocusManager.Switched[_]] = {
     fm.prevCycle( fm.focusOwner.getOrElse( fm.root ) ).take(1).nextOption match {
       case None => Left("can't take focus owner")
-      case Some(w) => fm.switchTo(w)
+      case Some(w) => 
+        dialogHolder match {
+          case Some(dlg) => w.widgetPath.exists(w2 => w2==dlg) match {
+            case true => fm.switchTo(w)
+            case false => Left("can't switch outside border")
+          }
+          case _ => fm.switchTo(w)
+        }
     }
   }
 
