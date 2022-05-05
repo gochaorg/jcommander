@@ -19,6 +19,7 @@ import xyz.cofe.jtfm.wid.MouseActionOps
 import xyz.cofe.jtfm.wid.MouseButton
 import xyz.cofe.jtfm.wid.wc.Jobs
 import xyz.cofe.jtfm.wid.WidgetCycle
+import com.googlecode.lanterna.TextColor
 
 class Dialog 
   extends Widget[Dialog] 
@@ -125,8 +126,8 @@ class Dialog
   }
 }
 
-object Dialog {
-  def show( dlg:Dialog )( onClose: => Unit ):Unit = {
+object Dialog {  
+  def createAndShow( dlg:Dialog )( onClose: => Unit )( postInit: =>Unit ):Unit = {
     Jobs.add {
       WidgetCycle.tryGet.foreach { wc =>
         wc.workState.foreach { ws => 
@@ -148,8 +149,82 @@ object Dialog {
               detach()
             }
           }}
+          postInit
         }
       }
     }
   }
+
+  def show( build:DialogBuild ?=> Unit ):Unit = {
+    import xyz.cofe.jtfm.wid.RectProperty._
+    given dbuild:DialogBuild = DialogBuild()
+    val dlg = Dialog()
+    build
+    dbuild.prepare.foreach( _(dlg) )
+    dbuild.content.foreach { cnt =>
+      dlg.nested.append(cnt)
+      cnt.rect.value = Rect(1,1).size(cnt.rect.width-2, cnt.rect.height-2)
+      cnt.rect.bindTo(dlg){ rct => Rect(1,1).size(rct.width-2, rct.height-2) }
+    }
+    createAndShow( dlg )({})({
+      dbuild.postInit.foreach { _(dlg) }
+    })
+  }
+
+  case class DialogBuild( 
+    var prepare:List[Dialog=>Unit] = List(),
+    var postInit:List[Dialog=>Unit] = List(),
+    var content:Option[Widget[_]] = None
+  )
+
+  def prepare( build:Dialog=>Unit )(using dbuild:DialogBuild ):Unit =
+    dbuild.prepare = dbuild.prepare :+ build
+
+  def post( build:Dialog=>Unit )(using dbuild:DialogBuild ):Unit =
+    dbuild.postInit = dbuild.postInit :+ build
+
+  def content( wid:Widget[_] )(using dbuild:DialogBuild ):Unit =
+    dbuild.content = Some(wid)
+
+  def title( str:String )(using dbuild:DialogBuild ):Unit =
+    prepare { dlg => dlg.title.value = str }
+    
+  def onClose( ls: => Unit )(using dbuild:DialogBuild ):Unit =
+    prepare { dlg => dlg.onClose(ls) }
+    
+  def location( rect:Rect )(using dbuild:DialogBuild ):Unit =
+    prepare { dlg => dlg.rect.value = rect }
+
+  def size( w:Int, h:Int )(using dbuild:DialogBuild ):Unit =
+    prepare { dlg => dlg.rect.value = Rect(dlg.rect.leftTop).size(w,h) }
+    
+  def toCenter()(using dbuild:DialogBuild ):Unit =
+    post { dlg => 
+      Jobs.add { 
+        for { 
+          wc <- WidgetCycle.tryGet
+          ws <- wc.workState
+        } {          
+          val rootSize = ws.root.rect.value.size
+          val dlgSize = dlg.rect.value.size
+          val marginHor = rootSize.width - dlgSize.width
+          val marginVer = rootSize.height - dlgSize.height
+          val x = marginHor / 2
+          val y = marginVer / 2
+          dlg.rect.value = Rect(x,y).size(dlgSize)
+        }
+      }
+    }
+
+  case class ColorSet()
+
+  def color( init: ColorSet ?=> Unit )(using dbuild:DialogBuild ):Unit =
+    given cs:ColorSet = ColorSet()
+    init
+
+  def foreground( color:TextColor )(using dbuild:DialogBuild, cs:ColorSet ):Unit =
+    prepare { dlg => dlg.foreground.value = color }
+
+  def background( color:TextColor )(using dbuild:DialogBuild, cs:ColorSet ):Unit =
+    prepare { dlg => dlg.background.value = color }
 }

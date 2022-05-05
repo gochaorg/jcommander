@@ -85,13 +85,18 @@ class Session ( terminal: Terminal ):
         action {
           text( "Dialog 1" )
           click {  
-            val dlg = Dialog()
-            dlg.title.value = "Some dlg 1"
-            dlg.rect.value = Rect(4,4).size(30,10)
-            dlg.background.value = TextColor.ANSI.RED
-            dlg.foreground.value = TextColor.ANSI.WHITE_BRIGHT
-            Dialog.show(dlg){
-              println("closed dlg")
+            import Dialog._
+            Dialog.show {
+              title( "Color select" )              
+              onClose {
+                println("closed dlg")
+              }
+              size( 30, 10 )
+              toCenter()
+              color {
+                foreground( TextColor.ANSI.WHITE_BRIGHT )
+                background( TextColor.ANSI.GREEN )
+              }
             }
           }
         }

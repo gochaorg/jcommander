@@ -72,6 +72,7 @@ object Rect {
     case class FirstPoint( val p:Point ){
         def size( width:Int, height:Int ):Rect = Rect( p, p.translate(width, height) )
         def size( s:Point ):Rect = Rect( p, p.translate(s) )
+        def size( s:Size2D ):Rect = Rect( p, p.translate(s.width, s.height) )
         
         def to( x:Int, y:Int ):Rect = Rect( p, Point(x,y) )
         def to( to:Point ):Rect = Rect( p, to )
