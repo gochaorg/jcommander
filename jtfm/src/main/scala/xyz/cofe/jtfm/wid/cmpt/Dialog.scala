@@ -82,9 +82,10 @@ class Dialog
     val title = this.title.value
     if( title!=null && title.length>0 ){
       val w = rect.width-3
-      if( w>0 ){
-        gr.draw( Rect(1,0).size(w,1), title, Align.Center )
-      }
+      // if( w>0 ){
+      //   gr.draw( Rect(1,0).size(w,1), title, Align.Center )
+      // }
+      gr.putString( 1,0, if( title.length>w )title.substring(0,w) else title )
     }
 
     gr.draw( closeButtonPoint, Symbols.Action.Close )
@@ -93,6 +94,7 @@ class Dialog
   private def closeButtonPoint:Point = Point(rect.width-2,0)
 
   def close():Unit = {
+    closeListeners0.foreach { ls => ls(this) }
     parent.value match {
       case Some(prnt) =>
         prnt.nested.remove(this)
@@ -103,7 +105,6 @@ class Dialog
       wid.asInstanceOf[FocusProperty[_]].focus.request()      
     }};
     repaint()
-    closeListeners0.foreach { ls => ls(this) }
   }
 
   protected def inputMouseAction(ma:MouseAction):Boolean = {
