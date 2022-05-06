@@ -1,9 +1,2 @@
-.bsp
-.idea
 target
-.bloop
-.metals
-.vscode
-/project/.bloop
-metals.sbt
-.vscode/settings.json
+.idea
