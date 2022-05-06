@@ -83,9 +83,6 @@ class Dialog
     val title = this.title.value
     if( title!=null && title.length>0 ){
       val w = rect.width-3
-      // if( w>0 ){
-      //   gr.draw( Rect(1,0).size(w,1), title, Align.Center )
-      // }
       gr.putString( 1,0, if( title.length>w )title.substring(0,w) else title )
     }
 

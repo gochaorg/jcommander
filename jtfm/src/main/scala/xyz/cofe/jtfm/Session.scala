@@ -97,6 +97,32 @@ class Session ( terminal: Terminal ):
                 foreground( TextColor.ANSI.WHITE_BRIGHT )
                 background( TextColor.ANSI.GREEN )
               }
+
+              val pnl = Panel()
+
+              val c0 = Label()
+              c0.text.value = "A"
+              c0.foreground.value = TextColor.ANSI.WHITE_BRIGHT
+              c0.background.value = TextColor.ANSI.BLACK
+              c0.rect.value = Rect(0,0).size(1,1)
+
+              val c1 = Label()
+              c1.text.value = "B"
+              c1.foreground.value = TextColor.ANSI.WHITE_BRIGHT
+              c1.background.value = TextColor.ANSI.BLUE
+              c1.rect.value = Rect(1,0).size(1,1)
+
+              val c2 = Label()
+              c2.text.value = "C"
+              c2.foreground.value = TextColor.ANSI.WHITE_BRIGHT
+              c2.background.value = TextColor.ANSI.GREEN
+              c2.rect.value = Rect(2,0).size(1,1)
+
+              pnl.nested.append(c0)
+              pnl.nested.append(c1)
+              pnl.nested.append(c2)
+
+              content(pnl)
             }
           }
         }
