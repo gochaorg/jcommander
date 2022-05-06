@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm.eval;
+package xyz.cofe.jtfm.prop;
 
 import org.junit.jupiter.api.Test;
 

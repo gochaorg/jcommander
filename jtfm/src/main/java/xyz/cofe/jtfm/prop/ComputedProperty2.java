@@ -1,6 +1,5 @@
-package xyz.cofe.jtfm.eval;
+package xyz.cofe.jtfm.prop;
 
-import xyz.cofe.fn.Fn1;
 import xyz.cofe.fn.Fn2;
 
 import java.util.function.Supplier;

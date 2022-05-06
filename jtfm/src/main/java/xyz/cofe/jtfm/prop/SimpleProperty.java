@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm.eval;
+package xyz.cofe.jtfm.prop;
 
 import java.lang.ref.WeakReference;
 import java.util.HashSet;

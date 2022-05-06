@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm.eval;
+package xyz.cofe.jtfm.prop;
 
 import xyz.cofe.ecolls.Closeables;
 import xyz.cofe.fn.Fn1;
