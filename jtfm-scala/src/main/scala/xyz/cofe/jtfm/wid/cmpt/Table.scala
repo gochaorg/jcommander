@@ -68,7 +68,7 @@ class Table[A]
   val focusBackground: OwnProperty[TextColor,Table[A]] = OwnProperty( TextColor.ANSI.BLACK,this)
 
   /** Цвет выбраннй/выделенной строки */  
-  val selectedForeground: OwnProperty[Option[TextColor],Table[A]] = OwnProperty( Some(TextColor.ANSI.GREEN_BRIGHT),this)
+  val selectedForeground: OwnProperty[Option[TextColor],Table[A]] = OwnProperty( Some(TextColor.ANSI.GREEN),this)
 
   /** Фон выбраннй/выделенной строки */  
   val selectedBackground: OwnProperty[Option[TextColor],Table[A]] = OwnProperty( Some(TextColor.ANSI.WHITE),this)
@@ -312,7 +312,7 @@ class Table[A]
     true
   }
 
-  protected def scrollToVisible( row:Int ):Unit = {
+  def scrollToVisible( row:Int ):Unit = {
     visibleRowIndexesBounds.value match {
       case None =>
       case Some( (from,toExc) ) => 
@@ -337,7 +337,7 @@ class Table[A]
     }
 
   /** Переход к следующей строке */
-  protected def switchNext():Boolean = {
+  def switchNext():Boolean = {
     focusedRowIndex.value match {
       case Some(idx) if idx< data.length-1 => 
         focusedRowIndex.value = Some(idx+1)
@@ -348,7 +348,7 @@ class Table[A]
   }
 
   /** Переход через блок видимых строк (page down) */
-  protected def switchNextPage():Boolean = {
+  def switchNextPage():Boolean = {
     focusedRowIndex.value match {
       case Some(idx) if idx< data.length-1 => 
         visibleRowIndexesBounds.value match {
@@ -365,7 +365,7 @@ class Table[A]
   }
 
   /** Переход к предыдущей строке */
-  protected def switchPrev():Boolean = {
+  def switchPrev():Boolean = {
     focusedRowIndex.value match {
       case Some(idx) if idx>0 => 
         focusedRowIndex.value = Some(idx-1)
@@ -376,7 +376,7 @@ class Table[A]
   }
 
   /** Переход через блок видимых строк (page up) */
-  protected def switchPrevPage():Boolean = {
+  def switchPrevPage():Boolean = {
     focusedRowIndex.value match {
       case Some(idx) if idx>0 => 
         visibleRowIndexesBounds.value match {
@@ -392,8 +392,28 @@ class Table[A]
     }
   }
 
+  /** Переход к концу таблицы */
+  def switchEnd():Boolean = {
+    if data.length>0 then
+      focusedRowIndex.value = Some(data.length-1)
+      scrollToVisible(focusedRowIndex.value.get)
+      true
+    else
+      false
+  }
+
+  /** Переход к началу таблицы */
+  def switchHome():Boolean = {
+    if data.length>0 then
+      focusedRowIndex.value = Some(0)
+      scrollToVisible(focusedRowIndex.value.get)
+      true
+    else
+      false
+  }
+
   /** Инверсия выделенной строки */
-  protected def invertSelectFocused():Boolean = {
+  def invertSelectFocused():Boolean = {
     focusedRow match {
       case None => false
       case Some(it) =>
@@ -429,6 +449,8 @@ class Table[A]
       case KeyType.ArrowDown => switchNext()
       case KeyType.PageDown  => switchNextPage()
       case KeyType.PageUp    => switchPrevPage()
+      case KeyType.Home      => switchHome()
+      case KeyType.End       => switchEnd()
       case KeyType.Insert    => invertSelectFocused()
       case KeyType.Character => ks.getCharacter() match {
         case ' ' => 

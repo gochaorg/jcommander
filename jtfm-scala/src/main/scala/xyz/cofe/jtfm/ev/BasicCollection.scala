@@ -33,6 +33,15 @@ class BasicCollection[N]
     inserted(0,n)
   }
 
+  /** Удаление всех элементов */
+  def clear():Unit = {    
+    val ls = list
+    list = List()
+    (0 until ls.length).reverse.foreach { idx =>
+      deleted(idx, ls(idx))
+    }
+  }
+
   /** Удаление элемента по его индексу из списка */
   override def removeAt(idx: Int): Unit = {
     var what = List[(Int,N)]()
