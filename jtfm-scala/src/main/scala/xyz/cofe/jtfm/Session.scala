@@ -50,29 +50,7 @@ class Session ( terminal: Terminal ):
     wc.root.background.value = TextColor.ANSI.BLACK
     wc.root.opaque.value = true
 
-    // val files = List(
-    //   SomeFile("abc",123), SomeFile("bcd",234), SomeFile("cde",345), SomeFile("def",345), SomeFile("efg",345),
-    //   SomeFile("qwe",123), SomeFile("wer",234), SomeFile("qwerty",345), SomeFile("ert",345), SomeFile("rt y",345),
-    //   SomeFile("azx",123), SomeFile("qaed",234), SomeFile("eedd",345), SomeFile("zaq",345), SomeFile("xswedc",345),
-    //   SomeFile("eedc",123), SomeFile("Tyuu",234), SomeFile("xDcf",345), SomeFile("rfVV",345), SomeFile("fggRR",345),
-    //   SomeFile("r z c",123), SomeFile("a s d",234), SomeFile("yyUUi",345), SomeFile("s76d",345), SomeFile("muuU",345),
-    // )
-
-    // val tbl = new Table[SomeFile]()
-    // wc.root.nested.append(tbl)
-    // tbl.rect.value = Rect( 1,1 ).size( 40, 20 )
-    // tbl.data = files
-    // tbl.background.value = TextColor.ANSI.BLACK_BRIGHT
-
-    // val sizeCol = Column[SomeFile,Long]("size", _.size, _.toString )
-    // sizeCol.width.prefect = Some(6)
-    // tbl.columns = List(
-    //   Column("name", _.name, _.toString ),
-    //   sizeCol,
-    // )
-    // tbl.rect.bindTo( wc.root ) { r => Rect(2,2).size(r.width-4, r.height-4) }
-
-    val tbl = FilesTable()
+    val tbl = DirectoryTable()
     wc.root.nested.append(tbl)    
     tbl.rect.value = Rect( 1,1 ).size( 40, 20 )
     tbl.rect.bindTo( wc.root ) { r => Rect(2,2).size(r.width-4, r.height-4) }
@@ -82,11 +60,7 @@ class Session ( terminal: Terminal ):
       FilesTable.columns.size 
       )
 
-    val ds = Files.newDirectoryStream(Paths.get("."))
-    var files = List[Path]()
-    ds.forEach { f => files = f :: files }
-    ds.close()
-    tbl.data = files
+    tbl.currentDir.value = Some(Paths.get("."))
     tbl.background.value = TextColor.ANSI.BLACK_BRIGHT
 
     val mb = menubar {

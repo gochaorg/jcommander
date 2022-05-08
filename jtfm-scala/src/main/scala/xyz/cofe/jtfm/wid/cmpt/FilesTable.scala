@@ -7,12 +7,15 @@ import java.time.ZoneId
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
+import org.slf4j.LoggerFactory
 
 class FilesTable extends Table[Path] {
   
 }
 
 object FilesTable {  
+  val log = LoggerFactory.getLogger(classOf[FilesTable])
+
   def humanSize(size:Long):String = {
     if size<0 then
       size.toString
@@ -85,5 +88,52 @@ object FilesTable {
       c.width.prefect = Some(10)
       c
     }
+  }
+
+  object sort {
+    lazy val defaultSort = combine(List(
+      dirFirst, byName
+    ))
+
+    val dirFirst:(Path,Path)=>Int = (a,b) => {
+      val aDir = try { Files.isDirectory(a) } catch { 
+        case e:Throwable => log.warn(s"can't read attr(isDirectory) of $a",e); false
+      }
+      val bDir = try { Files.isDirectory(b) } catch { 
+        case e:Throwable => log.warn(s"can't read attr(isDirectory) of $b",e); false
+      }
+      aDir == bDir match {
+        case true => 0
+        case _ => if aDir then -1 else 1
+      }
+    }
+
+    val byName:(Path,Path)=>Int = (a,b) => {
+      val aName = a.getFileName.toString
+      val bName = b.getFileName.toString
+      if aName==null && bName==null then
+        0
+      else if aName!=null && bName==null then
+        -1
+      else if aName==null && bName!=null then
+        1
+      else
+        aName.compareTo(bName)
+    }
+
+    def combine( sorts:Seq[(Path,Path)=>Int] ):(Path,Path)=>Int = (fa,fb)=> {
+      if sorts.isEmpty then
+        0
+      else
+        var cmpRes = 0
+        sorts.foldLeft( 0 )( (a,b) => {
+          if a==0 then
+            b(fa,fb)
+          else 
+            a
+        })
+    }
+
+    def inverse( cmpFn:(Path,Path)=>Int ):(Path,Path)=>Int = (a,b) => cmpFn(a,b) * -1
   }
 }
