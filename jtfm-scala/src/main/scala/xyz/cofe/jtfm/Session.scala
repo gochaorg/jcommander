@@ -63,17 +63,6 @@ class Session ( terminal: Terminal ):
     )
     tbl.rect.bindTo( wc.root ) { r => Rect(2,2).size(r.width-4, r.height-4) }
 
-    // val mc1v = new MenuAction( 
-    //   action= (_)=>{
-    //     println("view!action")
-    //   },
-    //   shortcut = Some(Shortcut.parse("C+u").get)
-    // )
-
-    // KeyboardInterceptor.bind(Shortcut.parse("C+y").get).eat {
-    //   println("!! accept shortcut! ")
-    // }
-
     val mb = menubar {
       menu( "File" ) {
         action {
@@ -88,8 +77,17 @@ class Session ( terminal: Terminal ):
             import Dialog._
             Dialog.show {
               title( "Color select" )              
+
+              val cpnl = ColorPanel()
+              content(cpnl)
+
+              val txt = new TextField()
+              txt.text.value = "Sample"
+              txt.rect.value = Rect(1,5).size(15,1)
+              cpnl.nested.append(txt)
+
               onClose {
-                println("closed dlg")
+                println(s"closed dlg color=${cpnl.color}, txt=${txt.text.value}")
               }
               size( 30, 10 )
               toCenter()
@@ -98,31 +96,6 @@ class Session ( terminal: Terminal ):
                 background( TextColor.ANSI.GREEN )
               }
 
-              val pnl = Panel()
-
-              val c0 = Label()
-              c0.text.value = "A"
-              c0.foreground.value = TextColor.ANSI.WHITE_BRIGHT
-              c0.background.value = TextColor.ANSI.BLACK
-              c0.rect.value = Rect(0,0).size(1,1)
-
-              val c1 = Label()
-              c1.text.value = "B"
-              c1.foreground.value = TextColor.ANSI.WHITE_BRIGHT
-              c1.background.value = TextColor.ANSI.BLUE
-              c1.rect.value = Rect(1,0).size(1,1)
-
-              val c2 = Label()
-              c2.text.value = "C"
-              c2.foreground.value = TextColor.ANSI.WHITE_BRIGHT
-              c2.background.value = TextColor.ANSI.GREEN
-              c2.rect.value = Rect(2,0).size(1,1)
-
-              pnl.nested.append(c0)
-              pnl.nested.append(c1)
-              pnl.nested.append(c2)
-
-              content(pnl)
             }
           }
         }

@@ -9,6 +9,7 @@ import com.googlecode.lanterna.terminal.TerminalResizeListener
 import com.googlecode.lanterna.TerminalSize
 import com.googlecode.lanterna.input.KeyType
 import xyz.cofe.jtfm.gr.Rect
+import xyz.cofe.jtfm.gr.Point
 import xyz.cofe.jtfm.wid.VirtualWidgetRoot
 import xyz.cofe.jtfm.wid.Widget
 
@@ -72,7 +73,8 @@ object State {
                    throttling: Throttling = Throttling.Sleep(100),
                    keyInterceptor: KeyboardInterceptor = new KeyboardInterceptor,
                    ubHandler: UndefinedBehavior = UndefinedBehavior.PanicFirst(),
-                      //UndefinedBehavior.TimeRateLimit(10000L, 8L),
+                   var caret:Option[Point] = None,
+                    //UndefinedBehavior.TimeRateLimit(10000L, 8L),
                    jobs: Jobs
   ) extends State
 
@@ -175,7 +177,17 @@ object State {
     }
 
     // обновление экрана терминала
-    val screenRefresh:DoWork = w => { w.screen.refresh(); w }
+    val screenRefresh:DoWork = w => { 
+      w.screen.refresh(); 
+      w.caret match {
+        case Some(p) =>
+          w.terminal.setCursorVisible(true)
+          w.terminal.setCursorPosition(p)
+        case None =>
+          w.terminal.setCursorVisible(false)
+      }
+      w 
+    }
 
     // обработка задач очереди
     val jobRunner:DoWork = w => {
