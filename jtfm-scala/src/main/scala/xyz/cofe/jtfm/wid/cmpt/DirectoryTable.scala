@@ -10,6 +10,10 @@ class DirectoryTable extends FilesTable {
 
   val currentDir:OwnProperty[Option[Path],DirectoryTable] = OwnProperty(None,this)
   currentDir.listen( (_,_,cdOpt) => {
+    readDir(cdOpt)
+  })
+
+  def readDir( cdOpt:Option[Path] ):Unit = {
     cdOpt match {
       case None =>
         log.info("read dir none")
@@ -31,5 +35,7 @@ class DirectoryTable extends FilesTable {
           case e:Throwable => log.warn(s"can't read dir $cd",e)
         }
     }
-  })
+  }
+
+  
 }

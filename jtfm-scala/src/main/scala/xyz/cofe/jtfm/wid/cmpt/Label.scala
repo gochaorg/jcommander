@@ -11,6 +11,9 @@ import xyz.cofe.jtfm.ev.OwnProperty
 import com.googlecode.lanterna.input.MouseAction
 import xyz.cofe.jtfm.wid.MouseButton
 import com.googlecode.lanterna.input.KeyStroke
+import javax.swing.text.TabExpander
+import xyz.cofe.jtfm.gr.TextBlock
+import xyz.cofe.jtfm.gr.TabExpand
 
 class Label
   extends Widget[Label]
@@ -36,6 +39,9 @@ class Label
     }
   }
 
+  val tabExpand:OwnProperty[TabExpand,Label] = OwnProperty(TabExpand.FourAligned,this).observe( (_,_,_) => repaint() )._1
+  val halign:OwnProperty[Align,Label] = OwnProperty(Align.Begin,this).observe((_,_,_)=>repaint())._1
+
   override def render(gr:TextGraphics):Unit=
     import xyz.cofe.jtfm.gr.TextGraphicsOps
     this.renderOpaque(gr)
@@ -43,7 +49,14 @@ class Label
     if txt.length>0 then
       gr.setForegroundColor(foreground.value)
       gr.setBackgroundColor(background.value)
-      gr.putString(0,0,txt)
+      val tb = halign.value match {
+        case Align.Begin  => TextBlock(txt,tabExpand.value)
+        case Align.Center => TextBlock(txt,tabExpand.value).cropRight(rect.width).alignCenter(rect.width)
+        case Align.End    => TextBlock(txt,tabExpand.value).alignRight.cropRight(rect.width)
+      }
+      (0 until tb.height).zip( tb.lines ).foreach { case(y,tline) =>
+        gr.putString(tline.offset,y, tline.line)
+      }
 
   override def input(ks:KeyStroke):Boolean = {
     ks match {
@@ -52,3 +65,4 @@ class Label
       case _ => false
     }
   }
+
