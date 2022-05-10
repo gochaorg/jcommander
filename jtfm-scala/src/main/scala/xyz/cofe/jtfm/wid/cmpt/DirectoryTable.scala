@@ -8,6 +8,8 @@ import com.googlecode.lanterna.TextColor
 import xyz.cofe.jtfm.gr.Align
 import xyz.cofe.jtfm.wid.RectProperty._
 import xyz.cofe.jtfm.gr.Rect
+import com.googlecode.lanterna.input.KeyStroke
+import com.googlecode.lanterna.input.KeyType
 
 class DirectoryTable extends FilesTable {
   private val log = LoggerFactory.getLogger(classOf[DirectoryTable])
@@ -21,6 +23,7 @@ class DirectoryTable extends FilesTable {
   currentDirLabel.foreground.value = TextColor.ANSI.BLACK
   currentDirLabel.background.value = TextColor.ANSI.WHITE
   currentDirLabel.halign.value = Align.End
+  currentDirLabel.opaque.value = false
   currentDirLabel.rect.bindTo( this ){ rct => Rect(2,0).size(rct.width-2-1,1) }
   currentDir.listen( (_,_,cdOpt) => {
     cdOpt match {
@@ -33,6 +36,7 @@ class DirectoryTable extends FilesTable {
   nested.append(currentDirLabel)
 
   protected def readDir( cdOpt:Option[Path] ):Unit = {
+    log.info(s"readDir $cdOpt")
     cdOpt match {
       case None =>
         log.info("read dir none")
@@ -50,10 +54,30 @@ class DirectoryTable extends FilesTable {
 
           selection.clear()
           data = files.sortWith( (a,b) => FilesTable.sort.defaultSort(a,b)<0 )
+          if data.nonEmpty then
+            focusedRowIndex.value = Some(0)
+          else
+            focusedRowIndex.value = None
         } catch {
           case e:Throwable => log.warn(s"can't read dir $cd",e)
         }
     }
   }
+
+  protected override def inputKeyboard(ks:KeyStroke):Boolean = 
+    ks.getKeyType match {
+      case KeyType.Enter if focusedRow.isDefined =>
+          val file = focusedRow.get
+          if( Files.isDirectory(file) ){
+            currentDir.value = Some(file)
+            true
+          }else{
+            super.inputKeyboard(ks)
+          }
+      case KeyType.Backspace if currentDir.value.isDefined && currentDir.value.get.getParent!=null =>
+        currentDir.value = Some(currentDir.value.get.getParent)
+        true
+      case _ => super.inputKeyboard(ks)
+    }
 
 }

@@ -52,7 +52,7 @@ class Label
       val tb = halign.value match {
         case Align.Begin  => TextBlock(txt,tabExpand.value)
         case Align.Center => TextBlock(txt,tabExpand.value).cropRight(rect.width).alignCenter(rect.width)
-        case Align.End    => TextBlock(txt,tabExpand.value).alignRight.cropRight(rect.width)
+        case Align.End    => TextBlock(txt,tabExpand.value).alignRight.cropLeft(rect.width)
       }
       (0 until tb.height).zip( tb.lines ).foreach { case(y,tline) =>
         gr.putString(tline.offset,y, tline.line)

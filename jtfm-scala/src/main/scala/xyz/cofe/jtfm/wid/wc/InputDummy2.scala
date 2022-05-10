@@ -91,7 +91,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
    */
   private def processMouseAction( state:State.Work, ma:MouseAction ):State = {
     val dlgHolder = dialogHolder
-    log.debug("processMouseAction()")
+    log.info(s"processMouseAction( x=${ma.getPosition.getColumn} y=${ma.getPosition.getRow} but=${ma.getButton} atype=${ma.getActionType} )")
 
     if( log.isTraceEnabled ){
       log.trace("tree")
@@ -152,7 +152,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
 
   /** Переключение фокуса на следующий элемент */
   def focusSwitchNext():Either[String,FocusManager.Switched[_]] = {
-    log.debug("focusSwitchNext()")
+    log.info("focusSwitchNext()")
     fm.nextCycle( fm.focusOwner.getOrElse( fm.root ) ).take(1).nextOption match {
       case None => Left("can't take focus owner")
       case Some(w) => 
@@ -168,7 +168,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
 
   /** Переключение фокуса на следующий элемент */
   def focusSwitchPrev():Either[String,FocusManager.Switched[_]] = {
-    log.debug("focusSwitchPrev()")
+    log.info("focusSwitchPrev()")
     fm.prevCycle( fm.focusOwner.getOrElse( fm.root ) ).take(1).nextOption match {
       case None => Left("can't take focus owner")
       case Some(w) => 

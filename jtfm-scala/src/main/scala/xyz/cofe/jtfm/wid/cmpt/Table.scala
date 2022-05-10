@@ -18,6 +18,7 @@ import xyz.cofe.jtfm.ev.EvalProperty
 import xyz.cofe.jtfm.wid.RepaitRequest
 import xyz.cofe.jtfm.ev.BasicCollection
 import xyz.cofe.jtfm.wid.wc.Jobs
+import org.slf4j.LoggerFactory
 
 /**
  * Таблица
@@ -29,6 +30,8 @@ class Table[A]
   with OpaqueProperty[Table[A]]
   with FocusProperty[Table[A]](repait=true)
 {
+  private val log = LoggerFactory.getLogger(classOf[Table[_]])
+
   /** Данные таблицы */
   private var _data:Seq[A] = List()
 
@@ -113,6 +116,14 @@ class Table[A]
     cols
   })
   columnsWidths.listen((prop,old,cur) => { columnsRect.recompute() })
+
+  /** Размещение заголовков колонк */
+  val columnHeadersRect:EvalProperty[List[(Column[A,_],Rect)],Table[A]] = EvalProperty(()=>{
+    columnsRect.value.map { case(col,rct) => 
+      (col,rct.reSize.setHeight(1).translate(0,1))
+    }
+  })
+  columnsWidths.listen((_,_,_)=>columnHeadersRect.recompute())
 
   /** Высота колонки с данными */
   val anyDataRectsHeight:EvalProperty[Option[Int],Table[A]] = EvalProperty(()=>{
@@ -300,15 +311,23 @@ class Table[A]
 
   /** Обработка событий мыши */
   protected def inputMouseAction(ma:MouseAction):Boolean = {
-    dataCell( ma ) match {
-      case None =>
+    val dataCellClicked = dataCell( ma ) match {
+      case None => false
       case Some( (dataRow, dataColumn) ) =>
         data.indexOf(dataRow) match {
           case ridx:Int if ridx>=0 =>
             focusedRowIndex.value = Some(ridx)
+            true
           case _ =>
+            false
         }
     }
+    if( !dataCellClicked ){
+      columnHeadersRect.value.find { case (col,rct) => rct.include(ma) }.foreach { case (col,rct) =>
+        log.info(s"click header ${col.name}")
+      }
+    }
+
     true
   }
 
