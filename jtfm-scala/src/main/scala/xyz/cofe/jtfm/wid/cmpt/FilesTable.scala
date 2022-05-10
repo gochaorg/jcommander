@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatterBuilder
 import org.slf4j.LoggerFactory
 
 class FilesTable extends Table[Path] {
-  
+  import FilesTable.log
 }
 
 object FilesTable {  
@@ -64,9 +64,12 @@ object FilesTable {
             try {
               Files.size(path)
             } catch {
-              case err:Throwable => -2L
+              case err:Throwable => 
+                log.warn(s"can't read size of $path",err)
+                -2L
             }
           }else{
+            log.debug(s"not file or exists $path")
             -1L
           }
         },
@@ -80,7 +83,9 @@ object FilesTable {
         "modified",
         path => {
           try { Files.getLastModifiedTime(path) } catch {
-            case _ : Throwable => null
+            case err : Throwable => 
+              log.warn(s"can't read getLastModifiedTime of $path",err)
+              null
           }
         },
         nullableFileTime => if nullableFileTime==null then "?" else dateTimeShort(nullableFileTime)

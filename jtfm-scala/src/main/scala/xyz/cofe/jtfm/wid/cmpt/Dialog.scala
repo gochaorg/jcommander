@@ -20,6 +20,7 @@ import xyz.cofe.jtfm.wid.MouseButton
 import xyz.cofe.jtfm.wid.wc.Jobs
 import xyz.cofe.jtfm.wid.WidgetCycle
 import com.googlecode.lanterna.TextColor
+import org.slf4j.LoggerFactory
 
 class Dialog 
   extends Widget[Dialog] 
@@ -124,7 +125,10 @@ class Dialog
 }
 
 object Dialog {  
+  protected val log = LoggerFactory.getLogger(classOf[Dialog])
+  
   def createAndShow( dlg:Dialog )( onClose: => Unit )( postInit: =>Unit ):Unit = {
+    log.debug("createAndShow title={}",dlg.title.value)
     Jobs.add {
       WidgetCycle.tryGet.foreach { wc =>
         wc.workState.foreach { ws => 

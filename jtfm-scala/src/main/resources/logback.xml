@@ -15,6 +15,8 @@
     </encoder>
   </appender>
 
+  <logger name="xyz.cofe.jtfm.wid.wc.InputDummy2" level="info" />
+
   <root level="debug">
     <!-- <appender-ref ref="STDOUT" /> -->
     <appender-ref ref="FILE" />

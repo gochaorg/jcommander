@@ -9,11 +9,14 @@ import xyz.cofe.jtfm.tree._
 import xyz.cofe.jtfm.wid.wc.FocusManager.Switched
 import xyz.cofe.jtfm.wid.cmpt.Dialog
 import xyz.cofe.jtfm.wid.VirtualWidgetRoot
+import org.slf4j.LoggerFactory
 
 /**
  * Обработка ввода
  */
 class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
+  protected val log = LoggerFactory.getLogger(classOf[InputDummy2])
+
   override def focusOwner: Option[Widget[_]] = fm.focusOwner
   
   override def focusRequest( target:Widget[_] ):Either[String,Option[Widget[_]]] = {
@@ -76,6 +79,9 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
       .map( _.asInstanceOf[Dialog] )      
     }
 
+  private def visibleWidgets:List[Widget[_]] = 
+    fm.root.widgetTree.toList.reverse.filter(isVisible)
+
   /** 
    * Обработка события мыши.
    * 
@@ -85,27 +91,26 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
    */
   private def processMouseAction( state:State.Work, ma:MouseAction ):State = {
     val dlgHolder = dialogHolder
+    log.debug("processMouseAction()")
 
-    // println("tree")
-    // fm.root.widgetTree.foreach { w =>       
-    //   println( 
-    //     "..".repeat(w.widgetPath.length-1) +
-    //     w+":"+w.getClass.getName +
-    //     " "+w.rect.value+
-    //     " visible="+w.visible.value+
-    //     " parent="+w.parent.value
-    //   )
-    // }
+    if( log.isTraceEnabled ){
+      log.trace("tree")
+      fm.root.widgetTree.foreach { w =>       
+        log.trace( 
+          "..".repeat(w.widgetPath.length-1) +
+          w+":"+w.getClass.getName +
+          " "+w.rect.value+
+          " visible="+w.visible.value+
+          " parent="+w.parent.value
+        )
+      }
+    }
 
     // обход в обратном порядке рендере
     fm.navigate.last(fm.root) match {
       case None =>
       case Some(last_w) =>
-        // println("last "+last_w)
-        // println("----")
-        // fm.navigate.backwardIterator(last_w).foreach { w => println(w) }
-        // println("----")
-        val widInputProcessed = fm.navigate.backwardIterator(last_w).map { wid =>
+        val widInputProcessed = visibleWidgets.map { wid =>
           val mma : MouseAction = ma
           val abs : Point = Point(mma.getPosition)
           val local : Point = abs toLocal wid          
@@ -115,7 +120,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
               wid.widgetPath.exists(w => w==dlg)
             case _ => true
           }
-          // println( s"$wid $x abs=$abs local=$local rect=${wid.rect}" ) 
+          if( log.isTraceEnabled )log.trace( s"$wid mouseAtWidget=$mouseAtWidget dialogMatch=$dialogMatch abs=$abs local=$local rect=${wid.rect}" ) 
           // вычисление локальных координат
           (mouseAtWidget && dialogMatch, wid, local)
         }.filter { case(matched,wid,local) =>
@@ -147,6 +152,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
 
   /** Переключение фокуса на следующий элемент */
   def focusSwitchNext():Either[String,FocusManager.Switched[_]] = {
+    log.debug("focusSwitchNext()")
     fm.nextCycle( fm.focusOwner.getOrElse( fm.root ) ).take(1).nextOption match {
       case None => Left("can't take focus owner")
       case Some(w) => 
@@ -162,6 +168,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
 
   /** Переключение фокуса на следующий элемент */
   def focusSwitchPrev():Either[String,FocusManager.Switched[_]] = {
+    log.debug("focusSwitchPrev()")
     fm.prevCycle( fm.focusOwner.getOrElse( fm.root ) ).take(1).nextOption match {
       case None => Left("can't take focus owner")
       case Some(w) => 
