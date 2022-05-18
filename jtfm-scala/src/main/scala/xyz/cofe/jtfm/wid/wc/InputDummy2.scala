@@ -90,14 +90,6 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
    *     то события не должны попадать в элементы которые вне этого диалога
    */
   private def processMouseAction( state:State.Work, ma:MouseAction ):State = {
-    // System.in match {
-    //   case ih:InputStreamHist =>
-    //     val inputStr = ih.history.values.map { ib => (ib.toChar)+" "+ib.toString }.mkString(",")
-    //     log.info( s"input bytes: ${inputStr}" );
-    //   case _ =>
-    //     log.info( "System.in {}",System.in.getClass )
-    // }
-
     val dlgHolder = dialogHolder
     log.info(s"processMouseAction( x=${ma.getPosition.getColumn} y=${ma.getPosition.getRow} but=${ma.getButton} atype=${ma.getActionType} )")
 
@@ -194,6 +186,7 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
    * обработка события клавиатуры
    */
   private def processKeyboard( state:State.Work, ks:KeyStroke ):State = {
+    log.info("processKeyboard ks={}", ks)
     val defProc: ()=> State = ()=>{ InputDummy2.super.input(state,ks) }
     val proc : ()=>State = ()=>{
       ks.getKeyType match {

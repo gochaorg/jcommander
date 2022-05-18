@@ -45,7 +45,7 @@ object FilesTable {
       yyyyMMdd.format(dt)
   }
   object columns {
-    val fileName = Column[Path,String](
+    val fileName = Column.create[Path,String](
       "name", 
       path=>{ 
         val pref = 
@@ -57,7 +57,7 @@ object FilesTable {
       _.toString
     )    
     val size = {
-      val c = Column[Path,Long](
+      val c = Column.create[Path,Long](
         "size", 
         path => {
           if( Files.exists(path) && Files.isRegularFile(path) ){
@@ -79,7 +79,7 @@ object FilesTable {
       c
     }
     val latModifiedTime = {
-      val c = Column[Path,FileTime](
+      val c = Column.create[Path,FileTime](
         "modified",
         path => {
           try { Files.getLastModifiedTime(path) } catch {

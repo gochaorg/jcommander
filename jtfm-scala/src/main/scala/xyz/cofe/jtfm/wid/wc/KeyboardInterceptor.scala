@@ -5,32 +5,34 @@ import xyz.cofe.jtfm.wid.Shortcut
 import xyz.cofe.jtfm.wid.Shortcut.SeqShortcut
 import xyz.cofe.jtfm.wid.wc.KeyboardInterceptor.Behavior
 import xyz.cofe.jtfm.wid.WidgetCycle
+import org.slf4j.LoggerFactory
 
 /** Перехват нажатия клавиатуры */
 class KeyboardInterceptor {
-  private def log(msg:String):Unit = {
-    //println(msg)
-  }
+  private val log = LoggerFactory.getLogger(classOf[KeyboardInterceptor])
 
   private var bindings:Map[Shortcut,()=>Behavior] = Map()
   def accept( state:State.Work, hist:List[KeyStroke] ):Option[State] = {
-    log("KeyboardInterceptor accept")
+    log.debug("KeyboardInterceptor accept")
     hist.size match {
       case 0 => 
-        log("KeyboardInterceptor no")
+        log.trace("KeyboardInterceptor no")
         None
       case _ =>
-        log(s"KeyboardInterceptor accept head=${hist.head}")
-        bindings.map { (shrt,action) => (shrt.test(hist),action) }.find { _._1 }.map { _._2 } match {
+        log.trace(s"KeyboardInterceptor accept head=${hist.head}")
+        bindings.map { (shrt,action) => (shrt.test(hist),action) }.find { _._1 } match {
           case None => 
-            log("KeyboardInterceptor not matched")
+            log.trace("KeyboardInterceptor not matched")
             None
-          case Some(action) =>
-            log("KeyboardInterceptor has match")
+          case Some((shrt,action)) =>
+            log.info("KeyboardInterceptor has match shortcut={} action={}",shrt,action)
             action() match {
-              case Behavior.Continue => None
-              case Behavior.Eat => Some(state)
-              case Behavior.Exit => Some(state.finish())
+              case Behavior.Continue => 
+                None
+              case Behavior.Eat => 
+                Some(state)
+              case Behavior.Exit => 
+                Some(state.finish())
             }
         }
     }
@@ -38,6 +40,13 @@ class KeyboardInterceptor {
 }
 
 object KeyboardInterceptor {
+  /** 
+   * Дальнейшее поведение при выполнии action
+   * 
+   * - Continue - Продолжить как есть
+   * - Eat - завершить обработку Shortcut, дальнейшие Shortcut не обрабатывать, продолжить работу приложения
+   * - Exit - завершить работу приложения
+   */
   enum Behavior:
     case Continue
     case Eat
@@ -61,24 +70,34 @@ object KeyboardInterceptor {
     }
   }
 
+  /**
+   * Как продолжить работу после выполнения action
+   */  
   case class Bind( shortcut:Shortcut ):
+    private var name:Option[String] = None
+    private def createAction( action: =>Unit, behavior:Behavior ):Function0[Behavior] = 
+      name match {
+        case None => ()=>{
+          action
+          behavior
+        }
+        case Some(actionName) => new Function0[Behavior]() {
+          override def apply():Behavior = {
+            action
+            behavior
+          }
+
+          override def toString():String = s"Action $actionName by shortcut $shortcut"
+        }
+      }
     def eat(action: =>Unit ):Unit = {
-      bind(shortcut, ()=>{
-        action
-        Behavior.Eat
-      })
+      bind(shortcut, createAction(action,Behavior.Eat))
     }
     def continue(action: =>Unit ):Unit = {
-      bind(shortcut, ()=>{
-        action
-        Behavior.Continue
-      })
+      bind(shortcut, createAction(action,Behavior.Continue))
     }
     def exit(action: =>Unit ):Unit = {
-      bind(shortcut, ()=>{
-        action
-        Behavior.Exit
-      })
+      bind(shortcut, createAction(action,Behavior.Exit))
     }
 
   def bind(shortcut:Shortcut):Bind = Bind(shortcut)

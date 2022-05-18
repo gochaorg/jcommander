@@ -19,6 +19,8 @@ import xyz.cofe.jtfm.wid.RepaitRequest
 import xyz.cofe.jtfm.ev.BasicCollection
 import xyz.cofe.jtfm.wid.wc.Jobs
 import org.slf4j.LoggerFactory
+import xyz.cofe.jtfm.wid.MouseActionOps
+import xyz.cofe.jtfm.wid.MouseButton
 
 /**
  * Таблица
@@ -309,6 +311,18 @@ class Table[A]
     }
   }
 
+  /**
+   * Вызывается из inputMouseAction, при клике на заголовок таблицы.
+   * Нужно для определя собственных правил сортировки
+   * @param ma Событие мыши
+   * @param col Колонка
+   * @param rect Рамка заголовка
+   */
+  protected def onColumnHeaderClick(ma:MouseAction, col:Column[A,_], rect:Rect):Unit = {
+    //ma.button == Some(MouseButton.Left)
+    log.info(s"click header ${col.name}")
+  }
+
   /** Обработка событий мыши */
   protected def inputMouseAction(ma:MouseAction):Boolean = {
     val dataCellClicked = dataCell( ma ) match {
@@ -324,7 +338,7 @@ class Table[A]
     }
     if( !dataCellClicked ){
       columnHeadersRect.value.find { case (col,rct) => rct.include(ma) }.foreach { case (col,rct) =>
-        log.info(s"click header ${col.name}")
+        onColumnHeaderClick(ma,col,rct)
       }
     }
 
