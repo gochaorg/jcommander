@@ -165,8 +165,8 @@ object State {
     // обработка ввода
     val inputs:DoWork = w => {
       try {
-        //val input = state.terminal.pollInput()
-        val input = state.screen.pollInput()
+        val input = state.terminal.pollInput()
+        //val input = state.screen.pollInput()
         if input != null then
           w.inputProcess.input(w, input)
         else

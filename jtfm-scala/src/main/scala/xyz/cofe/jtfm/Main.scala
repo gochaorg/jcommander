@@ -6,11 +6,16 @@ import com.googlecode.lanterna.terminal.ansi.TelnetTerminalServer
 
 import java.net.SocketTimeoutException
 import java.util.concurrent.atomic.AtomicReference
+import java.io.InputStream
+import xyz.cofe.jtfm.wid.wc.InputStreamHist
+
+import java.nio.charset.{Charset, StandardCharsets}
 
 enum ParseCmdLineState:
   case Init
   case TelnetPort
   case TelnetUse
+  case TelnetCharset
 
 /**
  * Опции командной строки
@@ -30,6 +35,9 @@ case class CmdLineOpt
 
   /** Порт на котором заустить telnet */
   telnetPort: Int = 4044,
+
+  /** Кодировка telnet */
+  telnetCharset: Option[Charset] = Some(StandardCharsets.ISO_8859_1),
 
   /** Не распознанные параметры */
   unparsed: List[String] = List(),
@@ -68,6 +76,7 @@ object CmdLineOpt:
       opt.state match {
         case Init => arg match {
           case "-telnet.port" | "-t.port" => opt.copy(state = TelnetPort, telnetStart = true)
+          case "-telnet.charset" => opt.copy(state = TelnetCharset)
           case "-telnet" => opt.copy(state = TelnetUse)
           case _ => opt.copy(unparsed = opt.unparsed ::: List(arg))
         }
@@ -78,6 +87,7 @@ object CmdLineOpt:
           case s if s.matches("\\d+") => opt.copy(state = Init, telnetStart = true, telnetPort = s.toInt)
           case _ => opt.copy(unparsed = opt.unparsed ::: List(arg), state = Init)
         }
+        case TelnetCharset => opt.copy(state = Init, telnetCharset = Some(Charset.forName(arg)))
       }
     })
 
@@ -86,6 +96,7 @@ object CmdLineOpt:
  * @param args аргументы коммандной строки
  */
 @main def hello(args: String*): Unit =
+  //System.setIn( InputStreamHist(System.in,100) )
   CmdLineOpt.parse(args).start()
 
 /**
@@ -124,7 +135,10 @@ class ThreadSession( private val openSesssion:()=>Session ):
  */
 def startTelnet(opt:CmdLineOpt): Unit =
   println(s"starting telnet on ${opt.telnetPort} port")
-  val telNet = new TelnetTerminalServer(opt.telnetPort)
+  val telNet = opt.telnetCharset match {
+    case None => new TelnetTerminalServer(opt.telnetPort)
+    case Some(cs) => new TelnetTerminalServer(opt.telnetPort, cs)
+  }
   telNet.getServerSocket.setSoTimeout( 1000 * 2 )
 
   val sessionManager = new SessionManager[ThreadSession]()
