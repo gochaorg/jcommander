@@ -52,7 +52,7 @@ class Session ( terminal: Terminal ):
 
     val tbl = DirectoryTable()
     wc.root.nested.append(tbl)    
-    tbl.rect.value = Rect( 1,1 ).size( 40, 20 )
+    tbl.rect.value = Rect( 0,1 ).size( 40, 20 )
     tbl.rect.bindTo( wc.root ) { r => Rect(2,2).size(r.width-4, r.height-4) }
     tbl.columns = List( 
       FilesTable.columns.fileName, 
@@ -60,7 +60,7 @@ class Session ( terminal: Terminal ):
       FilesTable.columns.size 
       )
 
-    tbl.currentDir.value = Some(Paths.get("."))
+    tbl.currentDir.value = Some(Paths.get("/"))
     tbl.background.value = TextColor.ANSI.BLACK_BRIGHT
 
     val mb = menubar {

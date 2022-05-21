@@ -139,11 +139,14 @@ class Table[A]
 
   /** смещение индекса отображаемой строки */
   val scrollOffset: OwnProperty[Int,Table[A]] = new OwnProperty[Int,Table[A]](0,this)
+  onData { scrollOffset.value = 0 }
 
   /** Индексы видимых строк */
   val visibleRowIndexesBounds:EvalProperty[Option[(Int,Int)],Table[A]] = EvalProperty(()=>{
+    log.trace("compute visibleRowIndexesBounds")
     anyDataRectsHeight.value match {
       case None =>         
+        log.trace("compute none")
         None
       case Some(size) => 
         val x = Some( (scrollOffset.value, (scrollOffset.value + size) min data.length ) )
@@ -275,9 +278,11 @@ class Table[A]
   }
 
   override def render( gr:TextGraphics ):Unit = {
+    log.trace("render")
     this.renderOpaque(gr)
 
     // grid
+    log.trace( "columnsRect {}", columnsRect.value )
     gr.setBackgroundColor( background.value )
     gr.setForegroundColor( foreground.value )
     grid(columnsRect.value).draw(gr)
@@ -289,10 +294,12 @@ class Table[A]
     }
 
     // data
+    log.trace( "visibleRowWithIndexes {}",visibleRowWithIndexes.value )
     visibleRowWithIndexes.value.foreach { (row,ridx,yOffset) =>
       //println(s"render row=${row} ridx=${ridx} yOffset=${yOffset}")
       dataRects.value.foreach { (col,rct) => 
         val str = col.asString(row)
+        log.trace( "dataRect col {} rect {} value {}",col.name,rct,str )
         val (fg,bg) = {
           if( focus.contains && isFocused(row,ridx) )
             ( focusForeground.value, focusBackground.value )
@@ -304,6 +311,7 @@ class Table[A]
             ( foreground.value, background.value )
         }
         val cellRect = rct.reSize.setHeight(1).translate(0,yOffset)
+        log.trace( "cellRect {}",cellRect )
         gr.setForegroundColor( fg )
         gr.setBackgroundColor( bg )
         gr.draw( cellRect, str, Align.Begin )

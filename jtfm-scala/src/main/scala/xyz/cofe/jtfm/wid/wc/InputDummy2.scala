@@ -187,13 +187,17 @@ class InputDummy2( val fm:FocusManager[Widget[_]] ) extends InputDummy {
    */
   private def processKeyboard( state:State.Work, ks:KeyStroke ):State = {
     log.info("processKeyboard ks={}", ks)
-    val defProc: ()=> State = ()=>{ InputDummy2.super.input(state,ks) }
+    val defProc: ()=> State = ()=>{ 
+      InputDummy2.super.input(state,ks) 
+    }
     val proc : ()=>State = ()=>{
       ks.getKeyType match {
         // Смена фокуса
         case KeyType.Tab | KeyType.ReverseTab =>
           fm.focusOwner match {
-            case None => defProc()
+            case None => 
+              focusSwitchNext()
+              defProc()
             case Some(fo) =>
               if( !fo.input(ks) ){
 

@@ -9,6 +9,7 @@ import xyz.cofe.jtfm.wid.Shortcut.SeqShortcut
 
 /** клавиатурные комбинации */
 sealed trait Shortcut:
+  /** Провкрка совпадения истории нажатии клавиш с историей */
   def test(hist:Seq[KeyStroke]):Boolean = {
     hist.size match {
       case 0 => false
@@ -21,6 +22,14 @@ sealed trait Shortcut:
   }
 
 object Shortcut {
+  /** 
+   * Нажатие функциональных кнопок (F1, F2, ... Backspace, Del, ...)
+   * 
+   * @param keyType тип клавиши
+   * @param ctrl нажата Control
+   * @param alt нажата Alt
+   * @param shift нажата Shift
+   */
   case class FunShortcut( keyType:KeyType, ctrl:Boolean=false, alt:Boolean=false, shift:Boolean=false ) extends Shortcut:
     def test( ke:KeyStroke ):Boolean =
       ke.getKeyType() == keyType && 
@@ -34,6 +43,15 @@ object Shortcut {
       sb.toString
     }
 
+  /**
+   * Нажатие символных кнопок (A,B,c,d,...)
+   * 
+   * @param chr Символ
+   * @param keyType тип клавиши
+   * @param ctrl нажата Control
+   * @param alt нажата Alt
+   * @param shift нажата Shift
+   */
   case class ChrShortcut( chr:Char, ctrl:Boolean=false, alt:Boolean=false, shift:Boolean=false ) extends Shortcut:
     def test( ke:KeyStroke ):Boolean =
       ke.getKeyType() == KeyType.Character && ke.getCharacter() == chr && 
@@ -152,16 +170,16 @@ object Shortcut {
 
   enum Mod:
     case Ctrl,Shift,Alt
-    def apply( ch:ChrShortcut ):ChrShortcut = this match {
+    def apply( ch:ChrShortcut ):ChrShortcut = this match
       case Ctrl => ch.copy(ctrl = true)
       case Shift => ch.copy(shift = true)
       case Alt => ch.copy(alt = true)
-    }
-    def apply( ch:FunShortcut ):FunShortcut = this match {
+    
+    def apply( ch:FunShortcut ):FunShortcut = this match
       case Ctrl => ch.copy(ctrl = true)
       case Shift => ch.copy(shift = true)
       case Alt => ch.copy(alt = true)
-    }
+    
 
   private def parseMod0( str:String, off:Int ):Option[(Mod,Int)] = {
     if str.startsWith("ctrl",off) then
@@ -330,4 +348,11 @@ object Shortcut {
   }
 
   def parse( str:String ):Option[Shortcut] = parseShortcut(str,0).map { (r,_) => r }
+
+  def parse( ks:KeyStroke ):Option[Shortcut] =
+    ks.getKeyType match
+      case KeyType.Character =>
+        Some( ChrShortcut( ks.getCharacter, ks.isCtrlDown, ks.isAltDown, ks.isShiftDown ) )
+      case _ =>
+        Some( FunShortcut( ks.getKeyType, ks.isCtrlDown, ks.isAltDown, ks.isShiftDown ) )
 }

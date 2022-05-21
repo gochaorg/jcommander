@@ -13,16 +13,18 @@ class KeyboardInterceptor {
 
   private var bindings:Map[Shortcut,()=>Behavior] = Map()
   def accept( state:State.Work, hist:List[KeyStroke] ):Option[State] = {
-    log.debug("KeyboardInterceptor accept")
     hist.size match {
       case 0 => 
-        log.trace("KeyboardInterceptor no")
+        log.debug("KeyboardInterceptor no")
         None
       case _ =>
-        log.trace(s"KeyboardInterceptor accept head=${hist.head}")
+        log.debug("KeyboardInterceptor accept head={} as shortcut={}",
+          hist.head,
+          hist.headOption.flatMap( ks => Shortcut.parse(ks) )
+        )
         bindings.map { (shrt,action) => (shrt.test(hist),action) }.find { _._1 } match {
           case None => 
-            log.trace("KeyboardInterceptor not matched")
+            log.debug("KeyboardInterceptor not matched")
             None
           case Some((shrt,action)) =>
             log.info("KeyboardInterceptor has match shortcut={} action={}",shrt,action)

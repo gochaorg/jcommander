@@ -48,16 +48,21 @@ class DirectoryTable extends FilesTable {
           var files = List[Path]()
           val ds = Files.newDirectoryStream(cd)
           ds.forEach { path =>
+            log.debug("readed path {}",path)
             files = path :: files
           }
           ds.close()
+          log.trace("readed total {} files",files.length)
 
           selection.clear()
           data = files.sortWith( (a,b) => FilesTable.sort.defaultSort(a,b)<0 )
+          log.debug("data length is {}",data.length)
+
           if data.nonEmpty then
             focusedRowIndex.value = Some(0)
           else
             focusedRowIndex.value = None
+
         } catch {
           case e:Throwable => log.warn(s"can't read dir $cd",e)
         }
