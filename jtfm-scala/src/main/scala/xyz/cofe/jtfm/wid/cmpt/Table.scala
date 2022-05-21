@@ -207,7 +207,7 @@ class Table[A]
     var hvLines = List[HVLine]()
     
     val lt = Point(0,0)
-    val rb = rect.value.rightBottom.translate(-3,-3)
+    val rb = Point(rect.width-1, rect.height-1)
     val rt = Point(rb.x, 0)
     val lb = Point(0, rb.y)
 
@@ -278,11 +278,12 @@ class Table[A]
   }
 
   override def render( gr:TextGraphics ):Unit = {
-    log.trace("render")
+    log.debug("render {}", rect.value)    
     this.renderOpaque(gr)
 
     // grid
-    log.trace( "columnsRect {}", columnsRect.value )
+    // log.trace( "columnsRect {}", columnsRect.value )
+    columnsRect.value.foreach { (col,crect) => log.debug("column {} {}",col.name, crect) }
     gr.setBackgroundColor( background.value )
     gr.setForegroundColor( foreground.value )
     grid(columnsRect.value).draw(gr)

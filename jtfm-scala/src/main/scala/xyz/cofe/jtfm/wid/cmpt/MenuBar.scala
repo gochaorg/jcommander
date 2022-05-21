@@ -25,7 +25,7 @@ class MenuBar
   lazy val focusForeground: OwnProperty[TextColor,MenuBar] = OwnProperty[TextColor,MenuBar](TextColor.ANSI.WHITE_BRIGHT, this)
   lazy val focusBackground: OwnProperty[TextColor,MenuBar] = OwnProperty[TextColor,MenuBar](TextColor.ANSI.BLACK, this)
   
-  background.value = TextColor.ANSI.BLACK_BRIGHT
+  background.value = TextColor.ANSI.CYAN
   foreground.value = TextColor.ANSI.WHITE_BRIGHT
 
   // Прикрепляет себя (menuBar) к верхней части родительского контейнера  
@@ -68,7 +68,7 @@ class MenuBar
     firstMenu.foreach(_.focus.request())
   }
 
-  /** length
+  /** 
    * internal
    * запоминает куда возвращать фокус после выбора пункта меню
    */

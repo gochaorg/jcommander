@@ -50,18 +50,31 @@ class Session ( terminal: Terminal ):
     wc.root.background.value = TextColor.ANSI.BLACK
     wc.root.opaque.value = true
 
-    val tbl = DirectoryTable()
-    wc.root.nested.append(tbl)    
-    tbl.rect.value = Rect( 0,1 ).size( 40, 20 )
-    tbl.rect.bindTo( wc.root ) { r => Rect(2,2).size(r.width-4, r.height-4) }
-    tbl.columns = List( 
+    val leftPanel = DirectoryTable()
+    wc.root.nested.append(leftPanel)    
+
+    leftPanel.rect.bindTo( wc.root ) { r => Rect(0,1).size(r.width/2, r.height-4) }
+    leftPanel.columns = List( 
       FilesTable.columns.fileName, 
       FilesTable.columns.latModifiedTime,
       FilesTable.columns.size 
       )
 
-    tbl.currentDir.value = Some(Paths.get("/"))
-    tbl.background.value = TextColor.ANSI.BLACK_BRIGHT
+    leftPanel.currentDir.value = Some(Paths.get("/"))
+    leftPanel.background.value = TextColor.ANSI.BLACK_BRIGHT
+
+    val rightPanel = DirectoryTable()
+    wc.root.nested.append(rightPanel)    
+
+    rightPanel.rect.bindTo( wc.root ) { r => Rect(r.width/2,1).size(r.width/2, r.height-4) }
+    rightPanel.columns = List( 
+      FilesTable.columns.fileName, 
+      FilesTable.columns.latModifiedTime,
+      FilesTable.columns.size 
+      )
+
+    rightPanel.currentDir.value = Some(Paths.get("/"))
+    rightPanel.background.value = TextColor.ANSI.BLACK_BRIGHT
 
     val mb = menubar {
       menu( "File" ) {
