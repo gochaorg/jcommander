@@ -14,6 +14,7 @@ import com.googlecode.lanterna.TextColor
 import xyz.cofe.jtfm.ev.EvalProperty
 import xyz.cofe.jtfm.wid.wc.FocusManager
 import xyz.cofe.jtfm.wid.WidgetCycle
+import org.slf4j.LoggerFactory
 
 /**
  * Меню контейнер, содержит вложенные пункты меню
@@ -24,6 +25,8 @@ class MenuContainer
   with TextProperty[MenuContainer]
   with MenuItem[MenuContainer]
 {
+  private val log = LoggerFactory.getLogger(classOf[MenuContainer])
+
   menuItemInit()
 
   private val renderColors:EvalProperty[ (TextColor,TextColor,TextColor,TextColor), MenuContainer ] = 
@@ -87,6 +90,8 @@ class MenuContainer
    * раставляет вложенные пункты меню
    */
   private def doLayout( f_mi:MenuItem[_]=>Unit=_=>() ):Unit = {
+    log.debug( "doLayout" )
+
     var x=1
     var y=2
 
@@ -117,15 +122,35 @@ class MenuContainer
   }
 
   focus.onGain { _ =>
+    log.info("focus onGain, text={}", text.value)
     doLayout()
     border.visible.value = nestedItemsRect.isDefined
   }
   focus.onLost { _ =>
+    onNestedFocusLost()
+
+    widgetPath.reverse
+      .find( _.isInstanceOf[MenuContainer] )
+      .map( _.asInstanceOf[MenuContainer] )
+      .foreach {
+        _.onNestedFocusLost()
+      }
+  }
+
+  def onNestedFocusLost():Unit =
+    log.info("focus onLost, text={}", text.value)
+
+    val focusPath = WidgetCycle.tryGet.flatMap( _.workState ).flatMap( _.inputProcess.focusOwner ).map( _.widgetPath )
+    log.debug("focusPath {}",
+      focusPath
+    )    
     if( !focus.contains ){
+      log.debug( "!focus.contains" )
       nested.foreach { _.visible.value = false }
       border.visible.value = false
+    }else{
+      log.debug( "focus.contains" )
     }
-  }
 
   override def input(ks:KeyStroke):Boolean = {
     ks match {
@@ -154,6 +179,7 @@ class MenuContainer
    * Переходит во вложенное меню
    */
   protected  def switchSubMenu():Boolean = {
+    log.info( "switchSubMenu" )
     val mi = nestedMenuItems.headOption
     mi.map { x => x.focus.request(); true }.getOrElse( false )
   }

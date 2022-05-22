@@ -58,6 +58,15 @@ class MenuAction(
     }
   }
 
+  focus.onLost { _ =>
+    widgetPath.reverse
+    .find( _.isInstanceOf[MenuContainer] )
+    .map( _.asInstanceOf[MenuContainer] )
+    .foreach {
+      _.onNestedFocusLost()
+    }
+  }
+
   override def input(ks:KeyStroke):Boolean = {
     ks match {
       case ma:MouseAction =>
@@ -101,4 +110,7 @@ class MenuAction(
       }
     }
   }
+
+  override def toString():String =
+    s"MenuAction{text=${text.value}}"
 }

@@ -6,6 +6,7 @@ import xyz.cofe.jtfm.wid.Widget.*
 import xyz.cofe.jtfm.*
 import xyz.cofe.jtfm.wid.WidgetCycle
 import scala.ref.WeakReference
+import org.slf4j.LoggerFactory
 
 /**
  * Менеджер фокуса ввода
@@ -20,6 +21,8 @@ class FocusManager[W <: Widget[_]]
   /** навигация по дереву */
   val navigate: Navigate[W]
 ) {
+  private val log = LoggerFactory.getLogger(classOf[FocusManager[_]])
+
   private var focus_owner:Option[W] = None
 
   /** возвращает владельца фокуса */
@@ -56,20 +59,32 @@ class FocusManager[W <: Widget[_]]
   /** Переключение фокуса */
   def switchTo( w:W ):Either[String,FocusManager.Switched[W]] = {
     (visible(w) && focusableFilter(w)) match {
-      case false => Left("target is not visible or not focusable")
+      case false => 
+        log.info("switchTo({}) target is not visible or not focusable",w)
+        Left("target is not visible or not focusable")
       case true =>
+        log.info("switchTo({})",w)
+
         val old_focus = focus_owner
         focus_owner = Some(w)
+        log.debug("old focus {}",old_focus)
         
         val focusable = w.asInstanceOf[FocusProperty[_]]
         old_focus match {
           case Some(old_w) =>
+            log.debug("matched old focus is {}",old_w)
             old_w match {
               case old_w_f:FocusProperty[_] =>
+                log.debug("matched has FocusProperty")
                 old_w_f.focus.onLost( focus_owner )
+              case _ =>
+                log.debug("matched has't FocusProperty")
             }
           case None =>
+            log.debug("old focus is none")
         }
+
+        log.debug("send onGain")
         focusable.focus.onGain(old_focus)
         
         val event = FocusManager.Switched(old_focus,focus_owner)
