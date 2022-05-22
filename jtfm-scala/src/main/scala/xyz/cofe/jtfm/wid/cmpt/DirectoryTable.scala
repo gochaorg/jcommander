@@ -15,7 +15,8 @@ class DirectoryTable extends FilesTable {
   private val log = LoggerFactory.getLogger(classOf[DirectoryTable])
 
   val currentDir:OwnProperty[Option[Path],DirectoryTable] = OwnProperty(None,this)
-  currentDir.listen( (_,_,cdOpt) => {
+  currentDir.listen( (_,cdOptPrev,cdOpt) => {
+    storeCurrentToHist(cdOptPrev)
     readDir(cdOpt)
   })
 
@@ -34,6 +35,21 @@ class DirectoryTable extends FilesTable {
     }
   })
   nested.append(currentDirLabel)
+
+  case class NavHistory( directory:Option[Path], focused:Option[Path], selection:Seq[Path] ):
+    def restore:Unit =
+      ???
+
+  var history:List[NavHistory] = List()
+  protected var historyLimit:Int = 200
+  protected def storeCurrentToHist(curDir:Option[Path]):Unit =
+    history = NavHistory(
+      curDir,
+      focusedRow,
+      selection = selection.toSeq
+    ) :: history
+    if historyLimit>0 then
+      history = history.take(historyLimit)
 
   protected def readDir( cdOpt:Option[Path] ):Unit = {
     log.info(s"readDir $cdOpt")

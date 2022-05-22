@@ -76,6 +76,9 @@ class Session ( terminal: Terminal ):
     rightPanel.currentDir.value = Some(Paths.get("/"))
     rightPanel.background.value = TextColor.ANSI.BLACK_BRIGHT
 
+    leftPanel.nextFocus = Some(rightPanel)
+    rightPanel.nextFocus = Some(leftPanel)
+
     val mb = menubar {
       menu( "File" ) {
         action {

@@ -21,6 +21,7 @@ import xyz.cofe.jtfm.wid.wc.Jobs
 import org.slf4j.LoggerFactory
 import xyz.cofe.jtfm.wid.MouseActionOps
 import xyz.cofe.jtfm.wid.MouseButton
+import javax.security.auth.kerberos.KeyTab
 
 /**
  * Таблица
@@ -354,6 +355,7 @@ class Table[A]
     true
   }
 
+  /** Скроллинг до указанной строки */
   def scrollToVisible( row:Int ):Unit = {
     visibleRowIndexesBounds.value match {
       case None =>
@@ -484,9 +486,23 @@ class Table[A]
     }
   }
 
+  /** На кого переводить фокус при нажатии Tab */
+  var nextFocus:Option[Widget[_] & FocusProperty[_]] = None
+
+  /** Переключение фокуса по нажатию TAB */
+  def switchNextFocus():Boolean = nextFocus match 
+    case None => false
+    case Some(nextFoc) => nextFoc.visible.inRoot match 
+      case true =>      
+        nextFoc.focus.request()
+        true
+      case false => false
+  
+
   /** Обработка событий клавиатуры */
   protected def inputKeyboard(ks:KeyStroke):Boolean = {
     ks.getKeyType match {
+      case KeyType.Tab       => switchNextFocus()
       case KeyType.ArrowUp   => switchPrev()      
       case KeyType.ArrowDown => switchNext()
       case KeyType.PageDown  => switchNextPage()
