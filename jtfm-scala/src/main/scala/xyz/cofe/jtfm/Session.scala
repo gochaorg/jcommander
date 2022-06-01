@@ -56,8 +56,9 @@ class Session ( terminal: Terminal ):
     leftPanel.rect.bindTo( wc.root ) { r => Rect(0,1).size(r.width/2, r.height-4) }
     leftPanel.columns = List( 
       FilesTable.columns.fileName, 
+      FilesTable.columns.chmod,
       FilesTable.columns.latModifiedTime,
-      FilesTable.columns.size 
+      FilesTable.columns.size
       )
 
     leftPanel.currentDir.value = Some(Paths.get("/"))
@@ -69,6 +70,7 @@ class Session ( terminal: Terminal ):
     rightPanel.rect.bindTo( wc.root ) { r => Rect(r.width/2,1).size(r.width/2, r.height-4) }
     rightPanel.columns = List( 
       FilesTable.columns.fileName, 
+      FilesTable.columns.chmod,
       FilesTable.columns.latModifiedTime,
       FilesTable.columns.size 
       )
@@ -86,7 +88,13 @@ class Session ( terminal: Terminal ):
           click{ wc.stop() }
         }
       }
-      menu( "View" ) {        
+      menu( "View" ) {
+        action {
+          text( "rePaint" )
+          click {
+            wc.root.repaint()
+          }
+        }
         action {
           text( "Dialog 1" )
           click {  

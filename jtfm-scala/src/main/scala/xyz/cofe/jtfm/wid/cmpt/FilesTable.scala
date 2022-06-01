@@ -8,6 +8,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import org.slf4j.LoggerFactory
+import java.nio.file.attribute.PosixFileAttributes
+import java.nio.file.LinkOption
+import java.nio.file.attribute.PosixFilePermission
 
 class FilesTable extends Table[Path] {
   import FilesTable.log
@@ -16,6 +19,9 @@ class FilesTable extends Table[Path] {
 object FilesTable {  
   val log = LoggerFactory.getLogger(classOf[FilesTable])
 
+  /** 
+   * Текстовое представление размера файла
+   */
   def humanSize(size:Long):String = {
     if size<0 then
       size.toString
@@ -44,7 +50,14 @@ object FilesTable {
     else
       yyyyMMdd.format(dt)
   }
+
+  /**
+   * Колонки файлов
+   */
   object columns {
+    /**
+     * Имя файла
+     */
     val fileName = Column.create[Path,String](
       "name", 
       path=>{ 
@@ -56,6 +69,10 @@ object FilesTable {
       },
       _.toString
     )    
+
+    /**
+     * Размер файла
+     */
     val size = {
       val c = Column.create[Path,Long](
         "size", 
@@ -78,6 +95,10 @@ object FilesTable {
       c.width.prefect = Some(6)
       c
     }
+
+    /**
+     * Дата модификации
+     */
     val latModifiedTime = {
       val c = Column.create[Path,FileTime](
         "modified",
@@ -91,6 +112,54 @@ object FilesTable {
         nullableFileTime => if nullableFileTime==null then "?" else dateTimeShort(nullableFileTime)
       )
       c.width.prefect = Some(10)
+      c
+    }
+
+    def posixPerm(p:PosixFileAttributes):String =
+      (if p.permissions.contains(PosixFilePermission.GROUP_READ) then "r" else "-") +
+      (if p.permissions.contains(PosixFilePermission.GROUP_WRITE) then "w" else "-") +
+      (if p.permissions.contains(PosixFilePermission.GROUP_EXECUTE) then "x" else "-") +
+      (if p.permissions.contains(PosixFilePermission.OWNER_READ) then "r" else "-") +
+      (if p.permissions.contains(PosixFilePermission.OWNER_WRITE) then "w" else "-") +
+      (if p.permissions.contains(PosixFilePermission.OWNER_EXECUTE) then "x" else "-") +
+      (if p.permissions.contains(PosixFilePermission.OTHERS_READ) then "r" else "-") +
+      (if p.permissions.contains(PosixFilePermission.OTHERS_WRITE) then "w" else "-") +
+      (if p.permissions.contains(PosixFilePermission.OTHERS_EXECUTE) then "x" else "-")
+
+    implicit val posixOptOrd:Ordering[Option[PosixFileAttributes]] = 
+      (a,b) => (a,b) match {
+        case (None,None) => 0
+        case (Some(_),None) => 0
+        case (None,Some(_)) => 0
+        case (Some(x),Some(y)) =>
+          if x.group.getName == y.group.getName then x.group.getName.compareTo(y.group.getName)
+          else if x.owner.getName == y.owner.getName then x.owner.getName.compareTo(y.owner.getName)
+          else posixPerm(x).compareTo( posixPerm(y) )
+      }
+
+    def posixColumn(posix2str:PosixFileAttributes=>String):Column[Path,Option[PosixFileAttributes]]=
+      Column.create[Path,Option[PosixFileAttributes]](
+        "perm",
+        path => {
+          try {
+            Some(Files.readAttributes(path,classOf[PosixFileAttributes],LinkOption.NOFOLLOW_LINKS))
+          } catch {
+            case err: Throwable =>
+              log.warn(s"can't readAttributes PosixFileAttributes of $path",err)
+              None
+          }
+        },
+        posixOpt => posixOpt match {
+          case None => "?"
+          case Some(posix) => posix2str(posix)
+        }
+      )
+
+    val chmod = {
+      val c = posixColumn(
+        posix => posixPerm(posix)
+      ).copy(name = "perm")
+      c.width.prefect = Some(9)
       c
     }
   }
