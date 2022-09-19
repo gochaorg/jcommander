@@ -42,7 +42,7 @@ object JsonParser {
       begin0:Ptr, end0:Ptr
     ) extends Token(begin0,end0)
 
-    case Litteral(
+    case Identifier(
       begin0:Ptr, end0:Ptr
     ) extends Token(begin0,end0)
 
@@ -58,7 +58,7 @@ object JsonParser {
     given Show[Undefined] with { def apply(value:Undefined) = s"Undefined(${value.begin.source.substring(value.begin.value, value.end.value)})" }
     given Show[Str] with { def apply(value: Str): String = s"Str(${value.begin.source.substring(value.begin.value, value.end.value)})" }
     given Show[SLComment] with { def apply(value: SLComment): String = s"SLComment(${value.begin.source.substring(value.begin.value, value.end.value)})" }
-    given Show[Litteral] with { def apply(value: Litteral): String = s"Litteral(${value.begin.source.substring(value.begin.value, value.end.value)})" }
+    given Show[Identifier] with { def apply(value: Identifier): String = s"Identifier(${value.begin.source.substring(value.begin.value, value.end.value)})" }
     given Show[WhiteSpace] with { def apply(value: WhiteSpace): String = s"WhiteSpace" }
     given Show[Number] with { def apply(value: Number): String = s"Number(${value.begin.source.substring(value.begin.value, value.end.value)})" }
     given Show[OpenSuqare] with { def apply(value: OpenSuqare): String = s"OpenSuqare" }
@@ -72,7 +72,7 @@ object JsonParser {
         case v:Undefined => summon[Show[Undefined]].apply(v)
         case v:Str => summon[Show[Str]].apply(v)
         case v:SLComment => summon[Show[SLComment]].apply(v)
-        case v:Litteral => summon[Show[Litteral]].apply(v)
+        case v:Identifier => summon[Show[Identifier]].apply(v)
         case v:WhiteSpace => summon[Show[WhiteSpace]].apply(v)
         case v:Number => summon[Show[Number]].apply(v)
         case v:OpenSuqare => summon[Show[OpenSuqare]].apply(v)
@@ -121,7 +121,8 @@ object JsonParser {
       
   extension ( tok:Token )
     def nextPtr:Ptr = Ptr(tok.end.value, tok.end.source)
-    
+    def text:String = tok.begin.source.substring(tok.begin.value, tok.end.value)
+
   extension ( optChr:Option[Char] )
     def in( chars:String ):Boolean = optChr.map { chr => chars.indexOf(chr)>=0 }.getOrElse(false)
     def isWhiteSpace:Boolean = optChr.map { chr => chr.isWhitespace }.getOrElse( false )
@@ -192,7 +193,7 @@ object JsonParser {
           case Some('\'') => Some(readStrLit('\''))
           case _ => None
 
-    given Lexer[Litteral] with
+    given Lexer[Identifier] with
       def apply( ptr:Ptr ) =
         ptr.inside() match
           case false => None
@@ -202,7 +203,7 @@ object JsonParser {
               var p = ptr + 1
               while !p.empty && p(0).is { c => c.isLetter || c=='_' || c.isDigit } do
                 p = p + 1
-              Some(Litteral(ptr,p))
+              Some(Identifier(ptr,p))
 
     given Lexer[WhiteSpace] with
       def apply( ptr:Ptr ) =
@@ -228,7 +229,7 @@ object JsonParser {
         summon[Lexer[Number]],
         summon[Lexer[Str]],
         summon[Lexer[WhiteSpace]],
-        summon[Lexer[Litteral]],
+        summon[Lexer[Identifier]],
       )
       var list = List[Token]()
       var ptr = Ptr(0, str)
@@ -262,18 +263,32 @@ object JsonParser {
   }
 
   enum AST( val begin:Ptr, val end:Ptr ):
-    case True(begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
-    case False(begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
-    case Null(begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
+    case True(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
+    case False(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
+    case Null(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Str(val tok:Token.Str, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Num(val tok:Token.Number, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Arr(items:Seq[AST], begin0:Ptr, end0:Ptr) extends AST(begin0,end0)
-    case Field(val name:Token.Str|Token.Litteral, val value:AST, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
+    case Field(val name:Token.Str|Token.Identifier, val value:AST, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Obj(val body:Seq[AST],begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Comment(val tok:Token.SLComment,begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
 
   case class LPtr( val value:Int, val source:Seq[Token] ):
     import scala.reflect._
+    def token:Option[Token]=
+      val t = value
+      if t>=0 && t<source.size then
+        Some(source(value))
+      else
+        None
+    def beginPtr:Ptr = token.get.begin
+    def endPtr:Ptr = token.get.end
+    def token(off:Int):Option[Token]=
+      val t = value+off
+      if t>=0 && t<source.size then
+        Some(source(value+off))
+      else
+        None
     def fetch[T<:Token:ClassTag](off:Int):Option[T]=
       val ct = summon[ClassTag[T]]
       val t = value+off
@@ -282,16 +297,76 @@ object JsonParser {
         ct.unapply(x)
       else
         None
+    def inside: Boolean = !empty
+    def empty: Boolean = value < 0 || value >= source.size
+    def +( off:Int ):LPtr = copy( value = value+off )
+    def isIdentifier(off:Int,txtPred:String=>Boolean):Option[Token.Identifier]=
+      fetch[Token.Identifier](off).flatMap(t => if txtPred(t.text) then Some(t) else None )
+    def isNull(off:Int)  = isIdentifier(off, _=="null")
+    def isFalse(off:Int) = isIdentifier(off, _=="false")
+    def isTrue(off:Int)  = isIdentifier(off, _=="true")
 
-  trait Parser {
+  extension ( tokens:Seq[Token] )
+    def dropWhitespaces:Seq[Token] = 
+      tokens.filterNot( t => 
+        t.isInstanceOf[Token.WhiteSpace] || 
+        t.isInstanceOf[Token.SLComment] )
+
+  object Parser {
     // expression ::= object | array | atom
+    def expression ( ptr:LPtr ):Option[(AST,LPtr)] = 
+      atom(ptr)
+
     // object ::= '{' [ field { ',' field } [ ',' ] ]  '}'
+    def _object    ( ptr:LPtr ):Option[(AST,LPtr)] = ???
+
     // field ::= ( str | id ) ':' expression
+    def field      ( ptr:LPtr ):Option[(AST,LPtr)] = ???
+
     // array ::= '[' [ expression { ',' expression } [ ',' ] ] ']'
+    def array      ( ptr:LPtr ):Option[(AST,LPtr)] = 
+      ptr.fetch[Token.OpenSuqare](0).flatMap { openBrace =>
+        var expList = List[AST]()
+        var p = ptr + 1
+        var stop = false
+        while !stop do
+          // [ expression { ',' expression } [ ',' ] ]
+          expression(p) match
+            case Some(ex1, next_p) =>
+              next_p.fetch[Token.Comma](0) match
+                case Some(_) =>
+                case _ => next_p.fetch[Token.CloseSuqare](1) match
+                  case Some(_) =>  // expression , ] 
+                                   //              you here
+                    p = next_p + 1
+                    stop = true
+                  case _ =>        // expression , ?
+                                   //              you here
+                    p = next_p + 1
+            //case _ =>
+        }
+
     // atom ::= str | num | predef_id
+    def atom       ( ptr:LPtr ):Option[(AST,LPtr)] = 
+      str(ptr).orElse(num(ptr)).orElse(predef_id(ptr))
+
     // str ::= ...
+    def str        ( ptr:LPtr ):Option[(AST.Str,LPtr)] = 
+      ptr.fetch[Token.Str](0).map { t => (AST.Str(t,ptr.beginPtr,ptr.endPtr),ptr+1)}
+
     // num ::= ...
+    def num        ( ptr:LPtr ):Option[(AST.Num,LPtr)] = 
+      ptr.fetch[Token.Number](0).map { t => (AST.Num(t,ptr.beginPtr,ptr.endPtr),ptr+1)}
+
     // predef_id ::= 'false' | 'true' | 'null'
-    def expression( ptr:LPtr ):Option[(AST,LPtr)]
+    def predef_id  ( ptr:LPtr ):Option[(AST,LPtr)] = 
+      _false(ptr).orElse(_true(ptr)).orElse(_null(ptr))
+
+    def _false     ( ptr:LPtr ):Option[(AST.False,LPtr)] =
+      ptr.isFalse(0).map(t => (AST.False(t, ptr.token.get.begin, ptr.token.get.end), ptr+1) )
+    def _true      ( ptr:LPtr ):Option[(AST.True,LPtr)] = 
+      ptr.isTrue(0).map(t => (AST.True(t, ptr.token.get.begin, ptr.token.get.end), ptr+1) )
+    def _null      ( ptr:LPtr ):Option[(AST.Null,LPtr)] = 
+      ptr.isNull(0).map(t => (AST.Null(t, ptr.token.get.begin, ptr.token.get.end), ptr+1) )
   }
 }
