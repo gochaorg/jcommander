@@ -1,2 +1,7 @@
 rtfm/target/
 rtfm/
+.bsp/
+.idea/
+target/
+project/
+jtfm-sfx/
