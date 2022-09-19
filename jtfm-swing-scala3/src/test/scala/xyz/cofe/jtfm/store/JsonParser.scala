@@ -99,7 +99,8 @@ object JsonParser {
         case true => ""
         case _ => inside() match
           case false => ""
-          case true => source.substring(value, (value+len) min (source.length()-value) )
+          case true => 
+            source.substring(value, (value+len) min (source.length()) )
 
     def apply(off:Int):Option[Char] =
       val trgt = value+off
@@ -271,15 +272,14 @@ object JsonParser {
     case Obj(val body:Seq[AST],begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Comment(val tok:Token.SLComment,begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
 
-  trait TokenTake[T]:
-    def tryTake(a:Any):Option[T]
-
   case class LPtr( val value:Int, val source:Seq[Token] ):
-    def fetch[T <: Token](off: Int)(using take:TokenTake[T]):Option[T] =
+    import scala.reflect._
+    def fetch[T<:Token:ClassTag](off:Int):Option[T]=
+      val ct = summon[ClassTag[T]]
       val t = value+off
       if t>=0 && t<source.size then
         val x = source(value+off)
-        take.tryTake(x)
+        ct.unapply(x)
       else
         None
 
