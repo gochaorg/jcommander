@@ -258,20 +258,68 @@ object JsonParser {
       list.reverse
   }
 
-  trait Name {
-    def name():String
-  }
+  extension ( str:String )
+    def decodeLitteral:String =
+      def unescape( strContent:String ):String = {
+        val sb = new StringBuilder()
+        var skip = 0
+        for 
+          idx <- (0 until strContent.length)
+          ch0 = strContent.charAt(idx)
+          ch1opt = 
+            if idx<(strContent.length-1) then 
+              Some(strContent.charAt(idx+1)) 
+            else 
+              None
+        do
+          if skip>0 then skip -= 1 
+          else
+            (ch0, ch1opt) match
+              case ('\\', Some('\n')) => sb += '\n'; skip=1
+              case ('\\', Some('\r')) => sb += '\r'; skip=1
+              case ('\\', Some('\t')) => sb += '\t'; skip=1
+              case ('\\', Some(ch1)) => sb += ch1; skip=1
+              case _ => sb += ch0
+        sb.toString()
+      }
+      if str.startsWith("'") && str.endsWith("'") then
+        unescape(str.substring(1,str.length()-1))
+      else if str.startsWith("\"") && str.endsWith("\"") then
+        unescape(str.substring(1,str.length()-1))
+      else
+        throw new IllegalArgumentException(s"can't decode js string litteral: $str")
+
 
   enum AST( val begin:Ptr, val end:Ptr ):
+    case Id(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case True(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case False(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Null(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
-    case Str(val tok:Token.Str, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
+    case Str(val decode:String, val tok:Token.Str, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Num(val tok:Token.Number, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case Arr(items:Seq[AST], begin0:Ptr, end0:Ptr) extends AST(begin0,end0)
-    case Field(val name:Token.Str|Token.Identifier, val value:AST, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
-    case Obj(val body:Seq[AST],begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
+    case Field(
+      val tok:Token.Str|Token.Identifier,
+      val name:String,
+      val value:AST, 
+      begin0:Ptr,
+      end0:Ptr,
+    ) extends AST(begin0,end0)
+    case Obj(
+      val body:Seq[AST],
+      begin0:Ptr,end0:Ptr,
+    ) extends AST(begin0,end0), ObjOpt
     case Comment(val tok:Token.SLComment,begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
+
+  trait ObjOpt {
+    self: AST.Obj =>
+      lazy val fields: Map[String, AST] =
+        self.body
+          .filter { e => e.isInstanceOf[AST.Field] }
+          .map { e => e.asInstanceOf[AST.Field] }
+          .map { f => (f.name, f.value) }
+          .toMap
+  }
 
   case class LPtr( val value:Int, val source:Seq[Token] ):
     import scala.reflect._
@@ -281,8 +329,15 @@ object JsonParser {
         Some(source(value))
       else
         None
-    def beginPtr:Ptr = token.get.begin
-    def endPtr:Ptr = token.get.end
+    def beginPtr:Ptr = token.map(_.begin).getOrElse(Ptr(-1,""))
+    def endPtr:Ptr =  token match
+      case Some(existsToken) => existsToken.end
+      case None => (this + (-1)).token match
+        case Some(preEndToken) => 
+          preEndToken.end
+        case None => throw new 
+          RuntimeException(s"can't compute end ptr of ${this}")
+        
     def token(off:Int):Option[Token]=
       val t = value+off
       if t>=0 && t<source.size then
@@ -315,35 +370,137 @@ object JsonParser {
   object Parser {
     // expression ::= object | array | atom
     def expression ( ptr:LPtr ):Option[(AST,LPtr)] = 
-      atom(ptr)
+      _object(ptr).orElse( array(ptr) ).orElse( atom(ptr) )
 
-    // object ::= '{' [ field { ',' field } [ ',' ] ]  '}'
-    def _object    ( ptr:LPtr ):Option[(AST,LPtr)] = ???
+    // object ::= '{' [ field { ',' field } [ ',' ] ]  '}' 
+    def _object    ( ptr:LPtr ):Option[(AST,LPtr)] = 
+      ptr.fetch[Token.OpenBrace](0).flatMap { openBrace =>
+        var p = ptr+1
+        var stop = false
+        var fields = List[AST.Field]()
+        var lastTok : Token = null
+        while(!stop) {
+          println(s"ptr at ${ptr.value}")
+          field(p) match {
+            case Some(fld, fld_ptr) => (fld_ptr.token(0), fld_ptr.token(1)) match 
+              case (Some(_:Token.Comma), Some(lastTok3:Token.CloseBrace)) =>
+                fields = fld :: fields
+                println(s"1 fields ${fields}")
+                lastTok = lastTok3
+                p = fld_ptr + 2
+                stop = true
+              case (Some(_:Token.Comma), _) =>
+                fields = fld :: fields
+                println(s"2 fields ${fields}")
+                p = fld_ptr + 1
+              case _ => throw new RuntimeException("expect , or ] at "+p)
+            case _ => (p.token(0), p.token(1)) match {
+              case (Some(_:Token.Comma), Some(lastTok1:Token.CloseBrace)) =>
+                println("3 case")
+                p = p + 2
+                stop = true
+              case (Some(lastTok2:Token.CloseBrace),_) =>
+                println("4 case")
+                p = p + 1
+                stop = true
+              case _ => throw new RuntimeException("expect , or ] at "+p)
+            }
+          }
+        }
+
+        println(s"fields result ${fields}")
+        Some((AST.Obj(fields.reverse, ptr.beginPtr, p.endPtr), p))
+      }
 
     // field ::= ( str | id ) ':' expression
-    def field      ( ptr:LPtr ):Option[(AST,LPtr)] = ???
+    def field      ( ptr:LPtr ):Option[(AST.Field,LPtr)] = {
+      def fieldName(ptr:LPtr):Option[(AST.Id|AST.Str,LPtr)] =
+        val idName:Option[(AST.Id,LPtr)] = ptr.fetch[Token.Identifier](0).flatMap { t =>
+          Some( (AST.Id(t,ptr.beginPtr,ptr.endPtr), ptr+1) )
+          }
+        val strName:Option[(AST.Str,LPtr)] = ptr.fetch[Token.Str](0).flatMap { t =>
+          Some( (AST.Str(t.text.decodeLitteral, t,ptr.beginPtr,ptr.endPtr), ptr+1) )
+          }
+        idName.orElse(strName)
+      fieldName(ptr).flatMap { (fname,next_ptr) => 
+        next_ptr.fetch[Token.Colon](0).flatMap { colon => 
+          expression(next_ptr + 1) match 
+            case Some( (exp,exp_ptr) ) =>
+
+              fname match 
+                case idName: AST.Id =>
+                  Some(AST.Field( 
+                    idName.tok, 
+                    idName.tok.text,
+                    exp, ptr.beginPtr, exp_ptr.endPtr ), 
+                    exp_ptr)
+                case strName: AST.Str =>
+                  println(s"exp_ptr $exp_ptr")
+                  Some(AST.Field( 
+                    strName.tok, 
+                    strName.tok.text.decodeLitteral,
+                    exp, ptr.beginPtr, exp_ptr.endPtr ), 
+                    exp_ptr)
+            case _ =>
+              throw new RuntimeException(s"expect expression at "+(next_ptr + 1))
+        }
+      }
+    }
 
     // array ::= '[' [ expression { ',' expression } [ ',' ] ] ']'
-    def array      ( ptr:LPtr ):Option[(AST,LPtr)] = 
+    def array      ( ptr:LPtr ):Option[(AST.Arr,LPtr)] = 
       ptr.fetch[Token.OpenSuqare](0).flatMap { openBrace =>
         var expList = List[AST]()
         var p = ptr + 1
         var stop = false
-        while !stop do
+        var latTok : Token = null
+        while (!stop) {
           // [ expression { ',' expression } [ ',' ] ]
           expression(p) match
             case Some(ex1, next_p) =>
               next_p.fetch[Token.Comma](0) match
-                case Some(_) =>
-                case _ => next_p.fetch[Token.CloseSuqare](1) match
-                  case Some(_) =>  // expression , ] 
-                                   //              you here
+                case Some(_) => next_p.fetch[Token.CloseSuqare](1) match
+                  case Some(et) =>  // expression , ] 
+                                    //              ▲ you here
                     p = next_p + 1
+                    expList = ex1 :: expList
                     stop = true
+                    latTok = et
                   case _ =>        // expression , ?
-                                   //              you here
+                                   //              ▲ you here
                     p = next_p + 1
-            //case _ =>
+                    expList = ex1 :: expList
+                case _ => // expression ?
+                          //            ▲ you here
+                  next_p.fetch[Token.CloseSuqare](0) match
+                    case Some(et) =>
+                      p = next_p + 1
+                      expList = ex1 :: expList
+                      stop = true
+                      latTok = et
+                    case _ =>
+                      throw new RuntimeException("expect ] at "+p)
+            case _ => // expect ] or , ]
+              ( p.token(0)
+              , p.token(1)
+              ) match
+                case (Some(et:Token.CloseSuqare), _) =>
+                  p = p + 1
+                  stop = true
+                  latTok = et
+                case (Some(_:Token.Comma), Some(et:Token.CloseSuqare)) =>
+                  p = p + 2
+                  stop = true
+                  latTok = et
+                case _ =>
+                  throw new RuntimeException("expect ] or , ] at "+p)
+        }
+        val x = p.token.map { _.begin }.orElse( (p+(-1)).token.map(_.end) )
+        Some((AST.Arr(
+            expList.reverse,
+            ptr.beginPtr,
+            latTok.end),
+            p))
         }
 
     // atom ::= str | num | predef_id
@@ -352,7 +509,7 @@ object JsonParser {
 
     // str ::= ...
     def str        ( ptr:LPtr ):Option[(AST.Str,LPtr)] = 
-      ptr.fetch[Token.Str](0).map { t => (AST.Str(t,ptr.beginPtr,ptr.endPtr),ptr+1)}
+      ptr.fetch[Token.Str](0).map { t => (AST.Str(t.text.decodeLitteral, t,ptr.beginPtr,ptr.endPtr),ptr+1)}
 
     // num ::= ...
     def num        ( ptr:LPtr ):Option[(AST.Num,LPtr)] = 
