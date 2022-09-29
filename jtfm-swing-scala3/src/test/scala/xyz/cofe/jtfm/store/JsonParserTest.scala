@@ -153,5 +153,7 @@ class JsonParserTest extends munit.FunSuite {
     println( s"fields, ${obj.fields.size}" )
     println( obj.fields("key") )
     println( obj.fields("key").num )
+
+    println( obj.toJson )
   }
 }

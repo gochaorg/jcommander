@@ -288,6 +288,58 @@ object JsonParser {
         unescape(str.substring(1,str.length()-1))
       else
         throw new IllegalArgumentException(s"can't decode js string litteral: $str")
+    def encodeLitteral:String =
+     str match
+      case null => "null"
+      case _ => 
+        "\"" + str.flatMap( chr => chr match
+          case '"'  => "\\\""
+          case '\\' => "\\\\"
+          case '\n' => "\\n"
+          case '\r' => "\\r"
+          case '\t' => "\\t"
+          case _ => chr.toString
+        ) + "\""
+
+  enum JS:
+    case Null()
+    case Bool(val value:Boolean)
+    case Str(val value:String)
+    case Num(val value:Double)
+    case Arr(val value:Seq[JS])
+    case Obj(val fields:Map[String,JS])
+
+  trait ToJson[T]:
+    def toJson(t:T):String
+
+  object ToJson:
+    given ToJson[JS.Null] with
+      def toJson(n:JS.Null) = "null"
+    given ToJson[JS.Bool] with
+      def toJson(b:JS.Bool) = b.value match 
+        case true => "true"
+        case false => "false"
+    given ToJson[JS.Str] with
+      def toJson(s:JS.Str) = s.value match
+        case null => "null"
+        case _ => s.value.encodeLitteral
+    given ToJson[JS.Num] with
+      def toJson(n:JS.Num) = n.value.toString()
+    given ToJson[JS.Arr] with
+      def toJson(a:JS.Arr) = a.value.map { it => summon[ToJson[JS]].toJson(it) }.mkString("[", ",", "]")
+    given ToJson[JS.Obj] with
+      def toJson(o:JS.Obj) = o.fields.map { (k,v) => 
+        k.encodeLitteral+":"+summon[ToJson[JS]].toJson(v) 
+        }.mkString("{",",","}")
+    given ToJson[JS] with
+      def toJson(j:JS) = j match
+        case n:JS.Null => summon[ToJson[JS.Null]].toJson(n)
+        case n:JS.Bool => summon[ToJson[JS.Bool]].toJson(n)
+        case n:JS.Str => summon[ToJson[JS.Str]].toJson(n)
+        case n:JS.Num => summon[ToJson[JS.Num]].toJson(n)
+        case n:JS.Arr => summon[ToJson[JS.Arr]].toJson(n)
+        case n:JS.Obj => summon[ToJson[JS.Obj]].toJson(n)
+      
 
   enum AST( val begin:Ptr, val end:Ptr ):
     case Id(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
@@ -320,6 +372,39 @@ object JsonParser {
           .toMap
   }
 
+  object AST:
+    given ToJson[Id] with
+      def toJson(a:Id) = a.tok.text.encodeLitteral
+    given ToJson[True] with
+      def toJson(a:True) = a.tok.text
+    given ToJson[False] with
+      def toJson(a:False) = a.tok.text
+    given ToJson[Null] with
+      def toJson(a:Null) = "null"
+    given ToJson[Str] with
+      def toJson(a:Str) = a.tok.text
+    given ToJson[Num] with
+      def toJson(a:Num) = a.tok.text
+    given ToJson[Arr] with
+      def toJson(a:Arr) = a.items.map { el => 
+        summon[ToJson[AST]].toJson(el) 
+      }.mkString("[",",","]")
+    given ToJson[Obj] with
+      def toJson(a:Obj) = a.fields.map { (k,v) => 
+        k.encodeLitteral+":"+summon[ToJson[AST]].toJson(v)
+      }.mkString("{",",","}")
+    given ToJson[AST] with
+      def toJson(a:AST) = a match
+        case n:Id => summon[ToJson[Id]].toJson(n)
+        case n:True => summon[ToJson[True]].toJson(n)
+        case n:False => summon[ToJson[False]].toJson(n)
+        case n:Null => summon[ToJson[Null]].toJson(n)
+        case n:Str => summon[ToJson[Str]].toJson(n)
+        case n:Num => summon[ToJson[Num]].toJson(n)
+        case n:Arr => summon[ToJson[Arr]].toJson(n)
+        case n:Obj => summon[ToJson[Obj]].toJson(n)
+        case _ => s"/* $a */"
+
   extension( ast:AST )
     def id:Option[String] = ast match
       case AST.Id(t,_,_) => Some(t.text)
@@ -343,6 +428,7 @@ object JsonParser {
     def obj:Option[Map[String,AST]] = ast match
       case ob:AST.Obj => Some(ob.fields)
       case _ => None
+    def toJson:String = summon[ToJson[AST]].toJson(ast)
 
   case class LPtr( val value:Int, val source:Seq[Token] ):
     import scala.reflect._
@@ -550,4 +636,6 @@ object JsonParser {
     def _null      ( ptr:LPtr ):Option[(AST.Null,LPtr)] = 
       ptr.isNull(0).map(t => (AST.Null(t, ptr.token.get.begin, ptr.token.get.end), ptr+1) )
   }
+
+
 }
