@@ -289,7 +289,6 @@ object JsonParser {
       else
         throw new IllegalArgumentException(s"can't decode js string litteral: $str")
 
-
   enum AST( val begin:Ptr, val end:Ptr ):
     case Id(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
     case True(val tok:Token.Identifier, begin0:Ptr,end0:Ptr) extends AST(begin0,end0)
@@ -320,6 +319,30 @@ object JsonParser {
           .map { f => (f.name, f.value) }
           .toMap
   }
+
+  extension( ast:AST )
+    def id:Option[String] = ast match
+      case AST.Id(t,_,_) => Some(t.text)
+      case _ => None
+    def bool:Option[Boolean] = ast match
+      case _:AST.True => Some(true)
+      case _:AST.False => Some(false)
+      case _ => None
+    def isNull:Boolean = ast match
+      case _:AST.Null => true
+      case _ => false
+    def str:Option[String] = ast match
+      case AST.Str(s,_,_,_) => Some(s)
+      case _ => None
+    def num:Option[Double] = ast match
+      case AST.Num(t,_,_) => t.text.toDoubleOption
+      case _ => None
+    def list:Option[List[AST]] = ast match
+      case AST.Arr(elems,_,_) => Some(elems.toList)
+      case _ => None
+    def obj:Option[Map[String,AST]] = ast match
+      case ob:AST.Obj => Some(ob.fields)
+      case _ => None
 
   case class LPtr( val value:Int, val source:Seq[Token] ):
     import scala.reflect._
@@ -375,67 +398,68 @@ object JsonParser {
     // object ::= '{' [ field { ',' field } [ ',' ] ]  '}' 
     def _object    ( ptr:LPtr ):Option[(AST,LPtr)] = 
       ptr.fetch[Token.OpenBrace](0).flatMap { openBrace =>
+        val show = summon[Show[Token]]
         var p = ptr+1
         var stop = false
         var fields = List[AST.Field]()
         var lastTok : Token = null
         while(!stop) {
-          println(s"ptr at ${ptr.value}")
           field(p) match {
             case Some(fld, fld_ptr) => (fld_ptr.token(0), fld_ptr.token(1)) match 
               case (Some(_:Token.Comma), Some(lastTok3:Token.CloseBrace)) =>
                 fields = fld :: fields
-                println(s"1 fields ${fields}")
                 lastTok = lastTok3
                 p = fld_ptr + 2
                 stop = true
               case (Some(_:Token.Comma), _) =>
                 fields = fld :: fields
-                println(s"2 fields ${fields}")
                 p = fld_ptr + 1
-              case _ => throw new RuntimeException("expect , or ] at "+p)
+              case (Some(lastTok4:Token.CloseBrace), _) =>
+                fields = fld :: fields
+                lastTok = lastTok4
+                p = fld_ptr + 1
+                stop = true
+              case e => 
+                throw new RuntimeException("expect , or ] at "+p)
             case _ => (p.token(0), p.token(1)) match {
               case (Some(_:Token.Comma), Some(lastTok1:Token.CloseBrace)) =>
-                println("3 case")
                 p = p + 2
                 stop = true
               case (Some(lastTok2:Token.CloseBrace),_) =>
-                println("4 case")
                 p = p + 1
                 stop = true
-              case _ => throw new RuntimeException("expect , or ] at "+p)
+              case e => 
+                throw new RuntimeException("expect , or ] at "+p)
             }
           }
         }
 
-        println(s"fields result ${fields}")
         Some((AST.Obj(fields.reverse, ptr.beginPtr, p.endPtr), p))
       }
 
     // field ::= ( str | id ) ':' expression
     def field      ( ptr:LPtr ):Option[(AST.Field,LPtr)] = {
-      def fieldName(ptr:LPtr):Option[(AST.Id|AST.Str,LPtr)] =
-        val idName:Option[(AST.Id,LPtr)] = ptr.fetch[Token.Identifier](0).flatMap { t =>
-          Some( (AST.Id(t,ptr.beginPtr,ptr.endPtr), ptr+1) )
+      def fieldName(ptr2:LPtr):Option[(AST.Id|AST.Str,LPtr)] =
+        val idName:Option[(AST.Id,LPtr)] = ptr2.fetch[Token.Identifier](0).flatMap { t =>
+          Some( (AST.Id(t,ptr2.beginPtr,ptr2.endPtr), ptr2+1) )
           }
-        val strName:Option[(AST.Str,LPtr)] = ptr.fetch[Token.Str](0).flatMap { t =>
-          Some( (AST.Str(t.text.decodeLitteral, t,ptr.beginPtr,ptr.endPtr), ptr+1) )
+        val strName:Option[(AST.Str,LPtr)] = ptr2.fetch[Token.Str](0).flatMap { t =>
+          Some( (AST.Str(t.text.decodeLitteral, t,ptr2.beginPtr,ptr2.endPtr), ptr2+1) )
           }
         idName.orElse(strName)
+
       fieldName(ptr).flatMap { (fname,next_ptr) => 
         next_ptr.fetch[Token.Colon](0).flatMap { colon => 
           expression(next_ptr + 1) match 
             case Some( (exp,exp_ptr) ) =>
-
               fname match 
-                case idName: AST.Id =>
+                case idName: AST.Id =>                  
                   Some(AST.Field( 
                     idName.tok, 
                     idName.tok.text,
                     exp, ptr.beginPtr, exp_ptr.endPtr ), 
                     exp_ptr)
                 case strName: AST.Str =>
-                  println(s"exp_ptr $exp_ptr")
                   Some(AST.Field( 
                     strName.tok, 
                     strName.tok.text.decodeLitteral,

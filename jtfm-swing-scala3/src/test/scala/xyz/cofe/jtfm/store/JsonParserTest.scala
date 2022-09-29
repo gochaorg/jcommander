@@ -132,26 +132,26 @@ class JsonParserTest extends munit.FunSuite {
     assert(fld.end.value==8)
   }
 
-  // test("Parse obj") {
-  //   println("=== Parse obj =====================")
+  test("Parse obj") {
+    println("=== Parse obj =====================")
 
-  //   import JsonParser._
-  //   import JsonParser.Token._
+    import JsonParser._
+    import JsonParser.Token._
 
-  //   val tokens = Lexer
-  //     .parse("{ 'key' : 1, keyb : true }")
-  //     .dropWhitespaces
+    val tokens = Lexer
+      .parse("{ 'key' : 1, 'keyb' : true }")
+      .dropWhitespaces
 
-  //   val showTok = summon[Show[Token]]
-  //   tokens.zipWithIndex.foreach((t,i) => println(s"$i "+showTok(t)))
+    val showTok = summon[Show[Token]]
+    tokens.zipWithIndex.foreach((t,i) => println(s"$i "+showTok(t)))
 
-  //   val ptr = LPtr(0,tokens)
-  //   val optExp = Parser.expression(ptr)
-  //   val obj = optExp.get._1.asInstanceOf[AST.Obj]
+    val ptr = LPtr(0,tokens)
+    val optExp = Parser.expression(ptr)
+    val obj = optExp.get._1.asInstanceOf[AST.Obj]
 
-  //   println( obj )
-  //   println( s"body ${obj.body.size}" )
-  //   println( s"fields, ${obj.fields.size}" )
-  //   println( obj.fields.get("key") )
-  // }
+    println( s"body ${obj.body.size}" )
+    println( s"fields, ${obj.fields.size}" )
+    println( obj.fields("key") )
+    println( obj.fields("key").num )
+  }
 }
