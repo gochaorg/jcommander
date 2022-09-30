@@ -57,6 +57,7 @@ class DeriveTest extends munit.FunSuite {
 
   test("decode by derive - json") {
     println("="*40)
+    println("decode by derive - json")
 
     val jsonStr = "{\"x\":1.0,\"y\":2.0,\"color\":\"green\"}"
     val result = for 
@@ -69,5 +70,28 @@ class DeriveTest extends munit.FunSuite {
     println( result )
     assert( result.isRight )
     assert( result.map( o => o == ColorPos(1, 2, Color.Green) ).getOrElse(false) )
+  }
+
+  test("syntax, from json") {
+    import syntax._
+
+    println("="*40)
+    println("syntax, from json")
+
+    val result = "{\"x\":1.0,\"y\":2.0,\"color\":\"green\"}".parseJson[ColorPos]
+    println( result )
+    assert( result.isRight )
+    assert( result.map( o => o == ColorPos(1, 2, Color.Green) ).getOrElse(false) )
+  }
+
+  test("syntax, to json") {
+    import syntax._
+
+    println("="*40)
+    println("syntax, to json")
+
+    val result = ColorPos(1,2,Color.Red).asJson
+    println( result )
+    assert( result.isRight )
   }
 }
