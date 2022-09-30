@@ -1,6 +1,17 @@
 package xyz.cofe.jtfm.store.json
 
 object Parser {
+  def parse(jsonString:String):Option[AST] =
+    val tokens = Lexer
+      .parse(jsonString)
+      .dropWhitespaces
+    expression(
+      LPtr(
+        0,
+        Lexer.parse(jsonString).dropWhitespaces
+      )
+    ).map( _._1 )
+
   // expression ::= object | array | atom
   def expression ( ptr:LPtr ):Option[(AST,LPtr)] = 
     _object(ptr).orElse( array(ptr) ).orElse( atom(ptr) )

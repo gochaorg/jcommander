@@ -40,15 +40,34 @@ class DeriveTest extends munit.FunSuite {
     println(cpos)
 
     val jsEt = summon[ToJson[ColorPos]].toJson(cpos)
-    val js = jsEt.getOrElse(null)
-    println(js)
+    val jsTree = jsEt.getOrElse(null)
+    println(jsTree)
 
-    val res = summon[FromJson[ColorPos]].fromJson(js)
+    val jsStr = jsTree.json
+    println(jsStr)
+
+    val res = summon[FromJson[ColorPos]].fromJson(jsTree)
     println(res)
 
     assert(res.isRight)
     val restored = res.getOrElse(null)
 
     assert(cpos == restored)
+  }
+
+  test("decode by derive - json") {
+    println("="*40)
+
+    val jsonStr = "{\"x\":1.0,\"y\":2.0,\"color\":\"green\"}"
+    val result = for 
+      astTree <- Parser.parse(jsonStr).lift(s"can't parse ast of $jsonStr")
+      jsTree <- astTree.toJson
+      obj <- summon[FromJson[ColorPos]].fromJson(jsTree)
+    yield
+      obj
+
+    println( result )
+    assert( result.isRight )
+    assert( result.map( o => o == ColorPos(1, 2, Color.Green) ).getOrElse(false) )
   }
 }
