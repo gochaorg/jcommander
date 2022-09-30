@@ -92,6 +92,8 @@ class WindowLocTest extends munit.FunSuite {
     println(jsObj.json)
   }
 
+  case class Pos(x:Int, y:Int)
+
   test("encode by given") {
     println("="*40)
     println("encode by given")
@@ -104,5 +106,12 @@ class WindowLocTest extends munit.FunSuite {
     println(loc_r)
     println(loc)
     println(loc_r == loc)
+
+    println( summon[ToJson[Pos]].toJson(Pos(1,2)) )
   }
+
+  enum Color:
+    case Red, Green, Blue
+
+  case class ColorPos(x:Int, y:Int, color:Color)
 }

@@ -1,5 +1,9 @@
 package xyz.cofe.jtfm.store
 
+import scala.deriving.*
+import scala.compiletime.{erasedValue, summonInline}
+import scala.CanEqual.derived
+
 object Json {
   enum Token( val begin:Ptr, val end:Ptr ):
     case Undefined(
@@ -661,6 +665,12 @@ object Json {
       ptr.isNull(0).map(t => (AST.Null(t, ptr.token.get.begin, ptr.token.get.end), ptr+1) )
   }
 
+  // https://dotty.epfl.ch/docs/reference/contextual/derivation.html
+  inline def summonAll[T <: Tuple]: List[ToJson[_]] =
+  inline erasedValue[T] match
+    case _: EmptyTuple => Nil
+    case _: (t *: ts) => summonInline[ToJson[t]] :: summonAll[ts]
+
   trait ToJson[T]:
     def toJson(t:T):Either[String,JS]
 
@@ -673,9 +683,33 @@ object Json {
       def toJson(n:Boolean) = Right(JS.Str(n match 
         case true => "true"
         case false => "false"
-      ))
+      ))      
     given ToJson[String] with
       def toJson(n:String) = Right(JS.Str(n))
+
+    // https://dotty.epfl.ch/docs/reference/contextual/derivation.html
+    def iterator[T](p: T) = p.asInstanceOf[Product].productIterator
+
+    inline given derived[T](using m: scala.deriving.Mirror.Of[T]): ToJson[T] = 
+      val elems = summonAll[m.MirroredElemTypes]
+      inline m match
+        case s: Mirror.SumOf[T] => toJsonSum(s, elems)
+        case p: Mirror.ProductOf[T] => toJsonProduct(p, elems)
+    
+    def toJsonSum[T](s: Mirror.SumOf[T], elems: List[ToJson[_]]):ToJson[T] = 
+      new ToJson[T]:
+        def toJson(t:T):Either[String,JS] =
+          Left(s"toJsonSum t $t\nelems $elems\ns $s")
+
+    def toJsonProduct[T](p: Mirror.ProductOf[T], elems: List[ToJson[_]]):ToJson[T] = 
+      new ToJson[T]:
+        def toJson(t:T):Either[String,JS] =
+          val jsons = t.asInstanceOf[Product].productIterator.zip(elems).map { case (v,tjs) => tjs.asInstanceOf[ToJson[Any]].toJson(v) }
+          val names = t.asInstanceOf[Product].productElementNames
+          val str = names.zip(jsons).foldLeft( Right(Map[String,JS]()):Either[String,Map[String,JS]] ){ case(m_e, (name,v_e)) => 
+            v_e.flatMap( js => m_e.map( m => m + (name -> js) ) )
+          }.map( m => JS.Obj(m) )
+          str
 
   trait FromJson[T]:
     def fromJson(j:JS):Either[String,T]
@@ -696,5 +730,6 @@ object Json {
     given FromJson[String] with
       def fromJson(j:JS) = j match
         case JS.Str(v) => Right(v)
-        case _ => Left(s"can't get string from $j")      
+        case _ => Left(s"can't get string from $j") 
+
 }
