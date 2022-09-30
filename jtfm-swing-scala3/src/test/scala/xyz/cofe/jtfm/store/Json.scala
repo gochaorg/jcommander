@@ -4,7 +4,7 @@ import scala.deriving.*
 import scala.compiletime.{erasedValue, summonInline, constValue}
 import scala.CanEqual.derived
 
-object Json {
+object Json { 
   enum Token( val begin:Ptr, val end:Ptr ):
     case Undefined(
       begin0:Ptr, end0:Ptr
