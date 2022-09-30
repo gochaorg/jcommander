@@ -664,6 +664,37 @@ object Json {
   trait ToJson[T]:
     def toJson(t:T):Either[String,JS]
 
+  object ToJson:
+    given ToJson[Double] with
+      def toJson(n:Double) = Right(JS.Num(n))
+    given ToJson[Int] with
+      def toJson(n:Int) = Right(JS.Num(n.toDouble))
+    given ToJson[Boolean] with
+      def toJson(n:Boolean) = Right(JS.Str(n match 
+        case true => "true"
+        case false => "false"
+      ))
+    given ToJson[String] with
+      def toJson(n:String) = Right(JS.Str(n))
+
   trait FromJson[T]:
-    def fromJson(j:JS):Either[String,JS]
+    def fromJson(j:JS):Either[String,T]
+
+  object FromJson:
+    given FromJson[Double] with
+      def fromJson(j:JS) = j match
+        case JS.Num(n) => Right(n)
+        case _ => Left(s"can't get double from $j")      
+    given FromJson[Int] with
+      def fromJson(j:JS) = j match
+        case JS.Num(n) => Right(n.toInt)
+        case _ => Left(s"can't get int from $j")      
+    given FromJson[Boolean] with
+      def fromJson(j:JS) = j match
+        case JS.Bool(v) => Right(v)
+        case _ => Left(s"can't get bool from $j")      
+    given FromJson[String] with
+      def fromJson(j:JS) = j match
+        case JS.Str(v) => Right(v)
+        case _ => Left(s"can't get string from $j")      
 }
