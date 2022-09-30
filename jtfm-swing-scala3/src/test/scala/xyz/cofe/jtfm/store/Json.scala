@@ -308,6 +308,8 @@ object Json {
     case Num(val value:Double)
     case Arr(val value:Seq[JS]=List())
     case Obj(val fields:Map[String,JS]=Map())
+    def json:String =
+      summon[ToJsonString[JS]].toJsonString(this)
 
   trait ToJsonString[T]:
     def toJsonString(t:T):String
@@ -447,6 +449,9 @@ object Json {
           a.map { m => m + (i._1 -> j) }
         }
       }.map { m => JS.Obj(m) }
+      case _:AST.Id => Left("Not supported for AST.Id")
+      case _:AST.Field => Left("Not supported for AST.Field")
+      case _:AST.Comment => Left("Not supported for AST.Comment")
     
 
   case class LPtr( val value:Int, val source:Seq[Token] ):

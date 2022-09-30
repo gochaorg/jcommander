@@ -29,7 +29,7 @@ class WindowLocTest extends munit.FunSuite {
       )
     )
 
-    //println(jsObj.json)
+    println(jsObj.json)
     
   }
 }
