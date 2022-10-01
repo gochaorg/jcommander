@@ -6,6 +6,12 @@ import java.nio.file.Files
 import JavaNioOperation._
 import scala.util.Try
 import java.nio.file.DirectoryStream
+import java.nio.charset.Charset
+
+import xyz.cofe.jtfm.store.json.{FromJson,ToJson}
+import xyz.cofe.jtfm.store.json.syntax._
+import java.nio.charset.StandardCharsets
+import java.io.IOException
 
 extension (path:Path)
   def isDir(using trace:JavaNioTracer, lopt:LinkOptions):Either[Throwable,Boolean] = 
@@ -83,3 +89,43 @@ extension (path:Path)
         case Some(prnt) => p = prnt
         case None => stop = true
     ls
+
+  def readString(cs:Charset)(using trace:JavaNioTracer):Either[Throwable,String] =
+    val op = ReadString(path,cs)
+    try
+      Right(trace(op)(Files.readString(path,cs)))
+    catch
+      case e:Throwable => Left(trace.error(op)(e))
+
+  def writeString(cs:Charset, str:String)(using trace:JavaNioTracer):Either[Throwable,Unit] =
+    val op = WriteString(path,cs,str)
+    try
+      Right(
+        trace(op) {
+          val _ = Files.writeString(path, str, cs)
+        }
+      )
+    catch
+      case e:Throwable => Left(trace.error(op)(e))
+
+  def readJson[T <: Product : FromJson](using trace:JavaNioTracer):Either[Throwable,T] = 
+    for
+      str <- readString(StandardCharsets.UTF_8)
+      js <- str.parseJson[T].left.map( errMessage => new IOException(errMessage) )
+    yield
+      js
+
+  def writeJson[T <: Product : ToJson](obj:T)(using trace:JavaNioTracer):Either[Throwable,Unit] = 
+    for
+      js <- obj.asJson.left.map( errMessage => new IOException(errMessage) )
+      _  <- writeString(StandardCharsets.UTF_8, js)
+    yield ()
+
+  def createDirectories(using trace:JavaNioTracer):Either[Throwable,Unit] =
+    val op = CreateDirectories(path)
+    try
+      Right(
+        trace(op){ val _ = Files.createDirectories(path) }
+      )
+    catch
+      case e:Throwable => Left(trace.error(op)(e))

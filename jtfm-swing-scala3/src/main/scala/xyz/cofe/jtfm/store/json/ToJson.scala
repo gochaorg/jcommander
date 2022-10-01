@@ -19,10 +19,7 @@ object ToJson:
   given ToJson[Int] with
     def toJson(n:Int) = Right(JS.Num(n.toDouble))
   given ToJson[Boolean] with
-    def toJson(n:Boolean) = Right(JS.Str(n match 
-      case true => "true"
-      case false => "false"
-    ))      
+    def toJson(n:Boolean) = Right(JS.Bool(n))      
   given ToJson[String] with
     def toJson(n:String) = Right(JS.Str(n))
 

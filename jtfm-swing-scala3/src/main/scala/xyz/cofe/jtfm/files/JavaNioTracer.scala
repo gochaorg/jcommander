@@ -2,6 +2,7 @@ package xyz.cofe.jtfm.files
 
 import java.nio.file.Path
 import java.nio.file.LinkOption
+import java.nio.charset.Charset
 
 sealed trait JavaNioOperation:
   type R
@@ -12,6 +13,10 @@ object JavaNioOperation {
   case class Exists(path:Path, linkOptions:Seq[LinkOption]) extends JavaNioOperation { type R = Boolean }
   case class IsFile(path:Path, linkOptions:Seq[LinkOption]) extends JavaNioOperation { type R = Boolean }
   case class FileSize(path:Path) extends JavaNioOperation { type R = Long }
+
+  case class ReadString(path:Path, cs:Charset) extends JavaNioOperation { type R = String }
+  case class WriteString(path:Path, cs:Charset, str:String) extends JavaNioOperation { type R = Unit }
+  case class CreateDirectories(path:Path) extends JavaNioOperation { type R = Unit }
 }
 
 trait JavaNioTracer:

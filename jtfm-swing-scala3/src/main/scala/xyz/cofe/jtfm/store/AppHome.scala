@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm.store.json
+package xyz.cofe.jtfm.store
 
 import java.nio.file.Path
 import xyz.cofe.jtfm.files.canonical
