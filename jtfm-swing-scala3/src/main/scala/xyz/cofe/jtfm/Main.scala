@@ -10,11 +10,20 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import xyz.cofe.jtfm.AppConfig
 import xyz.cofe.jtfm.ui.conf._
+import javax.swing.JMenuBar
+import javax.swing.JMenu
+import java.awt.GraphicsEnvironment
 
 object Main {
   def main(args:Array[String]):Unit =
+    val dm = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode()
+    println(s"${dm.getWidth()} x ${dm.getHeight()}")
+
+    System.setProperty("sun.java2d.uiScale","2.0")
     SwingUtilities.invokeLater(() => {
       val frame = new JFrame("JTFM")
+      frame.setJMenuBar(mainMenu)
+      //////////////////
       frame(AppConfig.activeConfig.mainWindow.location)
       
       val mainWindowLocLens = AppConfig.lens.mainWindow + MainWindowConfig.lens.location
@@ -25,4 +34,21 @@ object Main {
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
       frame.setVisible(true)
     })
+
+  lazy val mainMenu:JMenuBar = {
+    MenuBuilder(new JMenuBar)
+      .menu("Left"){ _ => }
+      .menu("Right"){ _ => }
+      .bar
+  }
+
+  // lazy val leftMenu:JMenu = {
+  //   val menu = new JMenu("Left")
+  //   menu
+  // }
+
+  // lazy val rightMenu:JMenu = {
+  //   val menu = new JMenu("Right")
+  //   menu
+  // }
 }
