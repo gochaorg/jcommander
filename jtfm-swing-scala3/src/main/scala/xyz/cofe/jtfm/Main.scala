@@ -16,7 +16,11 @@ object Main {
     SwingUtilities.invokeLater(() => {
       val frame = new JFrame("JTFM")
       frame(AppConfig.activeConfig.mainWindow.location)
-      AppConfig.activeConfig.mainWindow.listen(frame)
+      
+      val mainWindowLocLens = AppConfig.lens.mainWindow + MainWindowConfig.lens.location
+      WindowLocation.listen(frame) { loc => 
+        AppConfig.activeConfig = mainWindowLocLens(AppConfig.activeConfig,loc)
+      }
 
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
       frame.setVisible(true)

@@ -78,4 +78,13 @@ object AppConfig:
           save
       })
     }
-  
+
+  object lens:  
+    val mainWindow = Lens[AppConfig,MainWindowConfig](
+      get= a => a.mainWindow,
+      set= (a,b) => a.copy(mainWindow = b)
+    )
+    val saveOnExit = Lens[AppConfig,Boolean](
+      get= a => a.saveOnExit,
+      set= (a,b) => a.copy(saveOnExit = b)
+    )

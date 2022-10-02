@@ -1,10 +1,13 @@
-package xyz.cofe.jtfm.ui
+package xyz.cofe.jtfm
+package ui
 
 import xyz.cofe.jtfm.store.json._
 import javax.swing.JFrame
 import javax.swing.WindowConstants
 import java.awt.Window
 import java.awt.Frame
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 
 enum WindowState:
   case Normal, Minimized, MaximizedVert, MaximizedHoriz, MaximizedBoth
@@ -53,9 +56,19 @@ object WindowLocation:
     val size = frame.getSize()
     WindowLocation(
       WindowState.fromExtendedState(state),
-      loc.x, loc.y,
+      loc.x,      loc.y,
       size.width, size.height
     )
+  def listen(frame:JFrame)(store:WindowLocation=>Unit):Unit=
+    frame.addWindowStateListener { _ => 
+      store(WindowLocation(frame))
+    }
+    frame.addComponentListener(new ComponentAdapter(){
+      override def componentResized(e: ComponentEvent): Unit = 
+        store(WindowLocation(frame))
+      override def componentMoved(e: ComponentEvent): Unit = 
+        store(WindowLocation(frame))
+    })
 
 extension (frame: JFrame)
   def apply(loc: WindowLocation):Unit =
