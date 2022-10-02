@@ -94,4 +94,23 @@ class DeriveTest extends munit.FunSuite {
     println( result )
     assert( result.isRight )
   }
+
+  case class Append(value:String)
+  object Append:
+    given DefaultValue[Append] with
+      override def defaultValue: Option[Append] = Some(Append("def_value"))
+
+  case class ColorPos2(x:Int, y:Int, color:Color, append:Append)
+
+  test("syntax, from json + defaultValue") {
+    import syntax._
+
+    println("="*40)
+    println("syntax, to json")
+
+    val result = "{\"x\":1.0,\"y\":2.0,\"color\":\"green\"}".parseJson[ColorPos2]
+
+    println( result )
+    assert( result.isRight )
+  }
 }

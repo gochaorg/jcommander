@@ -12,6 +12,11 @@ inline erasedValue[T] match
   case _: EmptyTuple => Nil
   case _: (t *: ts) => summonInline[FromJson[t]] :: summonAllFromJson[ts]
 
+inline def summonAllDefaultValue[T <: Tuple]: List[DefaultValue[_]] =
+inline erasedValue[T] match
+  case _: EmptyTuple => Nil
+  case _: (t *: ts) => summonInline[DefaultValue[t]] :: summonAllDefaultValue[ts]
+
 inline def labelFromMirror[A](using m:Mirror.Of[A]):String = constValue[m.MirroredLabel]
 inline def labelsFrom[A <: Tuple]:List[String] = inline erasedValue[A] match
   case _:EmptyTuple => Nil
@@ -37,11 +42,12 @@ object FromJson:
       case JS.Str(v) => Right(v)
       case _ => Left(s"can't get string from $j") 
   inline given derived[A](using n:Mirror.Of[A]):FromJson[A] =
-    val elems = summonAllFromJson[n.MirroredElemTypes]
-    val names = labelsFrom[n.MirroredElemLabels]
+    val elems    = summonAllFromJson[n.MirroredElemTypes]
+    val defaults = summonAllDefaultValue[n.MirroredElemTypes]
+    val names    = labelsFrom[n.MirroredElemLabels]
     inline n match
       case s: Mirror.SumOf[A]     => fromJsonSum(s,elems)
-      case p: Mirror.ProductOf[A] => fromJsonPoduct(p,elems,names)
+      case p: Mirror.ProductOf[A] => fromJsonPoduct(p,elems,names,defaults)
     
   def fromJsonSum[T](s:Mirror.SumOf[T], elems:List[FromJson[_]]):FromJson[T] = 
     new FromJson[T]:
@@ -51,16 +57,23 @@ object FromJson:
     p:Mirror.ProductOf[T], 
     elems:List[FromJson[_]], 
     names:List[String],
+    defaults:List[DefaultValue[_]]
   ):FromJson[T] = 
     new FromJson[T]:
       def fromJson(js:JS):Either[String,T] =
         js match
           case JS.Obj(fields) => 
-            val res = names.zip(elems).map { case (name,restore) => 
+            val res = names.zip(elems).zip(defaults).map { case ((name,restore),tryDefValue) => 
               //restore.asInstanceOf[FromJson[Any]].fromJson()
-              fields.get(name).lift(s"field $name not found").flatMap { jsFieldValue => 
-                restore.asInstanceOf[FromJson[Any]].fromJson(jsFieldValue)
-              }
+              fields.get(name) match
+                case Some(jsFieldValue) =>
+                  restore.asInstanceOf[FromJson[Any]].fromJson(jsFieldValue)
+                case None =>
+                  tryDefValue.asInstanceOf[DefaultValue[Any]].defaultValue.lift(s"field $name not found and default value not defined")
+
+              // fields.get(name).lift(s"field $name not found").flatMap { jsFieldValue => 
+              //   restore.asInstanceOf[FromJson[Any]].fromJson(jsFieldValue)
+              // }
             }.foldLeft(Right(List[Any]()):Either[String,List[Any]]){ case (a,vE) => 
               vE.flatMap { v => 
                 a.map { l => v :: l }
