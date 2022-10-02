@@ -6,10 +6,12 @@ import xyz.cofe.jtfm.files._
 import xyz.cofe.jtfm.store.json._
 import java.io.IOError
 import java.io.IOException
+import xyz.cofe.jtfm.ui.SwingConfig
 
 case class AppConfig(
   mainWindow: MainWindowConfig = MainWindowConfig(),
-  saveOnExit: Boolean = true
+  saveOnExit: Boolean = true,
+  swing: SwingConfig = SwingConfig()
 )
 
 object AppConfig:

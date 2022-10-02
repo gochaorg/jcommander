@@ -41,6 +41,17 @@ object FromJson:
     def fromJson(j:JS) = j match
       case JS.Str(v) => Right(v)
       case _ => Left(s"can't get string from $j") 
+  given [T:FromJson]: FromJson[List[T]] with
+    def fromJson(js:JS) = 
+      val js2t = summon[FromJson[T]]
+      js match
+        case JS.Arr(arr) => arr.foldLeft(Right(List[T]()):Either[String,List[T]]){ case(a,jsElem) => 
+          js2t.fromJson(jsElem).flatMap { t => 
+            a.map { ls => t :: ls }
+          }
+        }.map { _.reverse }
+        case _ => Left(s"can't get list from $js")
+
   inline given derived[A](using n:Mirror.Of[A]):FromJson[A] =
     val elems    = summonAllFromJson[n.MirroredElemTypes]
     val defaults = summonAllDefaultValue[n.MirroredElemTypes]
@@ -64,16 +75,11 @@ object FromJson:
         js match
           case JS.Obj(fields) => 
             val res = names.zip(elems).zip(defaults).map { case ((name,restore),tryDefValue) => 
-              //restore.asInstanceOf[FromJson[Any]].fromJson()
               fields.get(name) match
                 case Some(jsFieldValue) =>
                   restore.asInstanceOf[FromJson[Any]].fromJson(jsFieldValue)
                 case None =>
                   tryDefValue.asInstanceOf[DefaultValue[Any]].defaultValue.lift(s"field $name not found and default value not defined")
-
-              // fields.get(name).lift(s"field $name not found").flatMap { jsFieldValue => 
-              //   restore.asInstanceOf[FromJson[Any]].fromJson(jsFieldValue)
-              // }
             }.foldLeft(Right(List[Any]()):Either[String,List[Any]]){ case (a,vE) => 
               vE.flatMap { v => 
                 a.map { l => v :: l }
@@ -90,7 +96,6 @@ object FromJson:
             .map { prod => 
               p.fromProduct(prod)
             }
-            //Left(s"fromJsonPoduct \nfields $fields \nnames $names \nelems $elems \nls $ls")
             res
           case _ => Left(s"fromJsonPoduct can't fetch from $js")
 

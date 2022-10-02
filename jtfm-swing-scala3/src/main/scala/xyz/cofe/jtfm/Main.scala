@@ -15,17 +15,15 @@ import javax.swing.JMenu
 import java.awt.GraphicsEnvironment
 
 object Main {
-  def main(args:Array[String]):Unit =
-    val dm = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode()
-    println(s"${dm.getWidth()} x ${dm.getHeight()}")
+  def main(args:Array[String]):Unit = {
+    AppConfig.activeConfig.swing.apply()
 
-    System.setProperty("sun.java2d.uiScale","2.0")
     SwingUtilities.invokeLater(() => {
       val frame = new JFrame("JTFM")
       frame.setJMenuBar(mainMenu)
-      //////////////////
-      frame(AppConfig.activeConfig.mainWindow.location)
-      
+
+      WindowLocation.apply(frame, AppConfig.activeConfig.mainWindow.location)
+
       val mainWindowLocLens = AppConfig.lens.mainWindow + MainWindowConfig.lens.location
       WindowLocation.listen(frame) { loc => 
         AppConfig.activeConfig = mainWindowLocLens(AppConfig.activeConfig,loc)
@@ -34,6 +32,7 @@ object Main {
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
       frame.setVisible(true)
     })
+  }
 
   lazy val mainMenu:JMenuBar = {
     MenuBuilder(new JMenuBar)
@@ -41,14 +40,4 @@ object Main {
       .menu("Right"){ _ => }
       .bar
   }
-
-  // lazy val leftMenu:JMenu = {
-  //   val menu = new JMenu("Left")
-  //   menu
-  // }
-
-  // lazy val rightMenu:JMenu = {
-  //   val menu = new JMenu("Right")
-  //   menu
-  // }
 }

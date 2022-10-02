@@ -69,9 +69,7 @@ object WindowLocation:
       override def componentMoved(e: ComponentEvent): Unit = 
         store(WindowLocation(frame))
     })
-
-extension (frame: JFrame)
-  def apply(loc: WindowLocation):Unit =
+  def apply(frame:JFrame, loc:WindowLocation):Unit =
     frame.setSize(loc.width, loc.height)
     frame.setLocation(loc.x, loc.y)
     frame.setExtendedState(loc.state.toExtendedState)
