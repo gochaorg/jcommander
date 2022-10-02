@@ -22,6 +22,14 @@ object ToJson:
     def toJson(n:Boolean) = Right(JS.Bool(n))      
   given ToJson[String] with
     def toJson(n:String) = Right(JS.Str(n))
+  given [T](using ToJson[T]): ToJson[List[T]] with
+    def toJson(list:List[T]):Either[String,JS] =
+      val t2js = summon[ToJson[T]]
+      list.foldLeft( Right(List[JS]()):Either[String,List[JS]] ){ case(a,e) =>
+        t2js.toJson(e).flatMap { js => 
+          a.map { ls => js :: ls }
+        }
+      }.map { ls => JS.Arr(ls.reverse) }
 
   // https://dotty.epfl.ch/docs/reference/contextual/derivation.html
   def iterator[T](p: T) = p.asInstanceOf[Product].productIterator
