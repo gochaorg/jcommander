@@ -36,8 +36,9 @@ object Main {
 
   lazy val mainMenu:JMenuBar = {
     MenuBuilder(new JMenuBar)
-      .menu("Left"){ _ => }
-      .menu("Right"){ _ => }
+      .menu("Left"){ mb => }
+      .horizGlue()
+      .menu("Right"){ mb => }
       .bar
   }
 }
