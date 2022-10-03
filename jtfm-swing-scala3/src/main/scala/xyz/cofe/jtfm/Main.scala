@@ -13,6 +13,13 @@ import xyz.cofe.jtfm.ui.conf._
 import javax.swing.JMenuBar
 import javax.swing.JMenu
 import java.awt.GraphicsEnvironment
+import xyz.cofe.jtfm.ui.table.Column
+import xyz.cofe.jtfm.ui.table.BasicColumn
+import xyz.cofe.jtfm.ui.table.BasicTable
+import xyz.cofe.jtfm.ui.table.Table
+import xyz.cofe.jtfm.ui.table.TableController
+import java.awt.BorderLayout
+import java.awt.Desktop
 
 object Main {
   def main(args:Array[String]):Unit = {
@@ -31,14 +38,35 @@ object Main {
 
       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
       frame.setVisible(true)
+
+      frame.getContentPane().setLayout(new BorderLayout())
+      frame.getContentPane().add(tableControllers._2)
     })
   }
 
   lazy val mainMenu:JMenuBar = {
     MenuBuilder(new JMenuBar)
-      .menu("Left"){ mb => }
-      .horizGlue()
-      .menu("Right"){ mb => }
+      .menu("File"){ mb => 
+        mb.action("exit"){ System.exit(0) }
+      }
+      .menu("Configuration") { mb =>
+        mb.action("Show config file") {
+          Desktop.getDesktop() match
+            case null => ()
+            case desk => desk.open( AppConfig.configFile.toFile() )
+        }
+      }
+      //.horizGlue()
+      //.menu("Right"){ mb => }
       .bar
   }
+
+  case class Sample(name:String, cnt:Int)
+  val nameColumn = BasicColumn[Sample,String]("name", row=>row.name, classOf[String])
+  val cntColumn = BasicColumn[Sample,Int]("count", row=>row.cnt, classOf[Int])
+  val table = BasicTable(
+    List(nameColumn, cntColumn),
+    List(Sample("hello", 1), Sample("world", 2))
+  )
+  lazy val tableControllers = TableController.swing(table)
 }

@@ -15,7 +15,7 @@ trait RootMenuBuilder extends MenuBuilder {
 }
 
 trait SubMenuBuilder extends MenuBuilder:
-  def action(name:String)(code:()=>Unit):SubMenuBuilder
+  def action(name:String)(code: =>Unit):SubMenuBuilder
   override def menu(name: String)(mb: SubMenuBuilder => Unit): SubMenuBuilder = ???
 
 case class RootMenuBuilderImpl(bar:JMenuBar) extends RootMenuBuilder:
@@ -35,11 +35,11 @@ case class SubMenuBuilderImpl(menu:JMenu) extends SubMenuBuilder:
     mb(SubMenuBuilderImpl(m))
     this
 
-  def action(name:String)(code:()=>Unit):SubMenuBuilder = {
+  def action(name:String)(code: =>Unit):SubMenuBuilder = {
     val m = new JMenuItem(name)
     menu.add(m)
     m.addActionListener { e =>
-      code()
+      code
     }
     this
   }
