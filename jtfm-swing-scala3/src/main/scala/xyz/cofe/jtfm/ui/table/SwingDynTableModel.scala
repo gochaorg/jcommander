@@ -12,9 +12,7 @@ class SwingDynTableModel[A]( data:ObserverList[A], columns:ObserverList[_ <: Swi
     def indexOf(item:A):Option[Int] = data.indexOf(item)
     def get(row:Int):Option[A] = data.get(row)
 
-
   private val dataListener = data.listen { ev => 
-    println(ev)
     ev match
       case ins:ObserverListEvent.Insert[A] => 
         fireRowInserted(ins.idx)
