@@ -7,7 +7,6 @@ trait SwingTableFocus[A](using model:ListTableModel[A]) extends JTable:
     this.getSelectionModel().getLeadSelectionIndex() match
       case ridx : Int if ridx<0 => None
       case ridx : Int => model.get(ridx)
-      case _ => None
 
   def focused_=(row: Option[A]): Option[A] = 
     val prev = focused
