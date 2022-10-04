@@ -11,5 +11,6 @@ class DynTable[A,M <: SwingDynTableModel[A]](
   listTableModel: ListTableModel[A] = model.listTableModel
 ) extends JTable 
   with SwingTableFocus[A]
-  with SwingTableSelection[A]:
+  with SwingTableSelection[A]
+  with SwingTableDynSelection[A]:
   setModel(model)
