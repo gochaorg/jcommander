@@ -20,6 +20,9 @@ import xyz.cofe.jtfm.ui.table.Table
 import xyz.cofe.jtfm.ui.table.TableController
 import java.awt.BorderLayout
 import java.awt.Desktop
+import xyz.cofe.jtfm.ui.table.SwingDynTableModel
+import javax.swing.JTable
+import javax.swing.JScrollPane
 
 object Main {
   def main(args:Array[String]):Unit = {
@@ -40,7 +43,8 @@ object Main {
       frame.setVisible(true)
 
       frame.getContentPane().setLayout(new BorderLayout())
-      frame.getContentPane().add(tableControllers._2)
+      //frame.getContentPane().add(tableControllers._2)
+      frame.getContentPane().add(new JScrollPane(swingTable))
     })
   }
 
@@ -56,8 +60,12 @@ object Main {
             case desk => desk.open( AppConfig.configFile.toFile() )
         }
       }
-      //.horizGlue()
-      //.menu("Right"){ mb => }
+      .horizGlue()
+      .menu("Table"){ mb => 
+        mb.action("add") {
+          data.insert(Sample("row"+data.size,data.size*2))
+        }
+      }
       .bar
   }
 
@@ -69,4 +77,12 @@ object Main {
     List(Sample("hello", 1), Sample("world", 2))
   )
   lazy val tableControllers = TableController.swing(table)
+
+  lazy val data = ObserverList[Sample]()
+  lazy val columns = ObserverList(List(
+    SwingDynTableModel.column[Sample,String]("name", sample=>sample.name, classOf[String]),
+    SwingDynTableModel.column[Sample,Int]("cnt", sample=>sample.cnt, classOf[Int]),
+    ))
+  lazy val tableModel = new SwingDynTableModel[Sample](data, columns)
+  lazy val swingTable = new JTable(tableModel)
 }
