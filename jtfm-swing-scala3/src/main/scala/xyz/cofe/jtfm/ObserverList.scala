@@ -61,6 +61,18 @@ class ObserverList[A]() extends Iterable[A]:
           emit(ObserverListEvent.Delete(index,old))
           Right(old)
 
+  def delete( a:A ):Either[String,List[A]] =
+    val removed = (0 until data.size).reverse.map { idx => 
+      (idx,data(idx))
+    }.filter { case(idx,item) => 
+      item == a
+    }.map { case(idx,item) => {      
+      data.remove(idx)
+      emit(ObserverListEvent.Delete(idx,item))
+      item
+    }}.toList
+    Right(removed)
+
   def update( index:Int, a:A ):Either[String,A] =
     if index<0
       then Left(s"index($index) < 0")
@@ -79,6 +91,31 @@ class ObserverList[A]() extends Iterable[A]:
     }
     data.clear()
     Right(removed)
+
+  def swap(first:Int, second:Int):Either[String,Unit] =
+    if first<0 then Left(s"first < 0")
+    else if first>=data.size then Left(s"first >= data.size")
+      else if second<0 then Left(s"second < 0")
+      else if second>=data.size then Left(s"second >= data.size")
+        else
+          val a = data(first)
+          val b = data(second)
+          data.update(first,b)
+          data.update(second,a)
+          emit(ObserverListEvent.Update(first,a,b))
+          emit(ObserverListEvent.Update(second,b,a))
+          Right(())
+
+  def indexOf(a:A, from:Int=0):Option[Int] =
+    if from<0 then None
+    else
+      var idx = from
+      var found = None:Option[Int]
+      while idx<size && found.isEmpty do
+        val itm = data(idx)
+        idx += 1
+        if itm==a then found = Some(idx)
+      found
     
 object ObserverList:
   def apply[A]():ObserverList[A] =

@@ -13,16 +13,14 @@ import xyz.cofe.jtfm.ui.conf._
 import javax.swing.JMenuBar
 import javax.swing.JMenu
 import java.awt.GraphicsEnvironment
-import xyz.cofe.jtfm.ui.table.Column
-import xyz.cofe.jtfm.ui.table.BasicColumn
-import xyz.cofe.jtfm.ui.table.BasicTable
-import xyz.cofe.jtfm.ui.table.Table
-import xyz.cofe.jtfm.ui.table.TableController
 import java.awt.BorderLayout
 import java.awt.Desktop
 import xyz.cofe.jtfm.ui.table.SwingDynTableModel
 import javax.swing.JTable
 import javax.swing.JScrollPane
+import xyz.cofe.jtfm.ui.table.DynTable
+import xyz.cofe.jtfm.ui.table.ListTableModel
+import javax.swing.JSplitPane
 
 object Main {
   def main(args:Array[String]):Unit = {
@@ -43,8 +41,12 @@ object Main {
       frame.setVisible(true)
 
       frame.getContentPane().setLayout(new BorderLayout())
-      //frame.getContentPane().add(tableControllers._2)
-      frame.getContentPane().add(new JScrollPane(swingTable))
+
+      val splitPanel = new JSplitPane()
+      splitPanel.setLeftComponent(new JScrollPane(swingTable))
+      splitPanel.setRightComponent(new JScrollPane(selSwingTable))
+      
+      frame.getContentPane().add(splitPanel)
     })
   }
 
@@ -62,21 +64,14 @@ object Main {
       }
       .horizGlue()
       .menu("Table"){ mb => 
-        mb.action("add") {
-          data.insert(Sample("row"+data.size,data.size*2))
-        }
+        mb.action("add") { data.insert(Sample("row"+data.size,data.size*2)) }
+        mb.action("next") { swingTable.focusedRow = swingTable.focusedRow.map { _ + 1} }
+        mb.action("prev") { swingTable.focusedRow = swingTable.focusedRow.map { _ - 1} }
       }
       .bar
   }
 
   case class Sample(name:String, cnt:Int)
-  val nameColumn = BasicColumn[Sample,String]("name", row=>row.name, classOf[String])
-  val cntColumn = BasicColumn[Sample,Int]("count", row=>row.cnt, classOf[Int])
-  val table = BasicTable(
-    List(nameColumn, cntColumn),
-    List(Sample("hello", 1), Sample("world", 2))
-  )
-  lazy val tableControllers = TableController.swing(table)
 
   lazy val data = ObserverList[Sample]()
   lazy val columns = ObserverList(List(
@@ -84,5 +79,8 @@ object Main {
     SwingDynTableModel.column[Sample,Int]("cnt", sample=>sample.cnt, classOf[Int]),
     ))
   lazy val tableModel = new SwingDynTableModel[Sample](data, columns)
-  lazy val swingTable = new JTable(tableModel)
+  lazy val swingTable = new DynTable(tableModel)
+
+  lazy val selTableModel = new SwingDynTableModel[Sample](swingTable.selection, columns)
+  lazy val selSwingTable = new DynTable(selTableModel)
 }

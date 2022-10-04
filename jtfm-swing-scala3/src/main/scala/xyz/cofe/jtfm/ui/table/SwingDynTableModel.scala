@@ -8,10 +8,20 @@ import java.awt.Event
 import xyz.cofe.jtfm.ui.ObserverListEvent
 
 class SwingDynTableModel[A]( data:ObserverList[A], columns:ObserverList[_ <: SwingDynTableModel.Column[A,_]] ) extends TableModel:
-  private val dataListener = data.listen { ev => ev match
-    case ins:ObserverListEvent.Insert[A] => fireRowInserted(ins.idx)
-    case upd:ObserverListEvent.Update[A] => fireRowUpdated(upd.idx)
-    case del:ObserverListEvent.Delete[A] => fireRowDeleted(del.idx)
+  given listTableModel: ListTableModel[A] with
+    def indexOf(item:A):Option[Int] = data.indexOf(item)
+    def get(row:Int):Option[A] = data.get(row)
+
+
+  private val dataListener = data.listen { ev => 
+    println(ev)
+    ev match
+      case ins:ObserverListEvent.Insert[A] => 
+        fireRowInserted(ins.idx)
+      case upd:ObserverListEvent.Update[A] => 
+        fireRowUpdated(upd.idx)
+      case del:ObserverListEvent.Delete[A] => 
+        fireRowDeleted(del.idx)
   }
   private val columnsListener = columns.listen { ev =>
     fireDataChanged()
