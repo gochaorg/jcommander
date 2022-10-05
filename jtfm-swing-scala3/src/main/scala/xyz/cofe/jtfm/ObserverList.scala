@@ -5,16 +5,13 @@ import scala.collection.mutable.ArrayBuffer
 class ObserverList[A]() extends Iterable[A]:
   private val data = ArrayBuffer[A]()
 
-  case class Listener(ls:ObserverCollEvent[A]=>Unit):
-    def close:Unit =
-      listeners = listeners.filterNot(l => l==ls)
+  private var listeners = List[ObserverCollEvent[Int,A]=>Unit]()
+  def listen(ls:ObserverCollEvent[Int,A]=>Unit):ObserverCollListener[Int,A] =
+    ObserverCollListener(ls, l => {
+      listeners = l :: listeners
+    })
 
-  private var listeners = List[ObserverCollEvent[A]=>Unit]()
-  def listen(ls:ObserverCollEvent[A]=>Unit):Listener =
-    listeners = ls :: listeners
-    Listener(ls)
-
-  private def emit(ev:ObserverCollEvent[A]):Unit =
+  private def emit(ev:ObserverCollEvent[Int,A]):Unit =
     listeners.foreach( ls => ls(ev) )
 
   override def iterator: Iterator[A] = data.iterator
@@ -82,7 +79,7 @@ class ObserverList[A]() extends Iterable[A]:
   def clear():Either[String,List[A]] =
     val removed = data.toList
     removed.zip(0 until removed.size).reverse.foreach { case (el,idx) => 
-      emit(ObserverCollEvent.Delete[A](idx, el))
+      emit(ObserverCollEvent.Delete(idx, el))
     }
     data.clear()
     Right(removed)

@@ -1,6 +1,6 @@
 package xyz.cofe.jtfm
 
-import xyz.cofe.jtfm.ui.ObserverList
+import xyz.cofe.jtfm.ObserverList
 
 class ObserverListTest extends munit.FunSuite {
   test("check") {

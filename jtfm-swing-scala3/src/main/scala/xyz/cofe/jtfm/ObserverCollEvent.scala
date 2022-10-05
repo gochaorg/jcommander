@@ -1,8 +1,8 @@
 package xyz.cofe.jtfm
 
-enum ObserverCollEvent[A]:
-  case Insert(idx:Int, a:A) extends ObserverCollEvent[A]
-  case Delete(idx:Int, a:A) extends ObserverCollEvent[A]
-  case Update(idx:Int, a:A, b:A) extends ObserverCollEvent[A]
+enum ObserverCollEvent[K,V]:
+  case Insert(idx:K, a:V) extends ObserverCollEvent[K,V]
+  case Delete(idx:K, a:V) extends ObserverCollEvent[K,V]
+  case Update(idx:K, a:V, b:V) extends ObserverCollEvent[K,V]
 
 

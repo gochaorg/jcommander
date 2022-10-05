@@ -5,6 +5,15 @@ import scala.collection.Iterable
 class ObserverMap[K,V] extends Iterable[(K,V)]:
   private val data = scala.collection.mutable.Map[K,V]()
 
+  private var listeners = List[ObserverCollEvent[K,V]=>Unit]()
+  def listen(ls:ObserverCollEvent[K,V]=>Unit):ObserverCollListener[K,V] =
+    ObserverCollListener(ls, l => {
+      listeners = l :: listeners
+    })
+
+  private def emit(ev:ObserverCollEvent[K,V]):Unit =
+    listeners.foreach( ls => ls(ev) )
+
   def keys = data.keySet
   def values = data.values
   def iterator = data.iterator

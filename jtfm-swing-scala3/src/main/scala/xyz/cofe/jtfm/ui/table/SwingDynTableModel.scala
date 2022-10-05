@@ -14,11 +14,11 @@ class SwingDynTableModel[A]( data:ObserverList[A], columns:ObserverList[_ <: Swi
 
   private val dataListener = data.listen { ev => 
     ev match
-      case ins:ObserverCollEvent.Insert[A] => 
+      case ins:ObserverCollEvent.Insert[Int,A] => 
         fireRowInserted(ins.idx)
-      case upd:ObserverCollEvent.Update[A] => 
+      case upd:ObserverCollEvent.Update[Int,A] => 
         fireRowUpdated(upd.idx)
-      case del:ObserverCollEvent.Delete[A] => 
+      case del:ObserverCollEvent.Delete[Int,A] => 
         fireRowDeleted(del.idx)
   }
   private val columnsListener = columns.listen { ev =>
