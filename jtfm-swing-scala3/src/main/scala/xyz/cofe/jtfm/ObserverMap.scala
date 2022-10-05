@@ -21,7 +21,28 @@ class ObserverMap[K,V] extends Iterable[(K,V)]:
   def get(key:K) = data.get(key)
   override def size:Int = data.size
 
-  def put(key:K, value:V) = data.put(key,value)
-  def remove(key:K) = data.remove(key)
+  def put(key:K, value:V) = 
+    val prev = data.put(key,value)
+    prev match
+      case Some(old) =>
+        emit(ObserverCollEvent.Update(key,old,value))
+      case None =>
+        emit(ObserverCollEvent.Insert(key,value))
+    prev
 
-  def clear() = data.clear()
+  def putAll(map:Map[K,V]) =
+    map.foreach { case(k,v) => put(k,v) }
+
+  def putAll(map:Iterable[(K,V)]) =
+    map.foreach { case(k,v) => put(k,v) }
+
+  def remove(key:K) = 
+    val prev = data.remove(key)
+    prev match
+      case Some(old) => emit(ObserverCollEvent.Delete(key,old))
+      case _ => ()
+    prev
+
+  def clear() = 
+    data.foreach { case(k,v) => emit(ObserverCollEvent.Delete(k,v)) }
+    data.clear()
