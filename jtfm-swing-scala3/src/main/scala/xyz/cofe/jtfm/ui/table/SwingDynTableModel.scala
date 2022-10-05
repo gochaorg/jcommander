@@ -1,11 +1,11 @@
 package xyz.cofe.jtfm.ui.table
 
-import xyz.cofe.jtfm.ui.ObserverList
+import xyz.cofe.jtfm.ObserverList
 import javax.swing.table.TableModel
 import javax.swing.event.TableModelListener
 import javax.swing.event.TableModelEvent
 import java.awt.Event
-import xyz.cofe.jtfm.ui.ObserverListEvent
+import xyz.cofe.jtfm.ObserverCollEvent
 
 class SwingDynTableModel[A]( data:ObserverList[A], columns:ObserverList[_ <: SwingDynTableModel.Column[A,_]] ) extends TableModel:
   given listTableModel: ListTableModel[A] with
@@ -14,11 +14,11 @@ class SwingDynTableModel[A]( data:ObserverList[A], columns:ObserverList[_ <: Swi
 
   private val dataListener = data.listen { ev => 
     ev match
-      case ins:ObserverListEvent.Insert[A] => 
+      case ins:ObserverCollEvent.Insert[A] => 
         fireRowInserted(ins.idx)
-      case upd:ObserverListEvent.Update[A] => 
+      case upd:ObserverCollEvent.Update[A] => 
         fireRowUpdated(upd.idx)
-      case del:ObserverListEvent.Delete[A] => 
+      case del:ObserverCollEvent.Delete[A] => 
         fireRowDeleted(del.idx)
   }
   private val columnsListener = columns.listen { ev =>

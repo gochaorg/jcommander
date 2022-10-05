@@ -42,11 +42,11 @@ object Main {
 
       frame.getContentPane().setLayout(new BorderLayout())
 
-      val splitPanel = new JSplitPane()
-      splitPanel.setLeftComponent(new JScrollPane(swingTable))
-      splitPanel.setRightComponent(new JScrollPane(selSwingTable))
-      
-      frame.getContentPane().add(splitPanel)
+      // val splitPanel = new JSplitPane()
+      // splitPanel.setLeftComponent(new JScrollPane(swingTable))
+      // splitPanel.setRightComponent(new JScrollPane(selSwingTable))
+      // splitPanel.setDividerLocation(200)      
+      // frame.getContentPane().add(splitPanel)
     })
   }
 
@@ -62,25 +62,25 @@ object Main {
             case desk => desk.open( AppConfig.configFile.toFile() )
         }
       }
-      .horizGlue()
-      .menu("Table"){ mb => 
-        mb.action("add") { data.insert(Sample("row"+data.size,data.size*2)) }
-        mb.action("next") { swingTable.focusedRow = swingTable.focusedRow.map { _ + 1} }
-        mb.action("prev") { swingTable.focusedRow = swingTable.focusedRow.map { _ - 1} }
-      }
+      // .horizGlue()
+      // .menu("Table"){ mb => 
+      //   mb.action("add") { data.insert(Sample("row"+data.size,data.size*2)) }
+      //   mb.action("next") { swingTable.focusedRow = swingTable.focusedRow.map { _ + 1} }
+      //   mb.action("prev") { swingTable.focusedRow = swingTable.focusedRow.map { _ - 1} }
+      // }
       .bar
   }
 
-  case class Sample(name:String, cnt:Int)
+  // case class Sample(name:String, cnt:Int)
 
-  lazy val data = ObserverList[Sample]()
-  lazy val columns = ObserverList(List(
-    SwingDynTableModel.column[Sample,String]("name", sample=>sample.name, classOf[String]),
-    SwingDynTableModel.column[Sample,Int]("cnt", sample=>sample.cnt, classOf[Int]),
-    ))
-  lazy val tableModel = new SwingDynTableModel[Sample](data, columns)
-  lazy val swingTable = new DynTable(tableModel)
+  // lazy val data = ObserverList[Sample]()
+  // lazy val columns = ObserverList(List(
+  //   SwingDynTableModel.column[Sample,String]("name", sample=>sample.name, classOf[String]),
+  //   SwingDynTableModel.column[Sample,Int]("cnt", sample=>sample.cnt, classOf[Int]),
+  //   ))
+  // lazy val tableModel = new SwingDynTableModel[Sample](data, columns)
+  // lazy val swingTable = new DynTable(tableModel)
 
-  lazy val selTableModel = new SwingDynTableModel[Sample](swingTable.selection, columns)
-  lazy val selSwingTable = new DynTable(selTableModel)
+  // lazy val selTableModel = new SwingDynTableModel[Sample](swingTable.selection, columns)
+  // lazy val selSwingTable = new DynTable(selTableModel)
 }

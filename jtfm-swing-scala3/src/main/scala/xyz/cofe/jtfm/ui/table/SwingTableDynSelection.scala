@@ -1,6 +1,6 @@
 package xyz.cofe.jtfm.ui.table
 
-import xyz.cofe.jtfm.ui.ObserverList
+import xyz.cofe.jtfm.ObserverList
 import javax.swing.JTable
 import javax.swing.event.ListSelectionListener
 import javax.swing.event.ListSelectionEvent

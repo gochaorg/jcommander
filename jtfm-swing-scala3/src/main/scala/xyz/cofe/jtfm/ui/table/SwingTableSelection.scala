@@ -1,7 +1,7 @@
 package xyz.cofe.jtfm.ui.table
 
 import javax.swing.JTable
-import xyz.cofe.jtfm.ui.ObserverList
+import xyz.cofe.jtfm.ObserverList
 import javax.swing.event.ListSelectionListener
 import javax.swing.event.ListSelectionEvent
 
