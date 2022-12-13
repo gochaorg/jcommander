@@ -14,12 +14,3 @@ trait ScreenBuffer:
   def diff(buf:ScreenBuffer): Seq[CharDifference]
   def resize(width:Int,height:Int):Either[ScreenBufferError,Unit]
 
-case class ScreenChar(char:Char, foreground:Color, background:Color )
-
-case class CharDifference(
-  pos: Position,
-  left:Option[ScreenChar],
-  right:Option[ScreenChar]
-)
-
-//case class PosScreenChar( char:ScreenChar, pos:Position )
