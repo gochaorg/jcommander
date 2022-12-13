@@ -71,26 +71,25 @@ object ScreenBufSync:
       batchCommands.foldLeft( List[BatchCmd]() ){ case (sum, itm) => 
         if sum.isEmpty
         then List(itm)
-        else 
-          sum.head match
-            case b@BatchCmd.SetCursor(x, y) => itm :: sum
-            case b@BatchCmd.SetForeground(color) => itm :: sum
-            case b@BatchCmd.SetBackground(color) => itm :: sum
-            case b@BatchCmd.WriteChar(prvChar) => 
-              itm match
-                case BatchCmd.WriteChar(curChar) =>
-                  BatchCmd.WriteStr("" + prvChar + curChar) :: sum.tail
-                case BatchCmd.WriteStr(string) =>
-                  BatchCmd.WriteStr(prvChar + string) :: sum.tail
-                case _ => itm :: sum
-            case b@BatchCmd.WriteStr(prvStr) => 
-              itm match
-                case BatchCmd.WriteChar(char) =>
-                  BatchCmd.WriteStr(prvStr + char) :: sum.tail
-                case BatchCmd.WriteStr(curStr) =>
-                  BatchCmd.WriteStr(prvStr + curStr) :: sum.tail
-                case _ => itm :: sum
-              itm :: sum
+        else itm match
+          case BatchCmd.SetCursor(x, y) => itm :: sum
+          case BatchCmd.SetForeground(color) => itm :: sum
+          case BatchCmd.SetBackground(color) => itm :: sum
+          case BatchCmd.WriteChar(curChar) =>
+            sum.head match
+              case BatchCmd.WriteChar(char) =>
+                BatchCmd.WriteStr("" + char + curChar) :: sum.tail
+              case BatchCmd.WriteStr(string) =>
+                BatchCmd.WriteStr(string + curChar) :: sum.tail
+              case _ => itm :: sum
+          case BatchCmd.WriteStr(curString) =>
+            sum.head match
+              case BatchCmd.WriteChar(char) =>
+                BatchCmd.WriteStr("" + char + curString) :: sum.tail
+              case BatchCmd.WriteStr(string) =>
+                BatchCmd.WriteStr("" + string + curString) :: sum.tail
+              case _ => itm :: sum
+        
       }.reverse
 
   object batch:
