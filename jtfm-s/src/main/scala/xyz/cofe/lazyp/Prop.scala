@@ -2,9 +2,26 @@ package xyz.cofe.lazyp
 
 import scala.runtime.Tuples.apply
 
+trait PropLogger
+object PropLogger
+
 trait Prop[V]:
   def get:V
   def onChange( listener: => Unit ):ReleaseListener
+
+object Prop:
+  def rw[A](initial:A):ReadWriteProp[A] = ReadWriteProp(initial)
+  def eval[A,Z](propA:Prop[A])(fn:A=>Z):Prop[Z] = (propA).compute(fn)
+  def eval[A,B,Z](pa:Prop[A],pb:Prop[B])
+    (fn:(A,B)=>Z):Prop[Z] = (pa,pb).compute(fn)
+  def eval[A,B,C,Z](pa:Prop[A],pb:Prop[B],pc:Prop[C])
+    (fn:(A,B,C)=>Z):Prop[Z] = (pa,pb,pc).compute(fn)
+  def eval[A,B,C,D,Z](pa:Prop[A],pb:Prop[B],pc:Prop[C],pd:Prop[D])
+    (fn:(A,B,C,D)=>Z):Prop[Z] = (pa,pb,pc,pd).compute(fn)
+  def eval[A,B,C,D,E,Z](pa:Prop[A],pb:Prop[B],pc:Prop[C],pd:Prop[D],pe:Prop[E])
+    (fn:(A,B,C,D,E)=>Z):Prop[Z] = (pa,pb,pc,pd,pe).compute(fn)
+  def eval[A,B,C,D,E,F,Z](pa:Prop[A],pb:Prop[B],pc:Prop[C],pd:Prop[D],pe:Prop[E],pf:Prop[F])
+    (fn:(A,B,C,D,E,F)=>Z):Prop[Z] = (pa,pb,pc,pd,pe,pf).compute(fn)
 
 trait ListenerSuppor:
   protected def fire():Unit =
@@ -33,6 +50,26 @@ class ReadWriteProp[V]( initial:V ) extends Prop[V] with ListenerSuppor:
     value = newValue
     fire()
     old
+
+class ComputeableProp[A,R]( compute:A=>R, values:()=>A ) extends Prop[R] with ListenerSuppor:
+  private var computed:Option[R] = None
+
+  override def get: R = 
+    computed match
+      case Some(v) => v
+      case None => 
+        val v = eval
+        computed = Some(v)
+        fire()
+        v
+
+  def reset():Unit = 
+    val prev = computed
+    computed = None
+    if prev.isDefined then
+      fire()
+
+  def eval:R = compute(values())
 
 extension [V]( prop:Prop[V] )
   def :* [A]( other:Prop[A] ):(Prop[V],Prop[A]) = (prop, other)
@@ -109,31 +146,3 @@ extension [A,B,C,D,E,F](props:(Prop[A],Prop[B],Prop[C],Prop[D],Prop[E],Prop[F]))
     props._5.onChange { cp.reset() }
     props._6.onChange { cp.reset() }
     cp
-
-class ComputeableProp[A,R]( compute:A=>R, values:()=>A ) extends Prop[R] with ListenerSuppor:
-  private var computed:Option[R] = None
-
-  override def get: R = 
-    computed match
-      case Some(v) => v
-      case None => 
-        val v = eval
-        computed = Some(v)
-        fire()
-        v
-
-  def reset():Unit = 
-    val prev = computed
-    computed = None
-    if prev.isDefined then
-      fire()
-
-  def eval:R = compute(values())
-
-// def depended() =
-//   val p1:Prop[Int] = ???
-//   val p2:Prop[Long] = ???
-//   val p3:Prop[Float] = ???
-//   val p4:Prop[Double] = ???
-//   val ps = p1 :* p2 :* p3
-
