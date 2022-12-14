@@ -1,8 +1,11 @@
 val scala3Version = "3.2.1"
 
-resolvers += Resolver.mavenLocal
+//resolvers += Resolver.mavenLocal
+resolvers += MavenCache("local-maven", file("/home/user/.m2/repository"))
+// resolvers += Resolver.mavenLocal
 
-libraryDependencies += "xyz.cofe" % "term-common" % "0.2" withSources()
+//libraryDependencies += "xyz.cofe" % "term-common" % "0.2" withSources()
+libraryDependencies += "xyz.cofe" % "term-common" % "0.3-SNAPSHOT" //withSources()
 
 lazy val root = project
   .in(file("."))
