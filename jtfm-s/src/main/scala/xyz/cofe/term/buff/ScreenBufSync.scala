@@ -8,11 +8,17 @@ object ScreenBufSync:
   def sync(console:Console, buff:ScreenBuffer) =
     batching(buff, console.getSize()).foreach( cmd => batch.apply(console, cmd) )
 
-  def batching(buff:ScreenBuffer, consoleSize:Size):Seq[BatchCmd] =
+  def batching(buff:ScreenBuffer, consoleSize:Size, fullSync:Boolean=true):Seq[BatchCmd] =
     val rect = consoleSize.leftUpRect(0,0)
-    val chars = writeChars(buff).filter { pchr => rect.contains(pchr.pos) }
+    val chars0 = writeChars(buff).filter { pchr => rect.contains(pchr.pos) }
+    val chars = 
+      if !fullSync && buff.isInstanceOf[ChangeMetricBuffer]
+      then 
+        val cmBuff = buff.asInstanceOf[ChangeMetricBuffer]
+        chars0.filter { pchr => cmBuff.changed(pchr.pos) }
+      else chars0
+
     reduce(batching(chars))
-    //batching(chars)
 
   def writeChars(buff: ScreenBuffer):IndexedSeq[PosScreenChar] =
     (0 until buff.width).flatMap { y => 
