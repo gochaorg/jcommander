@@ -10,6 +10,8 @@ import java.nio.channels.SeekableByteChannel
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
+import xyz.cofe.json4s3.derv.ToJson
+import xyz.cofe.json4s3.stream.ast.AST
 
 extension (path:Path)(using log:FilesLogger, opts:FilesOption)
   def isDirectory:Either[Throwable,Boolean] = 
@@ -42,8 +44,14 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(CreateDirectories(path,opts.copy)) {
       Files.createDirectories(path,opts.fileAttributes:_*)
     }
-  // def createFile:Either[Throwable,Unit]
-  // def createLink(target:Path):Either[Throwable,Unit]
+  def createFile:Either[Throwable,Unit] =
+    log(CreateFile(path,opts.copy)) {
+      Files.createFile(path,opts.fileAttributes:_*)
+    }
+  def createLink(target:Path):Either[Throwable,Unit] =
+    log(CreateLink(path,target)) {
+      Files.createLink(path,target)
+    }
   // def createSymbolicLink(target:Path):Either[Throwable,Unit]
   // def createTempDirectory(prefix:String):Either[Throwable,Path]
   // def createTempFile(prefix:String,suffix:String):Either[Throwable,Path]
@@ -69,14 +77,14 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(OutputStreamOp(path,opts.copy)) {
       Files.newOutputStream(path,opts.openOptions:_*)
     }
-  def readString(cs:Charset):Either[Throwable,String] =
-    log(ReadString(path,cs)) {
-      Files.readString(path,cs)
-    }
-  def writeString(string:String,cs:Charset):Either[Throwable,Unit] =
-    log(WriteString(path,cs,string,opts.copy)) {
-      Files.writeString(path,string,cs,opts.openOptions:_*)
-    }
+  // def readString(cs:Charset):Either[Throwable,String] =
+  //   log(ReadString(path,cs)) {
+  //     Files.readString(path,cs)
+  //   }
+  // def writeString(string:String,cs:Charset):Either[Throwable,Unit] =
+  //   log(WriteString(path,cs,string,opts.copy)) {
+  //     Files.writeString(path,string,cs,opts.openOptions:_*)
+  //   }
   // def readBytes:Either[Throwable,Array[Byte]]
   // def writeBytes(bytes:Array[Byte]):Either[Throwable,Unit]
   // def posixPerm:Either[Throwable,PosixPerm]
@@ -95,3 +103,8 @@ case class PosixPerm(
   othersWrite:Boolean,
   othersExecute:Boolean,
 )
+
+given pathToJson:ToJson[Path] with
+  def toJson(path: Path): Option[AST] = 
+    Some(AST.JsStr(path.toString()))
+
