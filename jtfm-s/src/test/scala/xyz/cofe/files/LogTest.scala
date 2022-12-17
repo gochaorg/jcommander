@@ -6,6 +6,7 @@ import xyz.cofe.files.FilesOperation._
 import xyz.cofe.jtfm.json._
 import java.time.Instant
 import xyz.cofe.jtfm.json.given
+import FilesOperation.given
 
 class LogTest extends munit.FunSuite {
   test("FilesOperation 2 json") {
