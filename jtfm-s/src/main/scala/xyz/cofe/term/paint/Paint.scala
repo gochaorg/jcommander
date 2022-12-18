@@ -37,8 +37,7 @@ trait Cursor:
   def position:Position
   def position_=(newPosition:Position):Either[String,Unit]
 
-
 trait Bounds:
   def size:Size
   def absoluteOffset:Position
-
+  def clipping: Boolean

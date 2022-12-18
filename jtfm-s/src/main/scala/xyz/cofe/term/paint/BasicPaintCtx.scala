@@ -35,6 +35,7 @@ extends PaintCtx {
   object boundsInstance extends Bounds {
     def absoluteOffset: Position = BasicPaintCtx.this.absoluteOffset
     def size: Size = boundsSize
+    def clipping: Boolean = BasicPaintCtx.this.clipping
   }
 
   override def cursor: Cursor = cursorInstance
