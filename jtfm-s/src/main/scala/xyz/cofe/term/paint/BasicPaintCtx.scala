@@ -10,7 +10,6 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Size
 
 class BasicPaintCtx(
-  console: Console,
   screenBuffer: ScreenBuffer,
   absoluteOffset: Position,
   boundsSize: Size,
