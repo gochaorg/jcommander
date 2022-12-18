@@ -152,6 +152,35 @@ extends PaintCtx {
         moveNext()
       case EscapeAction.Skip =>
     
+  def context:CtxBuilder = CtxBuilder(
+    absoluteOffset,
+    boundsSize,
+    clipping
+  )
+  case class CtxBuilder(
+    absoluteOffset1: Position,
+    boundsSize1: Size,
+    clipping1: Boolean,
+  ) extends ContextBuilder:
+    def absolute(x:Int,y:Int):ContextBuilder = 
+      copy(
+        absoluteOffset1 = Position(x,y)
+      )
+    def offset(x:Int,y:Int):ContextBuilder = 
+      copy(
+        absoluteOffset1 = absoluteOffset.move(x,y)
+      )
+    def size(width:Int,height:Int):ContextBuilder = 
+      require(width>=0)
+      require(height>=0)
+      copy( boundsSize1 = Size(width,height) )
+    def clipping(clip:Boolean):ContextBuilder = 
+      copy(clipping1 = clip)
+    def build:PaintCtx = BasicPaintCtx.this.copy(
+      absoluteOffset = absoluteOffset1,
+      boundsSize = boundsSize1,
+      clipping = clipping1
+    )
 }
 
 object BasicPaintCtx:

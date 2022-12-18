@@ -28,7 +28,7 @@ trait PaintCtx:
   def write(chr:Char):Unit
   def write(string:String):Unit  
 
-  //def context(newBound:Rect):PaintCtx
+  def context:ContextBuilder
 
 trait Cursor:
   def visible:Boolean
@@ -41,3 +41,17 @@ trait Bounds:
   def size:Size
   def absoluteOffset:Position
   def clipping: Boolean
+
+trait ContextBuilder:
+  def absolute(x:Int,y:Int):ContextBuilder
+  def absolute(pos:Position):ContextBuilder = absolute(pos.x, pos.y)
+
+  def offset(x:Int,y:Int):ContextBuilder
+  def offset(pos:Position):ContextBuilder = offset(pos.x, pos.y)
+
+  def size(width:Int,height:Int):ContextBuilder
+  def size(size:Size):ContextBuilder = this.size(size.width(), size.height())
+
+  def clipping(clip:Boolean):ContextBuilder
+
+  def build:PaintCtx
