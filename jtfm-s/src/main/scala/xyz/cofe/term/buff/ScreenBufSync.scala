@@ -26,7 +26,7 @@ object ScreenBufSync:
         val p = buff.cursorPos
         List( BatchCmd.SetCursor(p.x, p.y), BatchCmd.SetCursorVisible(true) )
       else
-        List(BatchCmd.SetCursorVisible(true))
+        List(BatchCmd.SetCursorVisible(false))
 
     charsCommands ++ cursorCommands
 
