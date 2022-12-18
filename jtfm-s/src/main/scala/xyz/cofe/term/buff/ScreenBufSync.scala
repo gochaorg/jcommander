@@ -18,7 +18,17 @@ object ScreenBufSync:
         chars0.filter { pchr => cmBuff.changed(pchr.pos) }
       else chars0
 
-    reduce(batching(chars))
+    val charsCommands = reduce(batching(chars))
+
+    val cursorCommands =
+      if buff.cursorVisible 
+      then 
+        val p = buff.cursorPos
+        List( BatchCmd.SetCursor(p.x, p.y), BatchCmd.SetCursorVisible(true) )
+      else
+        List(BatchCmd.SetCursorVisible(true))
+
+    charsCommands ++ cursorCommands
 
   def writeChars(buff: ScreenBuffer):IndexedSeq[PosScreenChar] =
     (0 until buff.width).flatMap { y => 
@@ -38,6 +48,7 @@ object ScreenBufSync:
     case SetBackground(color:Color)
     case WriteChar(char:Char)
     case WriteStr(string:String)
+    case SetCursorVisible(visible:Boolean)
 
   def batching( chars:IndexedSeq[PosScreenChar] ):Seq[BatchCmd] =
     if chars.isEmpty
@@ -95,6 +106,7 @@ object ScreenBufSync:
               case BatchCmd.WriteStr(string) =>
                 BatchCmd.WriteStr("" + string + curString) :: sum.tail
               case _ => itm :: sum
+          case _ => itm :: sum
         
       }.reverse
 
@@ -118,4 +130,5 @@ object ScreenBufSync:
         case BatchCmd.SetBackground(color) => console.setBackground(color)
         case BatchCmd.WriteChar(char) => console.write(""+char)
         case BatchCmd.WriteStr(string) => console.write(string)
+        case BatchCmd.SetCursorVisible(visible) => console.setCursorVisible(visible)
       
