@@ -31,3 +31,11 @@ class ChangeMetricBuffer(buff:ScreenBuffer) extends ScreenBuffer:
   override def resize(width: Int, height: Int): Either[ScreenBufferError, Unit] = buff.resize(width,height)
   override def diff(buf: ScreenBuffer): Seq[CharDifference] = buff.diff(buf)
   override def copy: ScreenBuffer = buff.copy
+
+  override def cursorPos:Position = buff.cursorPos
+  override def cursorPos_=(pos:Position):Either[ScreenBufferError,Unit] = 
+    buff.cursorPos = pos
+
+  override def cursorVisible:Boolean = buff.cursorVisible
+  override def cursorVisible_=(vis:Boolean):Either[ScreenBufferError,Unit] =
+    buff.cursorVisible = vis

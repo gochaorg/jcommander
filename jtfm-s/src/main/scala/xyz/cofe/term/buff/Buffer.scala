@@ -37,6 +37,24 @@ class Buffer extends ScreenBuffer:
           line(x) = chr
           Right(())
 
+
+  private var cursorPosValue : Position = Position(0,0)
+  def cursorPos:Position = cursorPosValue
+  def cursorPos_=(pos:Position):Either[ScreenBufferError,Unit] = 
+    if pos.x<0 || pos.x>=width 
+    then Left(ScreenBufferError.AgrumentOutRange("pos.x",pos.x,0,width-1))
+    else if pos.y<0 || pos.y>=height
+      then Left(ScreenBufferError.AgrumentOutRange("pos.y",pos.y,0,height-1))
+      else
+        cursorPosValue = pos
+        Right(())
+  
+  private var cursorVis = true
+  def cursorVisible:Boolean = cursorVis
+  def cursorVisible_=(vis:Boolean):Either[ScreenBufferError,Unit] =
+    cursorVis = vis
+    Right(())
+
   def copy:Buffer = 
     val buf = Buffer()
     buf.lines = lines.map( line => Array.copyOf(line,line.length) )

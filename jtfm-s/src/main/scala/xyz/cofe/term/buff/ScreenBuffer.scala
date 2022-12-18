@@ -13,4 +13,7 @@ trait ScreenBuffer:
   def copy:ScreenBuffer
   def diff(buf:ScreenBuffer): Seq[CharDifference]
   def resize(width:Int,height:Int):Either[ScreenBufferError,Unit]
-
+  def cursorPos:Position
+  def cursorPos_=(pos:Position):Either[ScreenBufferError,Unit]
+  def cursorVisible:Boolean
+  def cursorVisible_=(vis:Boolean):Either[ScreenBufferError,Unit]
