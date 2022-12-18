@@ -19,11 +19,10 @@ class BasicPaintCtx(
 extends PaintCtx {
   var cursorX: Int = 0
   var cursorY: Int = 0
-  override def title: String = BasicPaintCtx.lastTitle
+  override def title: String = screenBuffer.title
 
   override def title_=(string: String): Unit = 
-    console.setTitle(string)
-    BasicPaintCtx.lastTitle = string
+    screenBuffer.title = string
 
   override def bounds: Bounds = boundsInstance
 
@@ -38,10 +37,9 @@ extends PaintCtx {
     def position: Position = Position(cursorX,cursorY)
     def position_=(newPosition: Position): Either[String, Unit] = ???
 
-    def visible: Boolean = BasicPaintCtx.cursorVisible
+    def visible: Boolean = screenBuffer.cursorVisible
     def visible_=(switchOn: Boolean): Unit = 
-      BasicPaintCtx.cursorVisible = switchOn
-      console.setCursorVisible(switchOn)
+      screenBuffer.cursorVisible = switchOn
   }
 
   var foreground : Color = Color.White
@@ -74,9 +72,4 @@ extends PaintCtx {
 
   //override def read(x: Int, y: Int): Option[ScreenChar] = ???
   //override def context(newBound: Rect): PaintCtx = ???
-}
-
-object BasicPaintCtx {
-  @volatile var lastTitle = "default title"
-  @volatile var cursorVisible = false
 }

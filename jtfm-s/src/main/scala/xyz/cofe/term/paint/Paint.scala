@@ -26,7 +26,7 @@ trait PaintCtx:
   def write(x:Int,y:Int,string:String):Unit
   def write(chr:ScreenChar):Unit
   def write(chr:Char):Unit
-  def write(string:String):Unit
+  def write(string:String):Unit  
 
   //def context(newBound:Rect):PaintCtx
 

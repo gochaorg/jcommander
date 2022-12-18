@@ -134,3 +134,5 @@ class Buffer extends ScreenBuffer:
     }
     widthValue = width
     Right(())
+
+  var title:String = "title"

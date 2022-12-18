@@ -4,9 +4,12 @@ import xyz.cofe.term.common.Console
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.common.Size
+
 object ScreenBufSync:
   def sync(console:Console, buff:ScreenBuffer) =
     batching(buff, console.getSize()).foreach( cmd => batch.apply(console, cmd) )
+
+  @volatile var lastTitleOpt : Option[String] = None
 
   def batching(buff:ScreenBuffer, consoleSize:Size, fullSync:Boolean=true):Seq[BatchCmd] =
     val rect = consoleSize.leftUpRect(0,0)
@@ -28,7 +31,17 @@ object ScreenBufSync:
       else
         List(BatchCmd.SetCursorVisible(false))
 
-    charsCommands ++ cursorCommands
+    val titleCommands =
+      lastTitleOpt match
+        case None => List(BatchCmd.SetTitle(buff.title))
+        case Some(lastTitle) =>
+          if lastTitle != buff.title
+          then 
+            lastTitleOpt = Some(buff.title)
+            List(BatchCmd.SetTitle(buff.title))
+          else List()
+
+    charsCommands ++ cursorCommands ++ titleCommands
 
   def writeChars(buff: ScreenBuffer):IndexedSeq[PosScreenChar] =
     (0 until buff.width).flatMap { y => 
@@ -49,6 +62,7 @@ object ScreenBufSync:
     case WriteChar(char:Char)
     case WriteStr(string:String)
     case SetCursorVisible(visible:Boolean)
+    case SetTitle(title:String)
 
   def batching( chars:IndexedSeq[PosScreenChar] ):Seq[BatchCmd] =
     if chars.isEmpty
@@ -131,4 +145,5 @@ object ScreenBufSync:
         case BatchCmd.WriteChar(char) => console.write(""+char)
         case BatchCmd.WriteStr(string) => console.write(string)
         case BatchCmd.SetCursorVisible(visible) => console.setCursorVisible(visible)
+        case BatchCmd.SetTitle(title) => console.setTitle(title)
       

@@ -39,3 +39,7 @@ class ChangeMetricBuffer(buff:ScreenBuffer) extends ScreenBuffer:
   override def cursorVisible:Boolean = buff.cursorVisible
   override def cursorVisible_=(vis:Boolean):Either[ScreenBufferError,Unit] =
     buff.cursorVisible = vis
+
+  override def title:String = buff.title
+  override def title_=(str:String):Unit =
+    buff.title = str

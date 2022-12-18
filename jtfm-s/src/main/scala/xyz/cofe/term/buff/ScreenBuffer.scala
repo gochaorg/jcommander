@@ -17,3 +17,6 @@ trait ScreenBuffer:
   def cursorPos_=(pos:Position):Either[ScreenBufferError,Unit]
   def cursorVisible:Boolean
   def cursorVisible_=(vis:Boolean):Either[ScreenBufferError,Unit]
+  def title:String
+  def title_=(str:String):Unit
+  
