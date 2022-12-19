@@ -2,6 +2,7 @@ package xyz.cofe.term.buff
 
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.common.Position
+import xyz.cofe.term.common.Size
 
 trait ScreenBuffer:
   def width:Int
@@ -13,6 +14,7 @@ trait ScreenBuffer:
   def copy:ScreenBuffer
   def diff(buf:ScreenBuffer): Seq[CharDifference]
   def resize(width:Int,height:Int):Either[ScreenBufferError,Unit]
+  def resize(size:Size):Either[ScreenBufferError,Unit] = resize(size.width, size.height)
   def cursorPos:Position
   def cursorPos_=(pos:Position):Either[ScreenBufferError,Unit]
   def cursorVisible:Boolean

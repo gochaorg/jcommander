@@ -6,7 +6,7 @@ import xyz.cofe.term.common.Color
 import xyz.cofe.term.common.Size
 
 object ScreenBufSync:
-  def sync(console:Console, buff:ScreenBuffer) =
+  def sync(console:Console, buff:ScreenBuffer, fullSync:Boolean=true) =
     batching(buff, console.getSize()).foreach( cmd => batch.apply(console, cmd) )
 
   @volatile var lastTitleOpt : Option[String] = None
@@ -44,8 +44,8 @@ object ScreenBufSync:
     charsCommands ++ cursorCommands ++ titleCommands
 
   def writeChars(buff: ScreenBuffer):IndexedSeq[PosScreenChar] =
-    (0 until buff.width).flatMap { y => 
-      (0 until buff.height).map { x =>
+    (0 until buff.height).flatMap { y => 
+      (0 until buff.width).map { x =>
         buff.get(x,y).map { chr => 
           PosScreenChar(chr, Position(x,y))
         }

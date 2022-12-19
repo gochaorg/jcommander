@@ -87,7 +87,10 @@ extends PaintCtx {
     else
       val code = schr.char.toInt
       if code>=32 then
-        screenBuffer.set(x+absoluteOffset.x,y+absoluteOffset.y,schr)
+        screenBuffer.set(
+          x+absoluteOffset.x,
+          y+absoluteOffset.y,
+          schr)
       else
         specChars match
           case SpecChar.Skip =>
