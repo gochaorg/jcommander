@@ -1,4 +1,4 @@
-package xyz.cofe.term.ui
+package xyz.cofe.term.cs
 
 class ObserverListTest extends munit.FunSuite:
   test("check events") {
