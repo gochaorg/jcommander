@@ -53,7 +53,7 @@ trait TextProperty extends Widget:
 
 trait PaintText extends PaintStack with TextProperty with ForegroundColor:
   paintStack.set(
-    paintStack.get :+ { paint => 
+    paintStack.get :+ { paint =>       
       paint.write(0,0,text.get)
     }
   )

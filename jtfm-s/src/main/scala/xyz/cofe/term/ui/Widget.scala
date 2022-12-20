@@ -8,10 +8,12 @@ import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.term.common.InputEvent
 
 trait Widget:
+  val parent:ReadWriteProp[Option[Widget]] = ReadWriteProp(None)
   def location:Prop[Position]
   def size:Prop[Size]
   def paint(paintCtx:PaintCtx):Unit = {}
   def repaint:Unit = Session.currentSession.foreach( ses => ses.repaint(this) )
+
 trait LocationRWProp extends Widget:
   val location:ReadWriteProp[Position] = ReadWriteProp(Position(0,0))
   location.onChange { repaint }

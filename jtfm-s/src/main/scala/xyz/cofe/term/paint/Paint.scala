@@ -27,6 +27,8 @@ trait PaintCtx:
   def write(chr:ScreenChar):Unit
   def write(chr:Char):Unit
   def write(string:String):Unit  
+  def write(string:Seq[ScreenChar]):Unit =
+    string.foreach(write)
 
   def context:ContextBuilder
 
