@@ -22,7 +22,7 @@ class Session( console: Console, initialize: => Unit ):
   val screenBuffer = ChangeMetricBuffer(Buffer())
   @volatile var stop = false
 
-  private var jobs = List[()=>Unit]()
+  var jobs = List[()=>Unit]()
 
   protected def startSession():Unit = {
     val conSize = console.getSize()
@@ -33,6 +33,7 @@ class Session( console: Console, initialize: => Unit ):
 
     while( !stop ){
       processInput()
+      processJobs()
       repaint()      
       Thread.sleep(1)
     }
@@ -44,19 +45,15 @@ class Session( console: Console, initialize: => Unit ):
     repaintRequests.incrementAndGet()
   }
   
-  private def processInput():Unit = {    
+  private def processInput():Unit =
     val inputEvOpt = console.read()
     if( inputEvOpt.isPresent() ){
       val inputEv = inputEvOpt.get()
       inputEv match
         case resizeEv:InputResizeEvent =>
           val size = resizeEv.size()
-          println( s"resize input $size" )
           screenBuffer.resize(size)
           rootWidget.size.set(size)
-
-          println( s"screen ${screenBuffer.width} x ${screenBuffer.height}" )
-          println( s"root ${rootWidget.size.get}" )
         case _ => 
           rootWidget.children.nested.foreach { path => 
             path.last match
@@ -65,7 +62,12 @@ class Session( console: Console, initialize: => Unit ):
               case _ =>
           }
     }
-  }
+
+  private def processJobs():Unit = 
+    while jobs.nonEmpty do
+      val job = jobs.head
+      jobs = jobs.tail
+      job()
 
   private def repaint():Unit = 
     if repaintRequests.get()>0 
