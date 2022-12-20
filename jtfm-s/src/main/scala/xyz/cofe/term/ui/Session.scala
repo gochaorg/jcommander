@@ -16,13 +16,15 @@ import xyz.cofe.term.common.Size
 import xyz.cofe.term.buff.ScreenBufSync
 import java.util.concurrent.atomic.AtomicInteger
 import xyz.cofe.term.paint.ConsoleCtx
+import java.util.Queue
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class Session( console: Console, initialize: => Unit ):
   object rootWidget extends Panel with RootWidget
   val screenBuffer = ChangeMetricBuffer(Buffer())
   @volatile var stop = false
 
-  var jobs = List[()=>Unit]()
+  private val jobs:Queue[()=>Unit] = new ConcurrentLinkedQueue()
 
   protected def startSession():Unit = {
     val conSize = console.getSize()
@@ -64,10 +66,16 @@ class Session( console: Console, initialize: => Unit ):
     }
 
   private def processJobs():Unit = 
-    while jobs.nonEmpty do
-      val job = jobs.head
-      jobs = jobs.tail
-      job()
+    var stop = false
+    while !stop do
+      val job = jobs.poll()
+      if job!=null then
+        job()
+      else
+        stop = true
+
+  def addJob( job:()=>Unit ):Unit = 
+    jobs.add(job)
 
   private def repaint():Unit = 
     if repaintRequests.get()>0 
@@ -109,4 +117,5 @@ object Session:
     ses.startSession()
     ses
 
-  
+  def addJob(job: =>Unit):Unit =
+    currentSession.foreach( ses => ses.addJob( ()=>job ) )
