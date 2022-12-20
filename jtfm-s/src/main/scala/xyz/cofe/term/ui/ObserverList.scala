@@ -99,3 +99,6 @@ class ObserverListImpl[A] extends ObserverList[A]:
         onDeleteListeners = onDeleteListeners.filterNot( l => l==ls )
       }
     }
+
+object ObserverList:
+  def empty[A]:ObserverList[A] = new ObserverListImpl()
