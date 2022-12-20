@@ -1,4 +1,4 @@
-package xyz.cofe.term.ui
+package xyz.cofe.term.cs
 
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.lazyp.ReleaseListener

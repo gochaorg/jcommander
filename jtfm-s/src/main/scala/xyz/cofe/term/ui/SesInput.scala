@@ -3,6 +3,8 @@ package xyz.cofe.term.ui
 import xyz.cofe.term.common.InputResizeEvent
 
 trait SesInput extends SesPaint:
+  
+
   protected  def processInput():Unit =
     val inputEvOpt = console.read()
     if( inputEvOpt.isPresent() ){

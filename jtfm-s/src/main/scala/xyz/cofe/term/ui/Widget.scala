@@ -6,6 +6,7 @@ import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.term.common.InputEvent
+import xyz.cofe.term.cs.ObserverList
 
 trait Widget:
   val parent:ReadWriteProp[Option[Widget]] = ReadWriteProp(None)
@@ -36,3 +37,4 @@ trait WidgetInput extends Widget:
   def input(inputEvent:InputEvent):Unit
 
 trait RootWidget extends Widget with WidgetChildren[Widget] with SizeRWProp with LocationRWProp
+
