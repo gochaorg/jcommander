@@ -10,7 +10,9 @@ class NestedWidgetIterator(roots:Seq[Widget]) extends Iterator[List[Widget]]:
     workSet = workSet.tail
     res.last match
       case childProp: WidgetChildren[?] =>
-        val children : List[Widget] = childProp.children.get
-        workSet = children.map { cw => res :+ cw } ++ workSet
+        workSet = childProp.children.toList.map { cw => res :+ cw } ++ workSet
       case _ => 
     res
+
+extension [C <: Widget](children:ObserverList[C])
+  def nested = NestedWidgetIterator(children.toList)

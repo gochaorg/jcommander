@@ -51,6 +51,15 @@ class ReadWriteProp[V]( initial:V ) extends Prop[V] with ListenerSuppor:
     fire()
     old
 
+  def compareAndSet(expectValue:V, newValue:V):Boolean =
+    val old = value
+    if expectValue==old then
+      value = newValue
+      fire()
+      true
+    else
+      false
+
 class ComputeableProp[A,R]( compute:A=>R, values:()=>A ) extends Prop[R] with ListenerSuppor:
   private var computed:Option[R] = None
 

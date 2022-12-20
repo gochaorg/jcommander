@@ -10,8 +10,11 @@ trait ObserverList[A] extends Iterable[A] with Prop[ObserverList[A]]:
   def delete(items:Iterable[A]):Unit
   def deleteAt(index:Int):Unit
   def update(index:Int, item:A):Unit
+  def clear():Unit
   def onInsert(ls: A=>Unit):ReleaseListener
   def onDelete(ls: A=>Unit):ReleaseListener
+  def append(item:A):Unit = insert(Int.MaxValue,item)
+  def append(items:Iterable[A]):Unit = insert(Int.MaxValue,items)
 
 class ObserverListImpl[A] extends ObserverList[A]:
   override def get: ObserverList[A] = this
@@ -72,6 +75,12 @@ class ObserverListImpl[A] extends ObserverList[A]:
       fireDeleted(right.head)
       fireInserted(item)
       fireChanged()
+
+  def clear():Unit =
+    val oldItems = items
+    items = List()
+    oldItems.foreach(fireDeleted)
+    fireChanged()
 
   def fireInserted(item:A) =
     onInsertListeners.foreach(_(item))  
