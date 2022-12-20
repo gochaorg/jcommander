@@ -8,7 +8,7 @@ import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.term.common.InputEvent
 
 trait Widget:
-  val parent:ReadWriteProp[Option[Widget]] = ReadWriteProp(None)
+  //val parent:ReadWriteProp[Option[Widget]] = ReadWriteProp(None)
   def location:Prop[Position]
   def size:Prop[Size]
   def paint(paintCtx:PaintCtx):Unit = {}

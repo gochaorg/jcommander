@@ -45,26 +45,26 @@ class Session( console: Console, initialize: => Unit ):
   }
   
   private def processInput():Unit = {    
-      val inputEvOpt = console.read()
-      if( inputEvOpt.isPresent() ){
-        val inputEv = inputEvOpt.get()
-        inputEv match
-          case resizeEv:InputResizeEvent =>
-            val size = resizeEv.size()
-            println( s"resize input $size" )
-            screenBuffer.resize(size)
-            rootWidget.size.set(size)
+    val inputEvOpt = console.read()
+    if( inputEvOpt.isPresent() ){
+      val inputEv = inputEvOpt.get()
+      inputEv match
+        case resizeEv:InputResizeEvent =>
+          val size = resizeEv.size()
+          println( s"resize input $size" )
+          screenBuffer.resize(size)
+          rootWidget.size.set(size)
 
-            println( s"screen ${screenBuffer.width} x ${screenBuffer.height}" )
-            println( s"root ${rootWidget.size.get}" )
-          case _ => 
-            rootWidget.children.nested.foreach { path => 
-              path.last match
-                case wInput:WidgetInput =>
-                  wInput.input(inputEv)
-                case _ =>
-            }
-      }
+          println( s"screen ${screenBuffer.width} x ${screenBuffer.height}" )
+          println( s"root ${rootWidget.size.get}" )
+        case _ => 
+          rootWidget.children.nested.foreach { path => 
+            path.last match
+              case wInput:WidgetInput =>
+                wInput.input(inputEv)
+              case _ =>
+          }
+    }
   }
 
   private def repaint():Unit = 
