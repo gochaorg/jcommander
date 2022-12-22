@@ -31,12 +31,6 @@ given LikeTree[Widget] with
       case cw: WidgetChildren[?] => cw.children.toList
       case _ => List()
 
-// given LikeTree[RootWidget] with
-//   def nodes(w:Widget):List[Widget] = 
-//     w match
-//       case cw: WidgetChildren[?] => cw.children.toList
-//       case _ => List()
-
 trait LocationRWProp extends Widget:
   val location:ReadWriteProp[Position] = ReadWriteProp(Position(0,0))
   location.onChange { repaint }
@@ -89,7 +83,6 @@ class FocusClient( widget:Widget ):
       .flatMap { _.focusOwner }
       .map { owner => 
         owner.toTreePath.listToLeaf.contains(widget)
-        //widget.toTreePath.listToLeaf.contains(owner) 
       }.getOrElse(false)    
 
 trait RootWidget extends Widget with WidgetChildren[Widget] with SizeRWProp with LocationRWProp:
