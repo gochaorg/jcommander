@@ -42,22 +42,22 @@ object Main:
 
         ses.rootWidget.children.append(label)
 
-        val pnl1 = new FocPanel()
+        val pnl1 = new FocPanel("pnl1")
         pnl1.location.set(Position(1,3))
         pnl1.size.set(Size(30,1))
         ses.rootWidget.children.append(pnl1)
 
-        val pnl2 = new FocPanel()
+        val pnl2 = new FocPanel("pnl2")
         pnl2.location.set(Position(1,5))
-        pnl2.size.set(Size(30,3))
+        pnl2.size.set(Size(30,4))
         pnl2.backgroundColor.set(Color.Cyan)
         ses.rootWidget.children.append(pnl2)
 
-        val pnl3 = new FocPanel()
-        pnl3.location.set(Position(1,1))
+        val pnl3 = new FocPanel("pnl3")
+        pnl3.location.set(Position(2,2))
         pnl3.size.set(Size(30,1))
         pnl3.backgroundColor.set(Color.Magenta)
-        pnl3.children.append(pnl2)
+        pnl2.children.append(pnl3)
 
         ses.rootWidget.backgroundColor.set(Color.Green)
       }

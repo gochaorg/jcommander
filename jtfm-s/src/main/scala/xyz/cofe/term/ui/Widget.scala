@@ -88,7 +88,8 @@ class FocusClient( widget:Widget ):
     session
       .flatMap { _.focusOwner }
       .map { owner => 
-        widget.toTreePath.listToLeaf.contains(owner) 
+        owner.toTreePath.listToLeaf.contains(widget)
+        //widget.toTreePath.listToLeaf.contains(owner) 
       }.getOrElse(false)    
 
 trait RootWidget extends Widget with WidgetChildren[Widget] with SizeRWProp with LocationRWProp:
