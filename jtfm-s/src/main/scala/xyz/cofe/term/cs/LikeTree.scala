@@ -75,6 +75,13 @@ trait TreePath[A:LikeTree]:
   def nextByDeep:Option[TreePath[A]] =
     firstLeftChild.orElse( righter )
 
+  def lefter:Option[TreePath[A]] =
+    leftSib.flatMap { lftSib =>
+      lftSib.rightDeepest.orElse(Some(lftSib))
+    }
+
+  def prevByDeep:Option[TreePath[A]] =
+    lefter.orElse(parent)
 
 case class RTreePath[A:LikeTree]( rpath:List[A] ) extends TreePath[A]:
   def node:A = rpath.last

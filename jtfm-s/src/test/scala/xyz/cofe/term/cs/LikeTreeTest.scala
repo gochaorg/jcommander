@@ -130,20 +130,21 @@ class LikeTreeTest extends munit.FunSuite:
   }
 
   test("nextByDeep") {
-    val l   = tree.walk.path.find { _.node.value == "l" }.get
-    val ll  = tree.walk.path.find { _.node.value == "ll" }.get
-    val lll = tree.walk.path.find { _.node.value == "lll" }.get
-    val llr = tree.walk.path.find { _.node.value == "llr" }.get
-    val lr  = tree.walk.path.find { _.node.value == "lr" }.get
-    val lrl = tree.walk.path.find { _.node.value == "lrl" }.get
-    val lrr = tree.walk.path.find { _.node.value == "lrr" }.get
-    val r   = tree.walk.path.find { _.node.value == "r" }.get
-    val rl  = tree.walk.path.find { _.node.value == "rl" }.get
-    val rll = tree.walk.path.find { _.node.value == "rll" }.get
-    val rlr = tree.walk.path.find { _.node.value == "rlr" }.get
-    val rr  = tree.walk.path.find { _.node.value == "rr" }.get
-    val rrl = tree.walk.path.find { _.node.value == "rrl" }.get
-    val rrr = tree.walk.path.find { _.node.value == "rrr" }.get
+    val root = tree.walk.path.find { _.node.value == "root" }.get
+    val l    = tree.walk.path.find { _.node.value == "l" }.get
+    val ll   = tree.walk.path.find { _.node.value == "ll" }.get
+    val lll  = tree.walk.path.find { _.node.value == "lll" }.get
+    val llr  = tree.walk.path.find { _.node.value == "llr" }.get
+    val lr   = tree.walk.path.find { _.node.value == "lr" }.get
+    val lrl  = tree.walk.path.find { _.node.value == "lrl" }.get
+    val lrr  = tree.walk.path.find { _.node.value == "lrr" }.get
+    val r    = tree.walk.path.find { _.node.value == "r" }.get
+    val rl   = tree.walk.path.find { _.node.value == "rl" }.get
+    val rll  = tree.walk.path.find { _.node.value == "rll" }.get
+    val rlr  = tree.walk.path.find { _.node.value == "rlr" }.get
+    val rr   = tree.walk.path.find { _.node.value == "rr" }.get
+    val rrl  = tree.walk.path.find { _.node.value == "rrl" }.get
+    val rrr  = tree.walk.path.find { _.node.value == "rrr" }.get
 
     assert( l.nextByDeep   == Some(ll),  "l -> ll" )
     assert( ll.nextByDeep  == Some(lll), "ll -> ll" )
@@ -159,4 +160,38 @@ class LikeTreeTest extends munit.FunSuite:
     assert( rr.nextByDeep  == Some(rrl))
     assert( rrl.nextByDeep == Some(rrr))
     assert( rrr.nextByDeep == None)
+  }
+
+  test("prevByDeep") {
+    val root = tree.walk.path.find { _.node.value == "root" }.get
+    val l    = tree.walk.path.find { _.node.value == "l" }.get
+    val ll   = tree.walk.path.find { _.node.value == "ll" }.get
+    val lll  = tree.walk.path.find { _.node.value == "lll" }.get
+    val llr  = tree.walk.path.find { _.node.value == "llr" }.get
+    val lr   = tree.walk.path.find { _.node.value == "lr" }.get
+    val lrl  = tree.walk.path.find { _.node.value == "lrl" }.get
+    val lrr  = tree.walk.path.find { _.node.value == "lrr" }.get
+    val r    = tree.walk.path.find { _.node.value == "r" }.get
+    val rl   = tree.walk.path.find { _.node.value == "rl" }.get
+    val rll  = tree.walk.path.find { _.node.value == "rll" }.get
+    val rlr  = tree.walk.path.find { _.node.value == "rlr" }.get
+    val rr   = tree.walk.path.find { _.node.value == "rr" }.get
+    val rrl  = tree.walk.path.find { _.node.value == "rrl" }.get
+    val rrr  = tree.walk.path.find { _.node.value == "rrr" }.get
+
+    assert( root.prevByDeep == None )
+    assert( l.prevByDeep == Some(root) )
+    assert( ll.prevByDeep == Some(l) )
+    assert( lll.prevByDeep == Some(ll) )
+    assert( llr.prevByDeep == Some(lll) )
+    assert( lr.prevByDeep == Some(llr) )
+    assert( lrl.prevByDeep == Some(lr) )
+    assert( lrr.prevByDeep == Some(lrl) )
+    assert( r.prevByDeep == Some(lrr) )
+    assert( rl.prevByDeep == Some(r) )
+    assert( rll.prevByDeep == Some(rl) )
+    assert( rlr.prevByDeep == Some(rll) )
+    assert( rr.prevByDeep == Some(rlr) )
+    assert( rrl.prevByDeep == Some(rr) )
+    assert( rrr.prevByDeep == Some(rrl) )
   }
