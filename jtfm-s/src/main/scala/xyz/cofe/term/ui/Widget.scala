@@ -7,6 +7,9 @@ import xyz.cofe.lazyp.Prop
 import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.term.common.InputEvent
 import xyz.cofe.term.cs.ObserverList
+import xyz.cofe.term.cs.LikeTree
+import xyz.cofe.term.cs.TreePath
+import xyz.cofe.term.cs.RTreePath
 
 trait Widget:
   val parent:ReadWriteProp[Option[Widget]] = ReadWriteProp(None)
@@ -14,6 +17,19 @@ trait Widget:
   def size:Prop[Size]
   def paint(paintCtx:PaintCtx):Unit = {}
   def repaint:Unit = Session.currentSession.foreach( ses => ses.repaint(this) )
+  def toTreePath:TreePath[Widget] = 
+    var path = List(this)
+    var n:Widget = this
+    while n.parent.get.isDefined do
+      path = n.parent.get.get :: path
+      n = n.parent.get.get
+    new RTreePath[Widget](path)
+
+given LikeTree[Widget] with
+  def nodes(w:Widget):List[Widget] = 
+    w match
+      case cw: WidgetChildren[?] => cw.children.toList
+      case _ => List()
 
 trait LocationRWProp extends Widget:
   val location:ReadWriteProp[Position] = ReadWriteProp(Position(0,0))
