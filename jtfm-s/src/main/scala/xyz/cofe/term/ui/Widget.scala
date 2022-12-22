@@ -31,6 +31,12 @@ given LikeTree[Widget] with
       case cw: WidgetChildren[?] => cw.children.toList
       case _ => List()
 
+// given LikeTree[RootWidget] with
+//   def nodes(w:Widget):List[Widget] = 
+//     w match
+//       case cw: WidgetChildren[?] => cw.children.toList
+//       case _ => List()
+
 trait LocationRWProp extends Widget:
   val location:ReadWriteProp[Position] = ReadWriteProp(Position(0,0))
   location.onChange { repaint }
@@ -45,12 +51,46 @@ trait WidgetChildren[C <: Widget] extends Widget:
   children.onInsert { ch => ch.parent.set(Some(this)) }
   children.onDelete { ch => ch.parent.compareAndSet(Some(this),None) }
 
-trait VisibleRWProp extends Widget:
-  val visible:ReadWriteProp[Boolean] = ReadWriteProp(true)
-  visible.onChange { repaint }
+trait VisibleProp extends Widget:
+  val visible = VisibleClient(this)
+  visible.value.onChange { repaint }
+
+  def visible_=( value:Boolean ):Unit = visible.value.set(value)
+
+class VisibleClient( widget:Widget ):
+  val value:ReadWriteProp[Boolean] = ReadWriteProp(true)
+  def inTree:Boolean = 
+    widget.toTreePath.listToLeaf.forall {
+      case wv:VisibleProp => wv.visible.value.get
+      case _ => true
+    }
+
+implicit def visibleClient2Bool( vc:VisibleClient ):Boolean = vc.value.get
 
 trait WidgetInput extends Widget:
   def input(inputEvent:InputEvent):Unit
+  val focus:FocusClient = FocusClient(this)
 
-trait RootWidget extends Widget with WidgetChildren[Widget] with SizeRWProp with LocationRWProp
+class FocusClient( widget:Widget ):
+  def rootWidget:Option[RootWidget] = widget.toTreePath.listToLeaf.headOption.flatMap { w => 
+    if w.isInstanceOf[RootWidget] 
+    then Some(w.asInstanceOf[RootWidget])
+    else None
+  }
+  def session:Option[Session] = rootWidget.map(_.session)
+
+  def isOwner:Boolean = 
+    session
+      .flatMap { _.focusOwner }
+      .map { w => w==widget }.getOrElse(false)
+
+  def contains:Boolean = 
+    session
+      .flatMap { _.focusOwner }
+      .map { owner => 
+        widget.toTreePath.listToLeaf.contains(owner) 
+      }.getOrElse(false)    
+
+trait RootWidget extends Widget with WidgetChildren[Widget] with SizeRWProp with LocationRWProp:
+  def session: Session
 

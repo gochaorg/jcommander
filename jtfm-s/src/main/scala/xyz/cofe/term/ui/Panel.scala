@@ -7,6 +7,7 @@ import xyz.cofe.term.paint.PaintCtx
 
 class Panel extends Widget 
   with WidgetChildren[Widget] 
+  with VisibleProp
   with LocationRWProp
   with SizeRWProp
   with FillBackground

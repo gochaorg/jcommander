@@ -1,5 +1,9 @@
 package xyz.cofe.term.cs
 
+import xyz.cofe.term.ui.Panel
+import xyz.cofe.term.ui.SesInput
+import xyz.cofe.term.ui.Widget
+
 class LikeTreeTest extends munit.FunSuite:
   enum Node(val value:String):
     case Leaf(override val value:String) extends Node(value)
@@ -195,3 +199,4 @@ class LikeTreeTest extends munit.FunSuite:
     assert( rrl.prevByDeep == Some(rr) )
     assert( rrr.prevByDeep == Some(rrl) )
   }
+

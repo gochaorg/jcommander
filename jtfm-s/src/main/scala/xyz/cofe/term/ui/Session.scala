@@ -23,7 +23,8 @@ extends SesBase
   with SesPaint
   with SesInput:
     
-  object rootWidget extends Panel with RootWidget
+  object rootWidget extends Panel with RootWidget:
+    def session:Session = Session.this
 
   @volatile var stop = false
 

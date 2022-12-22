@@ -10,6 +10,12 @@ trait PaintStack extends Widget:
   override def paint(paintCtx: PaintCtx): Unit = 
     paintStack.get.foreach { fn => fn(paintCtx) }
 
+extension (paintStack: ReadWriteProp[List[PaintCtx => Unit]])
+  def add( render:PaintCtx => Unit ):Unit =
+    paintStack.set(
+      paintStack.get :+ render
+    )
+
 trait BackgroundColor:
   val backgroundColor: ReadWriteProp[Color] = ReadWriteProp(Color.Black)
 
@@ -41,7 +47,7 @@ trait PaintChildren extends PaintStack with WidgetChildren[_]:
             widget.paint(wCtx)
         }
         widget match
-          case visProp:VisibleRWProp if visProp.visible.get => paintChild()
+          case visProp:VisibleProp if visProp.visible => paintChild()
           case _ => paintChild()
       }
     }
