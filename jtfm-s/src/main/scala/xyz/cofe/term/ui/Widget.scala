@@ -61,46 +61,6 @@ class VisibleClient( widget:Widget ):
 
 implicit def visibleClient2Bool( vc:VisibleClient ):Boolean = vc.value.get
 
-trait WidgetInput extends Widget:
-  def input(inputEvent:InputEvent):Boolean = {
-    if this.isInstanceOf[WidgetChildren[_]] 
-    then 
-      val childs = this.asInstanceOf[WidgetChildren[Widget]].children.toList
-      childs.foldLeft( Option[Boolean](false) ){
-        case (consumed,child) =>
-          consumed match
-            case None => child match
-              case wi:WidgetInput => Some(wi.input(inputEvent))
-              case _ => None
-            case Some(true) => Some(true)
-            case Some(false) => child match
-              case wi:WidgetInput => Some(wi.input(inputEvent))
-              case _ => None
-      }.getOrElse(false)
-    else false
-  }
-  val focus:FocusClient = FocusClient(this)
-
-class FocusClient( widget:Widget ):
-  def rootWidget:Option[RootWidget] = widget.toTreePath.listToLeaf.headOption.flatMap { w => 
-    if w.isInstanceOf[RootWidget] 
-    then Some(w.asInstanceOf[RootWidget])
-    else None
-  }
-  def session:Option[Session] = rootWidget.map(_.session)
-
-  def isOwner:Boolean = 
-    session
-      .flatMap { _.focusOwner }
-      .map { w => w==widget }.getOrElse(false)
-
-  def contains:Boolean = 
-    session
-      .flatMap { _.focusOwner }
-      .map { owner => 
-        owner.toTreePath.listToLeaf.contains(widget)
-      }.getOrElse(false)    
-
 trait RootWidget extends Widget with WidgetChildren[Widget] with SizeRWProp with LocationRWProp:
   def session: Session
 
