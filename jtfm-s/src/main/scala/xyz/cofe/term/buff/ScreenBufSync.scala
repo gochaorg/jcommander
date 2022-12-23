@@ -4,6 +4,7 @@ import xyz.cofe.term.common.Console
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.common.Size
+import xyz.cofe.term.geom._
 
 object ScreenBufSync:
   def sync(console:Console, buff:ScreenBuffer, fullSync:Boolean=true) =

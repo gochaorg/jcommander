@@ -12,6 +12,7 @@ import xyz.cofe.term.common.Size
 import xyz.cofe.term.common.InputMouseButtonEvent
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.buff._
+import xyz.cofe.term.geom._
 import xyz.cofe.term.common.MouseButton
 
 trait SesInputLog:

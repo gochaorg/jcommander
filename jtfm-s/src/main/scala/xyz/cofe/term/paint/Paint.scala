@@ -2,7 +2,7 @@ package xyz.cofe.term.paint
 
 import xyz.cofe.term.buff.ScreenBuffer
 import xyz.cofe.term.buff.ScreenChar
-import xyz.cofe.term.buff.Rect
+import xyz.cofe.term.geom._
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Size

@@ -1,4 +1,4 @@
-package xyz.cofe.term.buff
+package xyz.cofe.term.geom
 
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Size
