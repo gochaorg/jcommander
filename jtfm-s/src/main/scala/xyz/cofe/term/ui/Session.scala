@@ -17,11 +17,16 @@ import xyz.cofe.term.buff.ScreenBufSync
 import java.util.concurrent.atomic.AtomicInteger
 import xyz.cofe.term.paint.ConsoleCtx
 
-class Session( val console: Console, initialize: => Unit )
+class Session
+( val console: Console, initialize: => Unit )
+( using 
+    sesInputLog:SesInputLog, 
+    sesInputBehavior:SesInputBehavior
+)
 extends SesBase 
   with SesJobs 
   with SesPaint
-  with SesInput:
+  with SesInput(sesInputLog, sesInputBehavior):
     
   object rootWidget extends Panel with RootWidget:
     def session:Session = Session.this

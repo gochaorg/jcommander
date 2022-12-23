@@ -33,7 +33,7 @@ object Main:
                 text.set( s"Key ${kEv.getKey()}" )
                 if kEv.getKey() == KeyName.Escape then ses.stop = true
               case _ => 
-            true
+            false
           }
         }
         label.location.set(Position(1,1))
