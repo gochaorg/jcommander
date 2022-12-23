@@ -62,7 +62,23 @@ class VisibleClient( widget:Widget ):
 implicit def visibleClient2Bool( vc:VisibleClient ):Boolean = vc.value.get
 
 trait WidgetInput extends Widget:
-  def input(inputEvent:InputEvent):Unit
+  def input(inputEvent:InputEvent):Boolean = {
+    if this.isInstanceOf[WidgetChildren[_]] 
+    then 
+      val childs = this.asInstanceOf[WidgetChildren[Widget]].children.toList
+      childs.foldLeft( Option[Boolean](false) ){
+        case (consumed,child) =>
+          consumed match
+            case None => child match
+              case wi:WidgetInput => Some(wi.input(inputEvent))
+              case _ => None
+            case Some(true) => Some(true)
+            case Some(false) => child match
+              case wi:WidgetInput => Some(wi.input(inputEvent))
+              case _ => None
+      }.getOrElse(false)
+    else false
+  }
   val focus:FocusClient = FocusClient(this)
 
 class FocusClient( widget:Widget ):

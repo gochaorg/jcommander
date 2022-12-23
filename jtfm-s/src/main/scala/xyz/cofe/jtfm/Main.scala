@@ -24,7 +24,7 @@ object Main:
     Session.start(console) {
       Session.currentSession.foreach { ses => 
         val label = new Label with WidgetInput {
-          def input(inputEvent: InputEvent): Unit = {
+          override def input(inputEvent: InputEvent): Boolean = {
             inputEvent match
               case cEv: InputCharEvent =>
                 text.set( s"Char '${cEv.getChar()}'" )
@@ -33,6 +33,7 @@ object Main:
                 text.set( s"Key ${kEv.getKey()}" )
                 if kEv.getKey() == KeyName.Escape then ses.stop = true
               case _ => 
+            true
           }
         }
         label.location.set(Position(1,1))

@@ -6,6 +6,7 @@ import xyz.cofe.term.common.KeyName
 
 import SesInput._
 import scala.reflect.ClassTag
+import xyz.cofe.term.common.InputEvent
 
 trait SesInput extends SesPaint:
   private var focusOwnerValue : Option[WidgetInput] = None
@@ -22,32 +23,34 @@ trait SesInput extends SesPaint:
           rootWidget.size.set(size)
         case ke:InputKeyEvent =>
           ke.getKey() match
-            case KeyName.Tab => focusNext()
-            case KeyName.ReverseTab => focusPrev()
-            case _ =>
+            case KeyName.Tab => focusNext(ke)
+            case KeyName.ReverseTab => focusPrev(ke)
+            case _ => send2focused(ke)
           
         case _ => 
-          rootWidget.children.nested.foreach { path => 
-            path.last match
-              case wInput:WidgetInput =>
-                wInput.input(inputEv)
-              case _ =>
-          }
+          send2focused(inputEv)
     }
 
-  private def focusNext():Unit = 
-    NavigateFrom(focusOwnerValue.getOrElse(rootWidget))
-      .forward.typed[WidgetInput].visibleOnly
-      .nextOption().foreach(switchFocusTo)
+  private def focusNext(ke:InputKeyEvent):Unit = 
+    if ! focusOwner.map { focOwn => focOwn.input(ke) }.getOrElse(false)
+    then
+      NavigateFrom(focusOwner.getOrElse(rootWidget))
+        .forward.typed[WidgetInput].visibleOnly
+        .nextOption().foreach(switchFocusTo)
 
-  private def focusPrev():Unit = 
-    NavigateFrom(focusOwnerValue.getOrElse(rootWidget))
-      .backward.typed[WidgetInput].visibleOnly
-      .nextOption().foreach(switchFocusTo)
+  private def focusPrev(ke:InputKeyEvent):Unit = 
+    if ! focusOwner.map { focOwn => focOwn.input(ke) }.getOrElse(false)
+    then
+      NavigateFrom(focusOwner.getOrElse(rootWidget))
+        .backward.typed[WidgetInput].visibleOnly
+        .nextOption().foreach(switchFocusTo)
 
   private def switchFocusTo(widInput:WidgetInput) =
     focusOwnerValue = Some(widInput)
     widInput.repaint
+
+  private def send2focused(ev:InputEvent):Unit =
+    focusOwner.foreach(_.input(ev))
 
 object SesInput:
   opaque type NavigateFrom = Widget
