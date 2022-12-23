@@ -4,6 +4,7 @@ import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.buff.ScreenChar
+import javafx.scene.layout.Background
 
 trait PaintStack extends Widget:
   val paintStack: ReadWriteProp[List[PaintCtx => Unit]] = ReadWriteProp(List())
@@ -59,8 +60,12 @@ trait TextProperty extends Widget:
 
 trait PaintText extends PaintStack with TextProperty with ForegroundColor:
   paintStack.set(
-    paintStack.get :+ { paint =>       
-      paint.write(0,0,text.get)
+    paintStack.get :+ { paint =>
+      paintText(paint)
     }
   )
   
+  def paintText( paint:PaintCtx ):Unit =
+    paint.foreground = foregroundColor.get
+    if this.isInstanceOf[BackgroundColor] then paint.background = this.asInstanceOf[BackgroundColor].backgroundColor.get
+    paint.write(0,0,text.get)

@@ -6,5 +6,6 @@ class Label extends Widget
   with SizeRWProp
   with FillBackground
   with TextProperty
+  with ForegroundColor
   with PaintText
 

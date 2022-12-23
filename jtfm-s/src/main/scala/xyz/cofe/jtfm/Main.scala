@@ -78,6 +78,10 @@ object Main:
         pnl2.children.append(pnl3)
 
         ses.rootWidget.backgroundColor.set(Color.Green)
+
+        val but1 = Button("[but 1]").action { println("clicked") }
+        but1.location.set(Position(35,1))
+        ses.rootWidget.children.append(but1)
       }
     }
 
