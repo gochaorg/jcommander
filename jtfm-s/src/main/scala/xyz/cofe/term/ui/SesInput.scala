@@ -7,46 +7,76 @@ import xyz.cofe.term.common.KeyName
 import SesInput._
 import scala.reflect.ClassTag
 import xyz.cofe.term.common.InputEvent
+import com.googlecode.lanterna.screen.ScreenBuffer
+import xyz.cofe.term.common.Size
 
-trait SesInput extends SesPaint:
+trait SesInputLog:
+  def inputEvent[R](inputEvent:InputEvent)(code: =>R):R = code
+  def resize[R](size:Size)(code: =>R):R = code
+  def focusNext[R](code: =>R):R = code
+  def focusPrev[R](code: =>R):R = code
+  def switchFocus(from:Option[WidgetInput],to:Option[WidgetInput]):Unit = ()
+
+object SesInputLog:
+  given noLog:SesInputLog = new SesInputLog {}
+
+trait SesInput(using log:SesInputLog) extends SesPaint:
   private var focusOwnerValue : Option[WidgetInput] = None
-  def focusOwner:Option[WidgetInput] = focusOwnerValue
 
-  protected  def processInput():Unit =
+  def focusOwner:Option[WidgetInput] = focusOwnerValue
+  protected def focusOwner_=(newOwner:Option[WidgetInput]):Unit = 
+    val oldOwner = focusOwnerValue
+    focusOwnerValue = newOwner
+    log.switchFocus(oldOwner, newOwner)
+
+  protected def processInput():Unit =
     val inputEvOpt = console.read()
     if( inputEvOpt.isPresent() ){
       val inputEv = inputEvOpt.get()
-      inputEv match
-        case resizeEv:InputResizeEvent =>
-          val size = resizeEv.size()
-          screenBuffer.resize(size)
-          rootWidget.size.set(size)
-        case ke:InputKeyEvent =>
-          ke.getKey() match
-            case KeyName.Tab => focusNext(ke)
-            case KeyName.ReverseTab => focusPrev(ke)
-            case _ => send2focused(ke)
-          
-        case _ => 
-          send2focused(inputEv)
+      log.inputEvent(inputEv){
+        inputEv match
+          case resizeEv:InputResizeEvent =>
+            val size = resizeEv.size()
+            log.resize(size) {
+              screenBuffer.resize(size)
+              rootWidget.size.set(size)
+            }
+          case ke:InputKeyEvent =>
+            ke.getKey() match
+              case KeyName.Tab => focusNext(ke)
+              case KeyName.ReverseTab => focusPrev(ke)
+              case _ => send2focused(ke)
+            
+          case _ => 
+            send2focused(inputEv)
+      }
     }
 
   private def focusNext(ke:InputKeyEvent):Unit = 
-    if ! focusOwner.map { focOwn => focOwn.input(ke) }.getOrElse(false)
-    then
-      NavigateFrom(focusOwner.getOrElse(rootWidget))
-        .forward.typed[WidgetInput].visibleOnly
-        .nextOption().foreach(switchFocusTo)
+    log.focusNext {
+      if ! focusOwner.map { focOwn => focOwn.input(ke) }.getOrElse(false)
+      then
+        NavigateFrom(focusOwner.getOrElse(rootWidget))
+          .forward.typed[WidgetInput].visibleOnly
+          .nextOption().foreach(switchFocusTo)
+    }
 
   private def focusPrev(ke:InputKeyEvent):Unit = 
-    if ! focusOwner.map { focOwn => focOwn.input(ke) }.getOrElse(false)
-    then
-      NavigateFrom(focusOwner.getOrElse(rootWidget))
-        .backward.typed[WidgetInput].visibleOnly
-        .nextOption().foreach(switchFocusTo)
+    log.focusPrev {
+      if ! focusOwner.map { focOwn => focOwn.input(ke) }.getOrElse(false)
+      then
+        NavigateFrom(focusOwner.getOrElse(rootWidget))
+          .backward.typed[WidgetInput].visibleOnly
+          .nextOption().foreach(switchFocusTo)
+    }
 
   private def switchFocusTo(widInput:WidgetInput) =
-    focusOwnerValue = Some(widInput)
+    val oldOwner = focusOwner
+    focusOwner = Some(widInput)
+    
+    oldOwner.foreach( w => w.focus.lost(Some(widInput)) )
+    widInput.focus.accept(oldOwner)
+
     widInput.repaint
 
   private def send2focused(ev:InputEvent):Unit =
