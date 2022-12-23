@@ -16,16 +16,6 @@ import xyz.cofe.term.buff._
 import xyz.cofe.term.geom._
 import xyz.cofe.term.common.MouseButton
 
-trait SesInputLog:
-  def inputEvent[R](inputEvent:InputEvent)(code: =>R):R = code
-  def resize[R](size:Size)(code: =>R):R = code
-  def focusNext[R](code: =>R):R = code
-  def focusPrev[R](code: =>R):R = code
-  def switchFocus(from:Option[WidgetInput],to:Option[WidgetInput]):Unit = ()
-
-object SesInputLog:
-  given noLog:SesInputLog = new SesInputLog {}
-
 trait SesInputBehavior:
   def switchFocusOnMouseEvent:Boolean = true
 
@@ -61,7 +51,9 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:
           case me:InputMouseButtonEvent =>
             findWidgetAt(me.position()).headOption.foreach { case (wid,local) => 
               if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) then switchFocusTo(wid)
-              wid.input( me.toLocal(local) )              
+
+              val eventForLocal = me.toLocal(local)
+              log.sendInput(wid,eventForLocal)( wid.input( eventForLocal ))
             }
           case _ => 
             send2focused(inputEv)
@@ -70,7 +62,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:
 
   private def focusNext(ke:InputKeyEvent):Unit = 
     log.focusNext {      
-      if ! focusOwner.map { focOwn => focOwn.input(ke) }.getOrElse(false)
+      if ! focusOwner.map { focOwn => log.tryInput(focOwn,ke)(focOwn.input(ke)) }.getOrElse(false)
       then
         NavigateFrom(focusOwner.getOrElse(rootWidget))
           .forward.typed[WidgetInput].visibleOnly
@@ -79,7 +71,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:
 
   private def focusPrev(ke:InputKeyEvent):Unit = 
     log.focusPrev {
-      if ! focusOwner.map { focOwn => focOwn.input(ke) }.getOrElse(false)
+      if ! focusOwner.map { focOwn => log.tryInput(focOwn,ke)(focOwn.input(ke)) }.getOrElse(false)
       then
         NavigateFrom(focusOwner.getOrElse(rootWidget))
           .backward.typed[WidgetInput].visibleOnly
@@ -102,7 +94,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:
       .reverse
 
   private def send2focused(ev:InputEvent):Unit =
-    focusOwner.foreach(_.input(ev))
+    focusOwner.foreach( wid => log.sendInput(wid,ev)(wid.input(ev)) )
 object SesInput:
   opaque type NavigateFrom = Widget
   object NavigateFrom:
@@ -118,51 +110,3 @@ object SesInput:
       def pressed(): Boolean = me.pressed()
     }
 
-  case class Navigator[W <: Widget : ClassTag]( from:Widget, move:Widget=>Option[Widget], skipFirst:Boolean=true, filter:W=>Boolean=(w:W)=>true ) extends Iterator[W]:
-    def fetch( from:Widget ):Option[W] =
-      var cur = from
-      var stop = false
-      val trgtCls = summon[ClassTag[W]].runtimeClass
-      var res : Option[W] = None
-      var cycle = 0
-      def fetchNext = {
-        move(cur) match
-          case None => 
-            stop = true
-            res = None
-          case Some(next) =>
-            cur = next
-      }
-      while !stop do
-        cycle += 1        
-        if trgtCls.isAssignableFrom( cur.getClass() ) && filter(cur.asInstanceOf[W])
-        then 
-          res = Some(cur.asInstanceOf[W])
-          if cycle==1 
-          then 
-            if skipFirst 
-            then 
-              res = None
-              fetchNext 
-            else 
-              stop = true
-          else stop = true
-        else
-          fetchNext
-      res
-
-    var current = fetch(from)
-    
-    def hasNext: Boolean = current.isDefined
-    def next(): W = 
-      val res = current.get
-      current = fetch(res)
-      res
-
-    def visibleOnly:Navigator[W] = copy(
-      filter = wid => wid match
-        case vp:VisibleProp => vp.visible.inTree
-        case _ => false      
-    )
-
-    def typed[W <: Widget:ClassTag]:Navigator[W] = Navigator[W](from, move, skipFirst, (w:W)=>true )

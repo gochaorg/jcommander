@@ -70,7 +70,11 @@ object Session:
         currentSessionTL.set(ses)
     }
 
-  def start(console: Console)(initialize: => Unit):Session =
+  def start(console: Console)(initialize: => Unit)
+  ( using 
+    sesInputLog:SesInputLog, 
+    sesInputBehavior:SesInputBehavior
+  ):Session =
     require(console!=null)
     val ses = new Session(console, initialize)
     setCurrentSession(ses)

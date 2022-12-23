@@ -14,12 +14,29 @@ import xyz.cofe.term.common.Color
 import xyz.cofe.term.ui
 import xyz.cofe.term.ui._
 import xyz.cofe.term.buff.ScreenChar
+import xyz.cofe.files.AppHome
+import xyz.cofe.files.log.PathPattern.AppHomeProvider
+import xyz.cofe.files.log.PathPattern
+import java.nio.file.Path
+import xyz.cofe.files.log.AppendableFile.apply
+import xyz.cofe.files.log.AppendableFile
+import xyz.cofe.term.ui.ses.SesInputLog
+import xyz.cofe.files.log.PathPattern.Evaluate
 
 object Main:
+  object appHome extends AppHome("jtfm")
+  implicit val appHomeProvider : AppHomeProvider = AppHomeProvider.provide(appHome.directory)
+  implicit val pathPatternEval : Evaluate = Evaluate.defaultEvaluate
+
+  lazy val logPathCommon = "{appHome}/log/{yyyy}/{MM}/{dd}/{HH}-{mi}-pid{pid}-"
+  lazy val sesInputLogPath = PathPattern.parse(Path.of(s"${logPathCommon}sesInput.txt"))
+  lazy val sesInputOut = AppendableFile(sesInputLogPath,Some(1024*1024*16))
+  given sesInputLog : SesInputLog = SesInputLog.simple(sesInputOut)
+
   def main(args:Array[String]):Unit =
     //System.setProperty("xyz.cofe.term.default","telnet")
     //System.setProperty("xyz.cofe.term.telnet.port","12346")
-    
+
     val console = ConsoleBuilder.defaultConsole()
     Session.start(console) {
       Session.currentSession.foreach { ses => 

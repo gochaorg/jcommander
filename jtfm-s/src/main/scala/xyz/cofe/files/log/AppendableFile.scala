@@ -5,6 +5,7 @@ import java.nio.file.Path
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.io.Writer
+import xyz.cofe.files.log.PathPattern.Evaluate
 
 class AppendableFile(
   pathPattern: ()=>Path,
@@ -100,11 +101,12 @@ extends java.lang.Appendable with AutoCloseable:
 
 object AppendableFile {
   def apply(pathPattern: List[PathPattern.Name],
+            limitSizePerFile: Option[Long] = None,
             charset: Charset = StandardCharsets.UTF_8,
-            limitSizePerFile: Option[Long] = None
            )(implicit
              opts: FilesOption,
              logs: FilesLogger,
+             evaluate: Evaluate
              )
   :AppendableFile = new AppendableFile(
     ()=> {

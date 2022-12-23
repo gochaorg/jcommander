@@ -1,7 +1,7 @@
 package xyz.cofe.term.cs
 
 import xyz.cofe.term.ui.Panel
-import xyz.cofe.term.ui.SesInput
+import xyz.cofe.term.ui.ses.SesInput
 import xyz.cofe.term.ui.Widget
 import xyz.cofe.jtfm.FocPanel
 import xyz.cofe.term.ui.WidgetInput
