@@ -1,4 +1,5 @@
 package xyz.cofe.term.ui
+package ses
 
 import xyz.cofe.term.buff.ChangeMetricBuffer
 import xyz.cofe.term.buff.Buffer

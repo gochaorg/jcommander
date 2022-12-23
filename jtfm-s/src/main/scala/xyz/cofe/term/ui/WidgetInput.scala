@@ -3,6 +3,8 @@ package xyz.cofe.term.ui
 import xyz.cofe.term.common.InputEvent
 import xyz.cofe.lazyp.ReleaseListener
 
+import ses._
+
 trait WidgetInput extends Widget:
   def input(inputEvent:InputEvent):Boolean = 
     WidgetInput.delegateToNested(this, inputEvent)

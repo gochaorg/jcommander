@@ -1,4 +1,5 @@
 package xyz.cofe.term.ui
+package ses
 
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue

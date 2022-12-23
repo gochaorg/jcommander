@@ -17,6 +17,8 @@ import xyz.cofe.term.buff.ScreenBufSync
 import java.util.concurrent.atomic.AtomicInteger
 import xyz.cofe.term.paint.ConsoleCtx
 
+import ses._
+
 class Session
 ( val console: Console, initialize: => Unit )
 ( using 
