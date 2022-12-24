@@ -29,7 +29,7 @@ object WidgetInput:
       }.getOrElse(false)
     else false
 
-class FocusClient( widget:Widget ):
+class FocusClient( widget:WidgetInput ):
   def rootWidget:Option[RootWidget] = widget.toTreePath.listToLeaf.headOption.flatMap { w => 
     if w.isInstanceOf[RootWidget] 
     then Some(w.asInstanceOf[RootWidget])
@@ -91,4 +91,4 @@ class FocusClient( widget:Widget ):
         onChangeListeners = onChangeListeners.filterNot( l => l==ls )
     }
 
-
+  def request:Unit = session.foreach { ses => ses.requestFocus(widget) }

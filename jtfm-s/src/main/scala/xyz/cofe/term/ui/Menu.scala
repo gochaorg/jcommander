@@ -6,6 +6,9 @@ import xyz.cofe.term.common.Size
 import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.term.geom._
 import xyz.cofe.term.common.Color
+import xyz.cofe.term.common.KeyName
+import xyz.cofe.term.common.InputEvent
+import xyz.cofe.term.common.InputKeyEvent
 
 sealed trait Menu 
   extends Widget
@@ -19,17 +22,30 @@ sealed trait Menu
   with FocusOwnerBgColor
   with FocusContainerBgColor
   with FocusOwnerFgColor
-  with FocusContainerFgColor
+  with FocusContainerFgColor:
+    def keyMap: Map[KeyName,()=>Unit]
+    def keyMap_=( map:Map[KeyName,()=>Unit] ):Unit
 
 class MenuContainer 
   extends Menu
   with WidgetChildren[Menu]
-  with ForegroundColor
   with PaintText:
     def this(text:String) = {
       this()
       this.text.set(text)
     }
+    var keyMap:Map[KeyName,()=>Unit] = Map.empty
+
+    override def input(inputEvent: InputEvent): Boolean = 
+      inputEvent match
+        case ke: InputKeyEvent => 
+          if !ke.isModifiersDown
+          then 
+            val action = keyMap.get(ke.getKey())
+            action.map { a => a() ; true }.getOrElse(false)
+          else false
+        case _ => 
+          false        
 
 class MenuAction
   extends Menu:
@@ -37,6 +53,8 @@ class MenuAction
       this()
       this.text.set(text)
     }
+
+    var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
 class MenuBar 
   extends Widget
@@ -105,9 +123,8 @@ class MenuBar
       size = Size(rwid.size.get.width(),1)
     }
 
-  children.onInsert { mu => 
-    repositionChildren
-  }
+  children.onInsert { mu => repositionChildren }
+  children.onDelete { mu => repositionChildren }
 
   def repositionChildren =
     children.foldLeft( None:Option[Rect] ){ case (prev,mi) => 
@@ -120,5 +137,15 @@ class MenuBar
           mi.size = Size(mi.text.length(), 1)
           mi.location = Position(prevRect.right+1,0)
           Some( mi.size.leftUpRect(mi.location.get) )      
+    }
+
+    children.foldLeft( None:Option[Menu] ){ case (prevOpt,mi) => 
+      prevOpt match
+        case None => 
+        case Some(prev) =>
+          prev.keyMap = prev.keyMap + ( KeyName.Right -> (()=>{mi.focus.request}) )
+          mi.keyMap = mi.keyMap + ( KeyName.Left -> (()=>{prev.focus.request}) )
+      
+      Some(mi)
     }
 
