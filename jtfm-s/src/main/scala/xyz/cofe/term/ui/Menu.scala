@@ -63,8 +63,8 @@ class MenuBar
 
     this.rootWidget = Some(rootWidget)
 
-    location.set( Position(0,0) )
-    size.set( Size(rootWidget.size.get.width(),1) )
+    location = Position(0,0)
+    size = Size(rootWidget.size.get.width(),1)
     rootListeners = rootWidget.size.onChange { resizeDelayed() } :: rootListeners
 
   def uninstall():Unit =
@@ -102,7 +102,7 @@ class MenuBar
 
   protected def resize():Unit =
     rootWidget.foreach { rwid => 
-      size.set( Size(rwid.size.get.width(),1) )
+      size = Size(rwid.size.get.width(),1)
     }
 
   children.onInsert { mu => 
@@ -113,16 +113,12 @@ class MenuBar
     children.foldLeft( None:Option[Rect] ){ case (prev,mi) => 
       prev match
         case None => 
-          mi.size.set( Size(mi.text.get.length(), 1) )
-          mi.location.set( Position(0,0) )
-          Some( mi.size.get.leftUpRect(0,0) )          
+          mi.size = Size(mi.text.length(), 1)
+          mi.location = Position(0,0)
+          Some( mi.size.leftUpRect(0,0) )          
         case Some(prevRect) =>
-          mi.size.set( Size(mi.text.get.length(), 1) )
-          mi.location.set( Position(prevRect.right+1,0) )
-          Some( mi.size.get.leftUpRect(mi.location.get) )      
+          mi.size = Size(mi.text.length(), 1)
+          mi.location = Position(prevRect.right+1,0)
+          Some( mi.size.leftUpRect(mi.location.get) )      
     }
-
-  // paintStack.add(renderMenubar)
-  // def renderMenubar( paintCtx:PaintCtx ):Unit = 
-  //   ()
 
