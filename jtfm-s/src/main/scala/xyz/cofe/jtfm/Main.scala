@@ -65,23 +65,28 @@ object Main:
         pnl1.size.set(Size(30,1))
         ses.rootWidget.children.append(pnl1)
 
-        val pnl2 = new FocPanel("pnl2")
-        pnl2.location.set(Position(1,5))
-        pnl2.size.set(Size(30,4))
-        pnl2.backgroundColor.set(Color.Cyan)
-        ses.rootWidget.children.append(pnl2)
-
-        val pnl3 = new FocPanel("pnl3")
-        pnl3.location.set(Position(2,2))
-        pnl3.size.set(Size(30,1))
-        pnl3.backgroundColor.set(Color.Magenta)
-        pnl2.children.append(pnl3)
-
         ses.rootWidget.backgroundColor.set(Color.Green)
 
-        val but1 = Button("[but 1]").action { println("clicked") }
-        but1.location.set(Position(35,1))
+        val but1 = Button("exit").action { ses.stop = true }
+        but1.location.set(Position(35,2))
         ses.rootWidget.children.append(but1)
+
+        val but2 = Button("foc on pnl1").action { ses.stop = true }
+        but2.location.set(Position(35,4))
+        ses.rootWidget.children.append(but2)
+
+        val menuBar = MenuBar()
+        val menuFile = MenuContainer("File")
+        val menuFileExit = MenuAction("Exit")
+        val menuView = MenuContainer("View")
+        val menuViewSome = MenuAction("Some")
+
+        menuBar.children.append(menuFile)        
+        menuBar.children.append(menuView)
+        menuFile.children.append(menuFileExit)
+        menuView.children.append(menuViewSome)
+
+        menuBar.install(ses.rootWidget)
       }
     }
 

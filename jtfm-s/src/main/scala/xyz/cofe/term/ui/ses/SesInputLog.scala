@@ -4,7 +4,8 @@ import xyz.cofe.term.common.{
   InputEvent            => CInputEvent,
   InputKeyEvent         => CInputKeyEvent,
   InputCharEvent        => CInputCharEvent,
-  InputMouseButtonEvent => CInputMouseButtonEvent
+  InputMouseButtonEvent => CInputMouseButtonEvent,
+  InputResizeEvent      => CInputResizeEvent
 }
 import xyz.cofe.term.ui.WidgetInput
 import xyz.cofe.term.common.Size
@@ -61,6 +62,7 @@ object SesInputLog:
     case Key( keyName:KeyName,altDown:Boolean,shiftDown:Boolean,ctrlDown:Boolean )
     case Char( char:String,altDown:Boolean,shiftDown:Boolean,ctrlDown:Boolean )
     case Mouse( position:Position, button:MouseButton, pressed:Boolean )
+    case Resize( size:Size )
 
   object InputEvent:
     def apply(ev:CInputEvent):Option[InputEvent] =
@@ -68,6 +70,7 @@ object SesInputLog:
         case ke:CInputKeyEvent => Some(InputEvent.Key(ke.getKey(), ke.isAltDown(), ke.isShiftDown(), ke.isControlDown()))
         case ke:CInputCharEvent => Some(InputEvent.Char(""+ke.getChar(), ke.isAltDown(), ke.isShiftDown(), ke.isControlDown()))
         case me:CInputMouseButtonEvent => Some(InputEvent.Mouse(me.position(), me.button(), me.pressed()))
+        case re:CInputResizeEvent => Some(InputEvent.Resize(re.size()))
         case _ => None
 
   // type LogId = Long

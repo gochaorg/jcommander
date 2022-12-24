@@ -22,41 +22,59 @@ trait SesInputBehavior:
 object SesInputBehavior:
   given defaultBehavior:SesInputBehavior = new SesInputBehavior {}
 
-trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:
+trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:  
   private var focusOwnerValue : Option[WidgetInput] = None
 
+  /** владелец фокуса */
   def focusOwner:Option[WidgetInput] = focusOwnerValue
   protected def focusOwner_=(newOwner:Option[WidgetInput]):Unit = 
     val oldOwner = focusOwnerValue
     focusOwnerValue = newOwner
     log.switchFocus(oldOwner, newOwner)
 
+  /** 
+   * подписчики на события ввода
+   * 
+   * ```fn( inputEvent ):Boolean``` 
+   * 
+   *  - если результат `true`  - то событие НЕ будет передаваться дальше в другие обработчики
+   *  - если результат `false` - то событие будет передаваться дальше в другие обработчики
+   */
+  var inputListeners: List[InputEvent => Boolean] = List.empty
+
   protected def processInput():Unit =
     val inputEvOpt = console.read()
     if( inputEvOpt.isPresent() ){
       val inputEv = inputEvOpt.get()
       log.inputEvent(inputEv){
-        inputEv match
-          case resizeEv:InputResizeEvent =>
-            val size = resizeEv.size()
-            log.resize(size) {
-              screenBuffer.resize(size)
-              rootWidget.size.set(size)
-            }
-          case ke:InputKeyEvent =>
-            ke.getKey() match
-              case KeyName.Tab => focusNext(ke)
-              case KeyName.ReverseTab => focusPrev(ke)
-              case _ => send2focused(ke)
-          case me:InputMouseButtonEvent =>
-            findWidgetAt(me.position()).headOption.foreach { case (wid,local) => 
-              if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) then switchFocusTo(wid)
 
-              val eventForLocal = me.toLocal(local)
-              log.sendInput(wid,eventForLocal)( wid.input( eventForLocal ))
-            }
-          case _ => 
-            send2focused(inputEv)
+        val consumed = inputListeners.foldLeft( false ){ case (consumed,ls) => 
+          if !consumed then ls(inputEv) else consumed
+        }
+
+        if !consumed 
+        then
+          inputEv match
+            case resizeEv:InputResizeEvent =>
+              val size = resizeEv.size()
+              log.resize(size) {
+                screenBuffer.resize(size)
+                rootWidget.size.set(size)
+              }
+            case ke:InputKeyEvent =>
+              ke.getKey() match
+                case KeyName.Tab => focusNext(ke)
+                case KeyName.ReverseTab => focusPrev(ke)
+                case _ => send2focused(ke)
+            case me:InputMouseButtonEvent =>
+              findWidgetAt(me.position()).headOption.foreach { case (wid,local) => 
+                if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) then switchFocusTo(wid)
+
+                val eventForLocal = me.toLocal(local)
+                log.sendInput(wid,eventForLocal)( wid.input( eventForLocal ))
+              }
+            case _ => 
+              send2focused(inputEv)
       }
     }
 
@@ -95,6 +113,10 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:
 
   private def send2focused(ev:InputEvent):Unit =
     focusOwner.foreach( wid => log.sendInput(wid,ev)(wid.input(ev)) )
+
+  def requestFocus( widInput:WidgetInput ):Unit =
+    switchFocusTo(widInput)
+
 object SesInput:
   opaque type NavigateFrom = Widget
   object NavigateFrom:
