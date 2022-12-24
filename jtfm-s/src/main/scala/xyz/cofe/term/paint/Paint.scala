@@ -28,9 +28,17 @@ trait PaintCtx:
   def write(chr:Char):Unit
   def write(string:String):Unit  
   def write(string:Seq[ScreenChar]):Unit =
-    string.foreach(write)
+    string.foreach(write)    
 
   def context:ContextBuilder
+
+  def fill(rect:Rect,chr:Char=' '):Unit =
+    (rect.top until rect.bottom).flatMap { y => 
+      (rect.left until rect.right).map { x => (x,y) }
+    }.foreach { case (x,y) => 
+      write(x,y,chr)
+    }
+
 
 trait Cursor:
   def visible:Boolean

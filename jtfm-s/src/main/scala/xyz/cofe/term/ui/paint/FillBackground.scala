@@ -3,6 +3,7 @@ package xyz.cofe.term.ui
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.term.buff.ScreenChar
+import xyz.cofe.term.geom._
 
 trait FillBackground extends PaintStack with BackgroundColor:
   paintStack.set(
@@ -25,10 +26,5 @@ trait FillBackground extends PaintStack with BackgroundColor:
       backgroundColor.get
 
   def fillBackground(paint:PaintCtx):Unit =    
-    val chr = ScreenChar(' ',Color.White, fillBackgroundColor)
-    (0 until paint.bounds.size.height()).flatMap { y => 
-      (0 until paint.bounds.size.width()).map { x => (x,y) }
-    }.foreach { case (x,y) => 
-      paint.write(x,y,chr)
-    }
-
+    paint.background = fillBackgroundColor
+    paint.fill( paint.bounds.size.leftUpRect(0,0) )
