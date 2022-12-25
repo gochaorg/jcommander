@@ -45,7 +45,8 @@ class MenuContainer
   with PaintChildren:
     def this(text:String) = {
       this()
-      this.text.set(text)
+      this.text = text
+      this.size = Size(text.length(),1)
     }
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
@@ -72,7 +73,7 @@ class MenuContainer
     def upDownLayout: Unit =
       children.foldLeft(1){ case (y,mi) => 
         mi.location = Position(0,y)
-        mi.size = Size(10,1)
+        //mi.size = Size(10,1)
         mi.visible = true
         y + 1
       }
@@ -86,6 +87,9 @@ class MenuContainer
         nextMi.keyMap = nextMi.keyMap + ( KeyName.ReverseTab -> ( ()=>{prevMi.focus.request} ) )
       }
       children.headOption.foreach { wid => wid.keyMap = wid.keyMap + ( KeyName.Up -> (()=>{MenuContainer.this.focus.request}) ) }
+      children.foreach { mi =>
+        mi.keyMap = mi.keyMap + ( KeyName.Enter -> (()=>{mi.selectMenu}) )
+      }      
 
     def hideSubMenu:Unit =
       children.foreach { mi => 
@@ -101,7 +105,8 @@ class MenuAction
   with PaintText:
     def this(text:String) = {
       this()
-      this.text.set(text)
+      this.text = text
+      this.size = Size(text.length(),1)
     }
 
     focus.onLost { _ => checkHideSubMenu }
@@ -114,7 +119,7 @@ class MenuAction
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
     def selectMenu: Unit = 
-      println("select")
+      onActionListener.foreach { ls => ls() }
 
     var onActionListener : List[()=>Unit] = List.empty
     def onAction( listener: => Unit ):ReleaseListener =

@@ -101,6 +101,8 @@ object Main:
         val menuView = MenuContainer("View")
         val menuViewSome = MenuAction("Some")
 
+        menuFileExit.size = Size(15,1)
+
         menuBar.children.append(menuFile)        
         menuBar.children.append(menuView)
         menuFile.children.append(menuFileOpen)
