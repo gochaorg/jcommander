@@ -33,7 +33,6 @@ sealed trait Menu
           if !ke.isModifiersDown
           then 
             val action = keyMap.get(ke.getKey())
-            println(s"action defined=${action.isDefined} key=${ke.getKey()}")
             action.map { a => a() ; true }.getOrElse(false)
           else false
         case _ => 
@@ -51,9 +50,17 @@ class MenuContainer
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
     focus.onAccept { _ => showSubMenu }
-    focus.onLost { _ => 
-      if !focus.contains then hideSubMenu 
-    }
+    focus.onLost { _ => checkHideSubMenu }
+
+    def checkHideSubMenu:Unit =
+      parent.get.foreach {
+        case mc:MenuContainer => mc.checkHideSubMenu
+        case _ =>
+      }
+
+      if !focus.contains 
+      then 
+        hideSubMenu 
 
     def selectMenu: Unit = 
       children.headOption.foreach { _.focus.request }
@@ -96,6 +103,13 @@ class MenuAction
       this()
       this.text.set(text)
     }
+
+    focus.onLost { _ => checkHideSubMenu }
+    def checkHideSubMenu:Unit =
+      parent.get.foreach {
+        case mc:MenuContainer => mc.checkHideSubMenu
+        case _ =>
+      }
 
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
