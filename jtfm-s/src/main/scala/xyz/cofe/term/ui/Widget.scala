@@ -62,7 +62,7 @@ class VisibleClient( widget:Widget ):
   def inTree:Boolean = 
     widget.toTreePath.listToLeaf.forall {
       case wv:VisibleProp => wv.visible.value.get
-      case _ => true
+      case _ => false
     }
 
 implicit def visibleClient2Bool( vc:VisibleClient ):Boolean = vc.value.get
