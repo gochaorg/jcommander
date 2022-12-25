@@ -22,6 +22,8 @@ import xyz.cofe.files.log.AppendableFile.apply
 import xyz.cofe.files.log.AppendableFile
 import xyz.cofe.term.ui.ses.SesInputLog
 import xyz.cofe.files.log.PathPattern.Evaluate
+import scala.collection.immutable.LazyList.cons
+import xyz.cofe.term.cs._
 
 object Main:
   object appHome extends AppHome("jtfm")
@@ -40,26 +42,6 @@ object Main:
     val console = ConsoleBuilder.defaultConsole()
     Session.start(console) {
       Session.currentSession.foreach { ses => 
-        val label = new Label with WidgetInput {
-          override def input(inputEvent: InputEvent): Boolean = {
-            inputEvent match
-              case cEv: InputCharEvent =>
-                text.set( s"Char '${cEv.getChar()}'" )
-                if cEv.getChar()=='q' then ses.stop = true
-              case kEv: InputKeyEvent =>
-                text.set( s"Key ${kEv.getKey()}" )
-                if kEv.getKey() == KeyName.Escape then ses.stop = true
-              case _ => 
-            false
-          }
-        }
-        label.location.set(Position(1,1))
-        label.size.set(Size(20,1))
-        label.foregroundColor.set(Color.WhiteBright)
-        label.backgroundColor.set(Color.BlackBright)
-
-        ses.rootWidget.children.append(label)
-
         val pnl1 = new FocPanel("pnl1")
         pnl1.location.set(Position(1,3))
         pnl1.size.set(Size(30,1))
@@ -71,18 +53,56 @@ object Main:
         but1.location.set(Position(35,2))
         ses.rootWidget.children.append(but1)
 
-        val but2 = Button("foc on pnl1").action { ses.stop = true }
+        val but2 = Button("foc on pnl1").action { pnl1.focus.request }
         but2.location.set(Position(35,4))
         ses.rootWidget.children.append(but2)
 
+        val but3 = Button("clear buff").action {
+          (0 until ses.screenBuffer.height).flatMap { y => 
+            (0 until ses.screenBuffer.width).map { x => (x,y) }
+          }.foreach { case (x,y) => 
+            ses.screenBuffer.set(x,y,ScreenChar(' ',Color.White,Color.Black))
+          }
+        }
+        but3.location.set(Position(35,6))
+        ses.rootWidget.children.append(but3)
+
+        val but4 = Button("clear console").action {
+          console.setBackground(Color.Black)
+          console.setForeground(Color.White)
+          (0 until ses.screenBuffer.height).flatMap { y => 
+            (0 until ses.screenBuffer.width).map { x => (x,y) }
+          }.foreach { case (x,y) => 
+            console.setCursorPosition(x,y)
+            console.write(" ")
+          }
+        }
+        but4.location.set(Position(35,8))
+        ses.rootWidget.children.append(but4)
+
+        val but5 = Button("dump").action {
+          ses.rootWidget.walk.path.foreach { path =>
+            print("  "*path.rpath.size)
+            val v = path.node match
+              case vp:VisibleProp => s"${vp.visible.value.get}"
+              case _ => "?"
+            
+            println(s"${path.node} v=${v} ${path.node.location.get} ${path.node.size.get}")
+          }
+        }
+        but5.location.set(Position(35,10))
+        ses.rootWidget.children.append(but5)
+
         val menuBar = MenuBar()
         val menuFile = MenuContainer("File")
+        val menuFileOpen = MenuAction("Open")
         val menuFileExit = MenuAction("Exit")
         val menuView = MenuContainer("View")
         val menuViewSome = MenuAction("Some")
 
         menuBar.children.append(menuFile)        
         menuBar.children.append(menuView)
+        menuFile.children.append(menuFileOpen)
         menuFile.children.append(menuFileExit)
         menuView.children.append(menuViewSome)
 

@@ -11,8 +11,8 @@ import xyz.cofe.term.buff.ScreenBufSync
 
 
 trait SesPaint extends SesBase:
-  protected val screenBuffer = ChangeMetricBuffer(Buffer())
-  protected val repaintRequests = new AtomicInteger(1)
+  val screenBuffer = ChangeMetricBuffer(Buffer())
+  val repaintRequests = new AtomicInteger(1)
 
   def repaint(widget:Widget):Unit = {
     repaintRequests.incrementAndGet()

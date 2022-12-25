@@ -22,7 +22,7 @@ trait SesInputBehavior:
 object SesInputBehavior:
   given defaultBehavior:SesInputBehavior = new SesInputBehavior {}
 
-trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:  
+trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with SesJobs:  
   private var focusOwnerValue : Option[WidgetInput] = None
 
   /** владелец фокуса */
@@ -115,7 +115,9 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint:
     focusOwner.foreach( wid => log.sendInput(wid,ev)(wid.input(ev)) )
 
   def requestFocus( widInput:WidgetInput ):Unit =
-    switchFocusTo(widInput)
+    addJob( ()=>{
+      switchFocusTo(widInput)
+    })
 
 object SesInput:
   opaque type NavigateFrom = Widget

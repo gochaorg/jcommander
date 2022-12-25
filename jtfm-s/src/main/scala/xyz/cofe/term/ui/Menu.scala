@@ -25,11 +25,13 @@ sealed trait Menu
   with FocusContainerFgColor:
     def keyMap: Map[KeyName,()=>Unit]
     def keyMap_=( map:Map[KeyName,()=>Unit] ):Unit
+    def selectMenu:Unit
 
 class MenuContainer 
   extends Menu
   with WidgetChildren[Menu]
-  with PaintText:
+  with PaintText
+  with PaintChildren:
     def this(text:String) = {
       this()
       this.text.set(text)
@@ -45,16 +47,50 @@ class MenuContainer
             action.map { a => a() ; true }.getOrElse(false)
           else false
         case _ => 
-          false        
+          false
+
+    focus.onAccept { _ => showSubMenu }
+    focus.onLost { _ => 
+      if !focus.contains then hideSubMenu 
+    }
+
+    def selectMenu: Unit = 
+      println("select")
+
+    def showSubMenu:Unit =
+      println(s"show sub menu of ${text.get}")
+      children.foldLeft(1){ case (y,mi) => 
+        mi.location = Position(0,y)
+        mi.size = Size(10,1)
+        mi.visible = true
+        println(s"show mi ${mi.text.get} ${mi.location.get} ${mi.size.get}")
+        y + 1
+      }
+
+    def hideSubMenu:Unit =
+      println("hide sub menu")
+      children.foreach { mi => 
+        mi.visible = false
+        println(s"hide mi ${mi.text.get} ${mi.location.get} ${mi.size.get}")
+      }
+
+    children.onInsert { mi =>
+      println(s"ins mi ${mi.text.get} ${mi.location.get} ${mi.size.get}")
+      mi.visible = false
+    }
 
 class MenuAction
-  extends Menu:
+  extends Menu
+  with PaintText:
     def this(text:String) = {
       this()
       this.text.set(text)
     }
 
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
+
+    def selectMenu: Unit = 
+      println("select")
 
 class MenuBar 
   extends Widget
@@ -140,11 +176,18 @@ class MenuBar
     }
 
     children.foldLeft( None:Option[Menu] ){ case (prevOpt,mi) => 
+      mi.keyMap = mi.keyMap + ( KeyName.Enter -> (()=>{mi.selectMenu}) )
       prevOpt match
         case None => 
         case Some(prev) =>
-          prev.keyMap = prev.keyMap + ( KeyName.Right -> (()=>{mi.focus.request}) )
-          mi.keyMap = mi.keyMap + ( KeyName.Left -> (()=>{prev.focus.request}) )
+          prev.keyMap = prev.keyMap + ( KeyName.Right  -> (()=>{mi.focus.request}) )
+          prev.keyMap = prev.keyMap + ( KeyName.Tab    -> (()=>{mi.focus.request}) )
+          mi.keyMap = mi.keyMap + ( KeyName.Left       -> (()=>{prev.focus.request}) )
+          mi.keyMap = mi.keyMap + ( KeyName.ReverseTab -> (()=>{prev.focus.request}) )
+          mi match
+            case mc: MenuContainer => 
+              mc.keyMap = mc.keyMap + ( KeyName.Down -> (()=>{mc.selectMenu}) )
+            case _: MenuAction => ()
       
       Some(mi)
     }

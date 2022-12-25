@@ -24,6 +24,7 @@ trait Widget:
       path = n.parent.get.get :: path
       n = n.parent.get.get
     new RTreePath[Widget](path)
+  def walk = LikeTree.Walk(this)
 
 implicit def sizeProp2Size( prop:Prop[Size] ):Size = prop.get
 implicit def locationProp2Position( prop:Prop[Position] ):Position = prop.get

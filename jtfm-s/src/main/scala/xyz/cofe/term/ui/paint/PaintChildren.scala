@@ -20,7 +20,7 @@ trait PaintChildren extends PaintStack with WidgetChildren[_]:
           widget.paint(wCtx)
       }
       widget match
-        case visProp:VisibleProp if visProp.visible => paintChild()
-        case _ => paintChild()
+        case visProp:VisibleProp if visProp.visible.value.get => paintChild()
+        case _ => ()
     }
 
