@@ -27,6 +27,18 @@ sealed trait Menu
     def keyMap_=( map:Map[KeyName,()=>Unit] ):Unit
     def selectMenu:Unit
 
+    override def input(inputEvent: InputEvent): Boolean = 
+      inputEvent match
+        case ke: InputKeyEvent => 
+          if !ke.isModifiersDown
+          then 
+            val action = keyMap.get(ke.getKey())
+            println(s"action defined=${action.isDefined} key=${ke.getKey()}")
+            action.map { a => a() ; true }.getOrElse(false)
+          else false
+        case _ => 
+          false
+
 class MenuContainer 
   extends Menu
   with WidgetChildren[Menu]
@@ -38,26 +50,19 @@ class MenuContainer
     }
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
-    override def input(inputEvent: InputEvent): Boolean = 
-      inputEvent match
-        case ke: InputKeyEvent => 
-          if !ke.isModifiersDown
-          then 
-            val action = keyMap.get(ke.getKey())
-            action.map { a => a() ; true }.getOrElse(false)
-          else false
-        case _ => 
-          false
-
     focus.onAccept { _ => showSubMenu }
     focus.onLost { _ => 
       if !focus.contains then hideSubMenu 
     }
 
     def selectMenu: Unit = 
-      println("select")
+      children.headOption.foreach { _.focus.request }
 
     def showSubMenu:Unit =
+      upDownLayout
+      bindUpDown
+
+    def upDownLayout: Unit =
       children.foldLeft(1){ case (y,mi) => 
         mi.location = Position(0,y)
         mi.size = Size(10,1)
@@ -65,10 +70,20 @@ class MenuContainer
         y + 1
       }
 
+    def bindUpDown:Unit =      
+      children.zip(children.drop(1)).foreach { case (prevMi,nextMi) => 
+        prevMi.keyMap = prevMi.keyMap + ( KeyName.Down -> ( ()=>{nextMi.focus.request} ) )
+        prevMi.keyMap = prevMi.keyMap + ( KeyName.Tab ->  ( ()=>{nextMi.focus.request} ) )
+
+        nextMi.keyMap = nextMi.keyMap + ( KeyName.Up         -> ( ()=>{prevMi.focus.request} ) )
+        nextMi.keyMap = nextMi.keyMap + ( KeyName.ReverseTab -> ( ()=>{prevMi.focus.request} ) )
+      }
+      children.headOption.foreach { wid => wid.keyMap = wid.keyMap + ( KeyName.Up -> (()=>{MenuContainer.this.focus.request}) ) }
+
     def hideSubMenu:Unit =
       children.foreach { mi => 
         mi.visible = false
-      }
+      } 
 
     children.onInsert { mi =>
       mi.visible = false
@@ -86,6 +101,19 @@ class MenuAction
 
     def selectMenu: Unit = 
       println("select")
+
+    var onActionListener : List[()=>Unit] = List.empty
+    def onAction( listener: => Unit ):ReleaseListener =
+      val ls:()=>Unit = ()=>listener
+      onActionListener = ls :: onActionListener
+      new ReleaseListener {
+        def release(): Unit = 
+          onActionListener = onActionListener.filterNot( l => l==ls )
+      }
+
+    def action( ls: => Unit ):this.type =
+      onAction(ls)
+      this
 
 class MenuBar 
   extends Widget

@@ -68,7 +68,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
                 case _ => send2focused(ke)
             case me:InputMouseButtonEvent =>
               findWidgetAt(me.position()).headOption.foreach { case (wid,local) => 
-                if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) then switchFocusTo(wid)
+                if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) && me.pressed() then switchFocusTo(wid)
 
                 val eventForLocal = me.toLocal(local)
                 log.sendInput(wid,eventForLocal)( wid.input( eventForLocal ))

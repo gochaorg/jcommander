@@ -95,8 +95,9 @@ object Main:
 
         val menuBar = MenuBar()
         val menuFile = MenuContainer("File")
-        val menuFileOpen = MenuAction("Open")
-        val menuFileExit = MenuAction("Exit")
+        val menuFileOpen = MenuAction("Open").action { println("open") }
+        val menuFileExit = MenuAction("Exit").action { println("exit") }
+        val menuFileSome = MenuAction("Some else")
         val menuView = MenuContainer("View")
         val menuViewSome = MenuAction("Some")
 
@@ -104,6 +105,7 @@ object Main:
         menuBar.children.append(menuView)
         menuFile.children.append(menuFileOpen)
         menuFile.children.append(menuFileExit)
+        menuFile.children.append(menuFileSome)
         menuView.children.append(menuViewSome)
 
         menuBar.install(ses.rootWidget)
