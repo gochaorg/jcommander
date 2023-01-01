@@ -35,7 +35,6 @@ sealed trait Menu
         case ke: InputKeyEvent => 
           if !ke.isModifiersDown
           then 
-            println("a")
             val action = keyMap.get(ke.getKey())
             action.map { a => a() ; true }.getOrElse(false)
           else false
