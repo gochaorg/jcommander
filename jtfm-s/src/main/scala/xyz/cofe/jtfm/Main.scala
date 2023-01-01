@@ -96,7 +96,7 @@ object Main:
         val menuBar = MenuBar()
         val menuFile = MenuContainer("File")
         val menuFileOpen = MenuAction("Open").action { println("open") }
-        val menuFileExit = MenuAction("Exit").action { println("exit") }
+        val menuFileExit = MenuAction("Exit").action { println("exit"); ses.stop = true }
         val menuFileSome = MenuAction("Some else")
         val menuView = MenuContainer("View")
         val menuViewSome = MenuAction("Some")
@@ -109,6 +109,11 @@ object Main:
         menuFile.children.append(menuFileExit)
         menuFile.children.append(menuFileSome)
         menuView.children.append(menuViewSome)
+
+        (0 until 15).foreach { i => 
+          val mi = MenuAction(s"menu $i")
+          menuFile.children.append(mi)
+        }
 
         menuBar.install(ses.rootWidget)
       }

@@ -17,7 +17,7 @@ case class Line(
 ) {
   lazy val diagonal: Boolean = {
     val d = a diff b
-    !( d.x!=0 && d.y!=0 )
+    ( d.x!=0 && d.y!=0 )
   }
   lazy val dot:Boolean = {
     val d = a diff b
