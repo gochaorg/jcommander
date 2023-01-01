@@ -11,6 +11,17 @@ enum KeyStroke:
   case CharEvent( char:Char, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean )
   case Sequence( events:Seq[KeyStroke] )
 
+  override def toString():String =
+    this match
+      case e @ KeyStroke.KeyEvent(keyName, altDown, ctrlDown, shiftDown) => 
+        val mod = KeyStroke.Modifiers(e)
+        KeyStroke.keyName2str(keyName)+mod.parsedString
+      case e @ KeyStroke.CharEvent(char, altDown, ctrlDown, shiftDown) =>
+        val mod = KeyStroke.Modifiers(e)
+        KeyStroke.char2str(char)+mod.parsedString
+      case KeyStroke.Sequence(events) =>
+        events.map(_.toString()).reverse.mkString(",")
+
   private def matchLeft0( events:Seq[InputEvent] ):(Boolean,Seq[InputEvent]) = 
     if events.isEmpty
     then (false,events)
@@ -200,7 +211,7 @@ object KeyStroke:
     mapping.foldLeft( None:Option[(KeyName,Int)] ){ case (opt,(ptrn,kn)) => 
       opt match
         case None => 
-          if str.startsWith(ptrn.toLowerCase())
+          if str.toLowerCase().startsWith(ptrn.toLowerCase())
           then Some( (kn,off + ptrn.length()) )
           else opt
         case Some(value) =>
@@ -225,6 +236,10 @@ object KeyStroke:
           )
         case s:KeyStroke.Sequence => 
           s
+    def parsedString:String =
+      if isEmpty 
+      then ""
+      else s"+${if alt then "A" else ""}${if ctrl then "C" else ""}${if shift then "S" else ""}"
 
   object Modifiers:
     def apply(ev:KeyStroke.CharEvent):Modifiers=new Modifiers(ev.altDown, ev.ctrlDown, ev.shiftDown)
@@ -238,7 +253,7 @@ object KeyStroke:
   def modifiers2str(mod:Modifiers):String =
     s"${if mod.alt then "A" else ""}${if mod.ctrl then "C" else ""}${if mod.shift then "S" else ""}"
 
-  val modPattern = Pattern.compile("([ACS]{0,3})")
+  val modPattern = Pattern.compile("(\\+(?<mod>[ACS]{1,3}))")
   def str2modifiers(string:String, off:Int):Option[(Modifiers,Int)]=
     val str = string.substring(off)
     var alt = false
@@ -247,11 +262,59 @@ object KeyStroke:
     val m = modPattern.matcher(str)
     if m.matches()
     then
-      val gr = m.group(1)
+      val gr = m.group("mod")
       alt = gr.contains("A")
       ctrl = gr.contains("C")
       shift = gr.contains("S")
-      Some((new Modifiers(alt,ctrl,shift), off+gr.length()))
+      val g1 = m.group(1)
+      Some((new Modifiers(alt,ctrl,shift), off+g1.length()))
     else
       None
       
+  def parseOne(string:String,off:Int) =
+    str2keyName(string,off).flatMap { case(kn,off) => 
+      str2modifiers(string,off).map { case(mod,off) => 
+        (mod(KeyStroke.KeyEvent(kn,false,false,false)),off)
+      }.orElse {
+        Some((KeyStroke.KeyEvent(kn,false,false,false),off))
+      }
+    }.orElse(
+      str2char(string,off).flatMap { case(cn,off) => 
+        str2modifiers(string,off).map { case(mod,_) => 
+          (mod(KeyStroke.CharEvent(cn,false,false,false)),off)
+        }.orElse {
+          Some((KeyStroke.CharEvent(cn,false,false,false),off))
+        }
+      }
+    )
+
+  def parse0(string:String,off:Int,ks0:Option[KeyStroke]):Option[(KeyStroke,Int)] =
+    parseOne(string,off).map { case(ks1,off) => 
+      ks0 match
+        case Some(k0:KeyStroke.Sequence) => 
+          ( KeyStroke.Sequence(ks1 :: k0.events.toList), off )
+        case Some(k0) =>
+          ( KeyStroke.Sequence(ks1 :: k0 :: Nil), off )
+        case None =>
+          ( ks1, off )
+    }.flatMap { case (ks,off) => 
+      if( off < (string.length()-1) && string.charAt(off)==',' ){
+        parse0(string,off+1,Some(ks))
+      }else{
+        Some((ks,off))
+      }
+    }
+
+  def parse(string:String) = parse0(string,0,None).map(_._1)
+
+  def parse(ev:InputKeyEvent):KeyStroke =
+    KeyStroke.KeyEvent( ev.getKey(), ev.isAltDown(), ev.isControlDown(), ev.isShiftDown() )
+
+  def parse(ev:InputCharEvent):KeyStroke =
+    KeyStroke.CharEvent( ev.getChar(), ev.isAltDown(), ev.isControlDown(), ev.isShiftDown() )
+
+  def parse(ev:InputEvent):Option[KeyStroke] =
+    ev match
+      case ke:InputKeyEvent => Some(parse(ke))
+      case ce:InputCharEvent => Some(parse(ce))
+      case _ => None

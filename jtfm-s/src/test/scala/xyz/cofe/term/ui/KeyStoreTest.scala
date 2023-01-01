@@ -57,3 +57,18 @@ class KeyStoreTest extends munit.FunSuite:
       ))
     )
   }
+
+  test("parse KeyStroke"){
+    // println( KeyStroke.parse("F1+A") )
+    // assert( KeyStroke.parse("F1+A") == Some(KeyStroke.KeyEvent(KeyName.F1,true,false,false)) )
+    // assert( KeyStroke.parse("F1") == Some(KeyStroke.KeyEvent(KeyName.F1,false,false,false)) )
+    // assert( KeyStroke.parse("a") == Some(KeyStroke.CharEvent('a',false,false,false)) )
+
+    val f1 = KeyStroke.KeyEvent(KeyName.F1,false,false,false)
+    val f2 = KeyStroke.KeyEvent(KeyName.F2,false,false,false)
+
+    val str = "F1,F2"
+    val ksseq = KeyStroke.Sequence(List( f2,f1 ))
+    assert( KeyStroke.parse(str) == Some(ksseq) )
+    assert(ksseq.toString() == str)
+  }
