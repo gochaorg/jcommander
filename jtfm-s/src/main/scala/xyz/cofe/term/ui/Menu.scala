@@ -35,6 +35,7 @@ sealed trait Menu
         case ke: InputKeyEvent => 
           if !ke.isModifiersDown
           then 
+            println("a")
             val action = keyMap.get(ke.getKey())
             action.map { a => a() ; true }.getOrElse(false)
           else false
@@ -145,10 +146,12 @@ class MenuContainer
     def renderBorder(paint:PaintCtx):Unit = {
       val contentHeight = childsVisibleItems.get.size
       val contentWidth = childsMaxWidth
+
       val lt = childsLeftUpPos.get
       val rb = Position(lt.x+1+contentWidth, lt.y+1+contentHeight)
       val rt = Position(rb.x, lt.y)
       val lb = Position(lt.x, rb.y)
+      val xCenter = ((lt.x - rt.x).abs / 2) + lt.x
 
       val style = 
         if focus.isOwner || children.exists(_.focus.isOwner)
@@ -166,6 +169,12 @@ class MenuContainer
       paint.foreground = paintTextColor
       paint.background = fillBackgroundColor
       hvLines.draw(paint)
+
+      if childsInvisibleTail.get.nonEmpty 
+      then paint.write(xCenter,lb.y, Symbols.Trinagles.down)
+
+      if childsInvisibleHead.get.nonEmpty
+      then paint.write(xCenter,lt.y, Symbols.Trinagles.up)
     }
 
     def upDownLayout: Unit =
