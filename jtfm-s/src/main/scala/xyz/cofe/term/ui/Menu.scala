@@ -10,6 +10,8 @@ import xyz.cofe.term.common.KeyName
 import xyz.cofe.term.common.InputEvent
 import xyz.cofe.term.common.InputKeyEvent
 import xyz.cofe.lazyp.Prop
+import xyz.cofe.term.common.InputMouseButtonEvent
+import xyz.cofe.term.common.MouseButton
 
 sealed trait Menu 
   extends Widget
@@ -102,20 +104,38 @@ class MenuContainer
       Prop.eval(childsCount, childsVisibleCountMax) { 
         case (cnt,cmax) => 0 max (cnt - cmax)
     }
-    private lazy val childsVisibleItems = 
+    private lazy val childsVisibleGroups = 
       Prop.eval( children, childsVisibleOffset, childsVisibleCountMax ) {
         case (childs, off, cmax) =>
           val off2 = off + cmax
-          children.zipWithIndex
-            .map { case (itm,idx) => (itm,idx>=off && idx<off2) }
-            .flatMap { case (itm,b) => b match 
-              case true => List(itm)
-              case false => List.empty
-            }
+          children.zipWithIndex.groupBy { case (mi,idx) => 
+            if idx < off
+            then 0
+              else if idx >= off && idx < off2
+                then 1
+                else 2
+          }
       }
-
+      
     childsVisibleOffset.onChange( Session.addJob(upDownLayout) )
     childsVisibleCountMax.onChange( Session.addJob(upDownLayout) )
+
+    private lazy val childsVisibleItems = 
+      Prop.eval( childsVisibleGroups ) { case (grps) =>
+        grps.get(1).map(_.map(_._1)).getOrElse(List())
+      }
+
+    private lazy val childsInvisibleHead = 
+      Prop.eval( childsVisibleGroups ) { case (grps) => 
+        grps.get(0).map(_.map(_._1)).getOrElse(List())
+      }
+
+    private lazy val childsInvisibleTail = 
+      Prop.eval( childsVisibleGroups ) { case (grps) => 
+        grps.get(2).map(_.map(_._1)).getOrElse(List())
+      }
+
+    private lazy val childsLeftUpPos = Prop.rw(Position(0,1))
 
     paintStack.set(
       paintStack.get :+ { paint => 
@@ -125,7 +145,7 @@ class MenuContainer
     def renderBorder(paint:PaintCtx):Unit = {
       val contentHeight = childsVisibleItems.get.size
       val contentWidth = childsMaxWidth
-      val lt = Position(0,1)
+      val lt = childsLeftUpPos.get
       val rb = Position(lt.x+1+contentWidth, lt.y+1+contentHeight)
       val rt = Position(rb.x, lt.y)
       val lb = Position(lt.x, rb.y)
@@ -152,8 +172,9 @@ class MenuContainer
       val off = childsVisibleOffset.get
       val cmax = childsVisibleCountMax.get
       val off2 = off + cmax
+      val lt = childsLeftUpPos.get
       children.zipWithIndex.foreach { case (mi,idx) => 
-        mi.location = Position(1,2+idx-childsVisibleOffset.get)
+        mi.location = Position( lt.x+1, lt.y+1+idx-childsVisibleOffset.get )
         mi.size = Size( childsMaxWidth, 1 )
         mi.visible = idx>=off && idx<off2
       }

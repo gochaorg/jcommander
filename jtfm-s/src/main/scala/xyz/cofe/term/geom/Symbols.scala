@@ -24,6 +24,13 @@ U+21Fx	⇰	⇱	⇲	⇳	⇴	⇵	⇶	⇷	⇸	⇹	⇺	⇻	⇼	⇽	⇾	⇿
 U+2BCx	⯀	⯁	⯂	⯃	⯄	⯅	⯆	⯇	⯈	⯉	⯊	⯋	⯌	⯍	⯎	⯏
 */
 object Symbols {
+  object Trinagles {
+    val up    : Char = '\u25b2'
+    val down  : Char = '\u25bc'
+    val left  : Char = '\u25c0'
+    val right : Char = '\u25b6'
+  }
+
   object Round {
     val leftTop  :Char = '\u256d'
     val rightTop :Char = '\u256e'
