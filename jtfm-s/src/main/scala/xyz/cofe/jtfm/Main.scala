@@ -95,8 +95,11 @@ object Main:
 
         val menuBar = MenuBar()
         val menuFile = MenuContainer("File")
+        
         val menuFileOpen = MenuAction("Open").action { println("open") }
-        val menuFileExit = MenuAction("Exit").action { println("exit"); ses.stop = true }
+        menuFileOpen.keyStroke.set( Some(KeyStroke.KeyEvent(KeyName.F2,false,false,false)) )
+
+        val menuFileExit = MenuAction("Exit").action { println("exit"); ses.stop = true }        
         val menuFileSome = MenuAction("Some else")
         val menuView = MenuContainer("View")
         val menuViewSome = MenuAction("Some")

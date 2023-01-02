@@ -6,10 +6,10 @@ import xyz.cofe.term.common.InputKeyEvent
 import xyz.cofe.term.common.InputCharEvent
 import java.util.regex.Pattern
 
-enum KeyStroke:
-  case KeyEvent( keyName:KeyName, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean )
-  case CharEvent( char:Char, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean )
-  case Sequence( events:Seq[KeyStroke] )
+enum KeyStroke( val sequenceSize:Int ):
+  case KeyEvent( keyName:KeyName, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean ) extends KeyStroke(1)
+  case CharEvent( char:Char, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean ) extends KeyStroke(1)
+  case Sequence( events:Seq[KeyStroke] ) extends KeyStroke( if events.isEmpty then 0 else events.map(_.sequenceSize).sum )
 
   override def toString():String =
     this match

@@ -332,7 +332,9 @@ class MenuAction
 
     /* #region paint text */
 
-    def renderText: String = text.get
+    def renderText: String = text.get + {
+      keyStroke.get.map { ks => " " + ks.toString() }.getOrElse( "" )
+    }
 
     paintStack.set(
       paintStack.get :+ { paint =>
@@ -361,7 +363,7 @@ class MenuAction
         paint.background = 
           this.asInstanceOf[FillBackground].fillBackgroundColor
 
-      paint.write(0,0,text.get)
+      paint.write(0,0,renderText)
     
     /* #endregion */
 
@@ -525,21 +527,47 @@ class MenuBar
       Some(mi)
     }
 
-  var shortcuts = Map[KeyStroke,List[MenuAction]]()
+  private var shortcuts = Map[KeyStroke,List[MenuAction]]()
+  private var shortcutsByLen = Map[Int,Set[KeyStroke]]()
 
   def bindKeyStroke( action:MenuAction, keyStroke:KeyStroke ):Unit =
     shortcuts = shortcuts + (keyStroke -> (action :: shortcuts.get(keyStroke).getOrElse(List())))
+    shortcutsByLen = shortcutsByLen + 
+      (keyStroke.sequenceSize -> 
+        (shortcutsByLen.get(keyStroke.sequenceSize).getOrElse(Set()) ++ Set(keyStroke))
+      )
 
   def unbindKeyStroke( action:MenuAction ):Unit = 
     shortcuts = shortcuts.map { case (ks, actions) => 
       (ks, actions.filterNot(a => a==action))
     }.filter { case (ks,actions) => actions.nonEmpty }
 
+    val ksAll = shortcuts.keySet
+
+    shortcutsByLen = shortcutsByLen.map { case (len, kss) => 
+      (len,kss.filter { ks => ksAll.contains(ks)} )
+    }.filter { case (len,kss) => kss.nonEmpty }
+
   var inputHistory = List[InputEvent]()
-  def inputHistoryMax = 10
+  def inputHistoryMax = shortcutsByLen.keySet.maxOption.getOrElse(1)
 
   def processInput(inputEvent:InputEvent):Boolean = 
     inputHistory = (inputEvent :: inputHistory).take(inputHistoryMax)
-    false
+
+    val acton = shortcutsByLen.values.toList.flatten.reverse.map{ ks => 
+      (ks.matchLeft(inputHistory), ks)
+    }.find { case (m, ks) => m }
+     .flatMap { case (_,ks) => shortcuts.get(ks) }
+
+    val actions = acton match
+      case None => List()
+      case Some(value) => value
+    
+    if actions.nonEmpty
+    then
+      actions.foreach( _.selectMenu )
+      true
+    else
+      false
 
 /* #endregion */

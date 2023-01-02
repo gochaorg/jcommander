@@ -72,3 +72,27 @@ class KeyStoreTest extends munit.FunSuite:
     assert( KeyStroke.parse(str) == Some(ksseq) )
     assert(ksseq.toString() == str)
   }
+
+  def keyEvent(keyName:KeyName, alt:Boolean=false, shift:Boolean=false, ctrl:Boolean=false ) =
+     new InputKeyEventBase(keyName,alt,shift,ctrl) {}
+
+  test("nested seq") {
+    println("="*80)
+    println("nested seq")
+    val ef1 = keyEvent(KeyName.F1)
+    val ef2 = keyEvent(KeyName.F2)
+    val ef3 = keyEvent(KeyName.F3)
+    val ef4 = keyEvent(KeyName.F4)
+
+    val f1 = KeyStroke.KeyEvent(KeyName.F1,false,false,false)
+    val f2 = KeyStroke.KeyEvent(KeyName.F2,false,false,false)
+    val f3 = KeyStroke.KeyEvent(KeyName.F3,false,false,false)
+    val f4 = KeyStroke.KeyEvent(KeyName.F4,false,false,false)
+
+    val seq1 = KeyStroke.Sequence(List(f2,f1))
+    val seq2 = KeyStroke.Sequence(List(f4,f3))
+    val seq  = KeyStroke.Sequence(List(seq2,seq1))
+
+    val inpEvents = List(ef4,ef3,ef2,ef1)
+    assert( seq.matchLeft(inpEvents) )
+  }
