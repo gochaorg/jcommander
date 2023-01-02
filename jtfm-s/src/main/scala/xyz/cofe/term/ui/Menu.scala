@@ -95,13 +95,29 @@ class MenuContainer
         mi.visible = false
       } 
 
+    private lazy val menuLevel = Prop.eval( parent ) { _ => 
+      this.toTreePath.listToLeaf.reverse.takeWhile( w => w.isInstanceOf[Menu] ).size
+    }
+
+    private lazy val parentMenu = Prop.eval(parent) { wOpt => wOpt.filter(_.isInstanceOf[MenuContainer]).map(_.asInstanceOf[MenuContainer]) }
+
     def showSubMenu:Unit =
+      menuLevel.get match
+        case 0 => childsLeftUpPos.set(Position(0,1))
+        case _ => 
+          parentMenu.get.foreach { mc => 
+            childsLeftUpPos.set(Position(mc.contentWidth,0))
+          }
+      
       upDownLayout
       bindUpDown
 
     private def childsMaxWidth = { 
       children.map(_.text.length()).maxOption.getOrElse(5) 
     }
+    private def contentWidth = childsMaxWidth
+    private def contentHeight = childsVisibleItems.get.size
+
     private lazy val childsVisibleOffset = Prop.rw(0)
     private lazy val childsVisibleCountMax = Prop.rw(10) 
     private lazy val childsCount = Prop.eval(children) { _.size }
@@ -148,9 +164,6 @@ class MenuContainer
     })
 
     def renderBorder(paint:PaintCtx):Unit = {
-      val contentHeight = childsVisibleItems.get.size
-      val contentWidth = childsMaxWidth
-
       val lt = childsLeftUpPos.get
       val rb = Position(lt.x+1+contentWidth, lt.y+1+contentHeight)
       val rt = Position(rb.x, lt.y)
@@ -188,7 +201,7 @@ class MenuContainer
       val lt = childsLeftUpPos.get
       children.zipWithIndex.foreach { case (mi,idx) => 
         mi.location = Position( lt.x+1, lt.y+1+idx-childsVisibleOffset.get )
-        mi.size = Size( childsMaxWidth, 1 )
+        mi.size = Size( contentWidth, 1 )
         mi.visible = idx>=off && idx<off2
       }
 
