@@ -90,6 +90,11 @@ class MenuContainer
     def selectMenu: Unit = 
       children.headOption.foreach { _.focus.request }
 
+    def hideSubMenu:Unit =
+      children.foreach { mi => 
+        mi.visible = false
+      } 
+
     def showSubMenu:Unit =
       upDownLayout
       bindUpDown
@@ -212,14 +217,11 @@ class MenuContainer
         mi.visible = true
       mi.focus.request
 
-    def hideSubMenu:Unit =
-      children.foreach { mi => 
-        mi.visible = false
-      } 
-
     children.onInsert { mi =>
       mi.visible = false
     }
+
+/* #region MenuAction */
 
 class MenuAction
   extends Menu
@@ -255,6 +257,9 @@ class MenuAction
       onAction(ls)
       this
 
+/* #endregion */
+
+/* #region MenuBar */
 class MenuBar 
   extends Widget
   with WidgetChildren[Menu]
@@ -262,7 +267,6 @@ class MenuBar
   with LocationRWProp
   with SizeRWProp
   with FillBackground
-  //with PaintChildren
   with WidgetInput:
 
   paintStack.set(
@@ -377,3 +381,4 @@ class MenuBar
       Some(mi)
     }
 
+/* #endregion */

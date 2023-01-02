@@ -101,6 +101,13 @@ object Main:
         val menuView = MenuContainer("View")
         val menuViewSome = MenuAction("Some")
 
+        val menuViewSub = MenuContainer("Sub")
+        menuView.children.append(menuViewSub)
+        (0 until 15).foreach { i => 
+          val miSub = MenuAction(s"sub $i")
+          menuViewSub.children.append(miSub)
+        }
+
         menuFileExit.size = Size(15,1)
 
         menuBar.children.append(menuFile)        
