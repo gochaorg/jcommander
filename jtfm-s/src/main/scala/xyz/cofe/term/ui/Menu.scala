@@ -303,15 +303,67 @@ class MenuContainer
 /* #region MenuAction */
 
 class MenuAction
-  extends Menu
-  with PaintText:
+  extends Menu:
     def this(text:String) = {
       this()
       this.text = text
       this.size = Size(text.length(),1)
     }
 
+    lazy val keyStroke = Prop.rw(None:Option[KeyStroke])
+
+    private var binded:Option[MenuBar] = None
+    private def menuBarOpt:Option[MenuBar] = {
+      this.toTreePath.listToLeaf.reverse.filter(_.isInstanceOf[MenuBar]).map(_.asInstanceOf[MenuBar]).headOption
+    }
+
+    keyStroke.onChange { rebind }
+    parent.onChange { rebind }
+
+    private def rebind:Unit =
+      binded.foreach( _.unbindKeyStroke(this) )
+      binded =
+      keyStroke.get.flatMap { ks => 
+        menuBarOpt.map { mbar => 
+          mbar.bindKeyStroke(this, ks)
+          mbar
+        }
+      }
+
+    /* #region paint text */
+
     def renderText: String = text.get
+
+    paintStack.set(
+      paintStack.get :+ { paint =>
+        paintText(paint)
+      }
+    )
+
+    def paintTextColor:Color =
+      if this.isInstanceOf[WidgetInput]
+      then
+        val foc = this.asInstanceOf[WidgetInput].focus
+        if this.isInstanceOf[FocusOwnerFgColor] && foc.isOwner 
+        then this.asInstanceOf[FocusOwnerFgColor].focusOwnerFgColor.get 
+        else 
+          if this.isInstanceOf[FocusContainerFgColor] && foc.contains 
+          then this.asInstanceOf[FocusContainerFgColor].focusContainerFgColor.get 
+          else foregroundColor.get
+      else
+        foregroundColor.get
+    
+    def paintText( paint:PaintCtx ):Unit =
+      paint.foreground = paintTextColor
+
+      if this.isInstanceOf[FillBackground] 
+      then 
+        paint.background = 
+          this.asInstanceOf[FillBackground].fillBackgroundColor
+
+      paint.write(0,0,text.get)
+    
+    /* #endregion */
 
     focus.onLost { _ => checkHideSubMenu }
     def checkHideSubMenu:Unit =
@@ -390,6 +442,17 @@ class MenuBar
     size = Size(rootWidget.size.get.width(),1)
     rootListeners = rootWidget.size.onChange { resizeDelayed() } :: rootListeners
 
+    val inputSesListener: InputEvent => Boolean = this.processInput
+    rootWidget.session.inputListeners = inputSesListener :: rootWidget.session.inputListeners
+
+    val releaseInputSes = new ReleaseListener {
+      def release(): Unit = {
+        rootWidget.session.inputListeners = rootWidget.session.inputListeners.filterNot( ls => ls==inputSesListener )
+      }
+    }
+
+    rootListeners = releaseInputSes :: rootListeners
+
   def uninstall():Unit =
     rootListeners.foreach(_.release())
     rootListeners = List()
@@ -461,5 +524,22 @@ class MenuBar
       
       Some(mi)
     }
+
+  var shortcuts = Map[KeyStroke,List[MenuAction]]()
+
+  def bindKeyStroke( action:MenuAction, keyStroke:KeyStroke ):Unit =
+    shortcuts = shortcuts + (keyStroke -> (action :: shortcuts.get(keyStroke).getOrElse(List())))
+
+  def unbindKeyStroke( action:MenuAction ):Unit = 
+    shortcuts = shortcuts.map { case (ks, actions) => 
+      (ks, actions.filterNot(a => a==action))
+    }.filter { case (ks,actions) => actions.nonEmpty }
+
+  var inputHistory = List[InputEvent]()
+  def inputHistoryMax = 10
+
+  def processInput(inputEvent:InputEvent):Boolean = 
+    inputHistory = (inputEvent :: inputHistory).take(inputHistoryMax)
+    false
 
 /* #endregion */
