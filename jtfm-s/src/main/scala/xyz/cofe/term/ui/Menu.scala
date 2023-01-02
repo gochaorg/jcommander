@@ -38,6 +38,13 @@ sealed trait Menu
             val action = keyMap.get(ke.getKey())
             action.map { a => a() ; true }.getOrElse(false)
           else false
+        case me: InputMouseButtonEvent =>
+          if !me.isModifiersDown && me.button() == MouseButton.Left
+          then
+            selectMenu
+            true
+          else
+            false
         case _ => 
           false
 
@@ -266,8 +273,15 @@ class MenuContainer
         nextMi.keyMap = nextMi.keyMap + ( KeyName.ReverseTab -> ( ()=>{focusChildPrev(prevMi)} ) )
       }
       children.headOption.foreach { wid => wid.keyMap = wid.keyMap + ( KeyName.Up -> (()=>{MenuContainer.this.focus.request}) ) }
+
       children.foreach { mi =>
         mi.keyMap = mi.keyMap + ( KeyName.Enter -> (()=>{mi.selectMenu}) )
+
+        if mi.isInstanceOf[MenuContainer]
+        then
+          mi.keyMap = mi.keyMap + ( KeyName.Right -> (()=>{mi.selectMenu}) )
+
+        mi.keyMap = mi.keyMap + ( KeyName.Left -> (()=>{MenuContainer.this.focus.request}) )
       }
       
     private def focusChildNext( mi:Menu ):Unit =
