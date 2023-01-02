@@ -51,6 +51,48 @@ class MenuContainer
       this.size = Size(text.length(),1)
     }
 
+    /* #region render border */
+
+    paintStack.set(
+      paintStack.get :+ { paint => 
+      if focus.contains then renderBorder(paint)
+    })
+
+    def renderBorder(paint:PaintCtx):Unit = {
+      val lt = childsLeftUpPos.get
+      val rb = Position(lt.x+1+contentWidth, lt.y+1+contentHeight)
+      val rt = Position(rb.x, lt.y)
+      val lb = Position(lt.x, rb.y)
+      val xCenter = ((lt.x - rt.x).abs / 2) + lt.x
+
+      val style = 
+        if focus.isOwner || children.exists(_.focus.isOwner)
+        then Symbols.Style.Double else Symbols.Style.Single 
+      val lines = List(
+        Line(lt,rt,style),
+        Line(rt,rb,style),
+        Line(lb,rb,style),
+        Line(lt,lb,style),
+      )
+      val hvLines = lines.flatMap { line => line.toHVLine() match
+        case None => List()
+        case Some(value) => List(value)
+      }
+      paint.foreground = paintTextColor
+      paint.background = fillBackgroundColor
+      hvLines.draw(paint)
+
+      if childsInvisibleTail.get.nonEmpty 
+      then paint.write(xCenter,lb.y, Symbols.Trinagles.down)
+
+      if childsInvisibleHead.get.nonEmpty
+      then paint.write(xCenter,lt.y, Symbols.Trinagles.up)
+    }
+    
+    /* #endregion */
+
+    /* #region render children */
+
     paintStack.set(
       paintStack.get :+ { paint => 
         paintChildren(paint)
@@ -71,6 +113,8 @@ class MenuContainer
           case visProp:VisibleProp if visProp.visible.value.get => paintChild()
           case _ => ()
       }
+
+    /* #endregion */ 
 
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
@@ -157,42 +201,6 @@ class MenuContainer
       }
 
     private lazy val childsLeftUpPos = Prop.rw(Position(0,1))
-
-    paintStack.set(
-      paintStack.get :+ { paint => 
-      if focus.contains then renderBorder(paint)
-    })
-
-    def renderBorder(paint:PaintCtx):Unit = {
-      val lt = childsLeftUpPos.get
-      val rb = Position(lt.x+1+contentWidth, lt.y+1+contentHeight)
-      val rt = Position(rb.x, lt.y)
-      val lb = Position(lt.x, rb.y)
-      val xCenter = ((lt.x - rt.x).abs / 2) + lt.x
-
-      val style = 
-        if focus.isOwner || children.exists(_.focus.isOwner)
-        then Symbols.Style.Double else Symbols.Style.Single 
-      val lines = List(
-        Line(lt,rt,style),
-        Line(rt,rb,style),
-        Line(lb,rb,style),
-        Line(lt,lb,style),
-      )
-      val hvLines = lines.flatMap { line => line.toHVLine() match
-        case None => List()
-        case Some(value) => List(value)
-      }
-      paint.foreground = paintTextColor
-      paint.background = fillBackgroundColor
-      hvLines.draw(paint)
-
-      if childsInvisibleTail.get.nonEmpty 
-      then paint.write(xCenter,lb.y, Symbols.Trinagles.down)
-
-      if childsInvisibleHead.get.nonEmpty
-      then paint.write(xCenter,lt.y, Symbols.Trinagles.up)
-    }
 
     def upDownLayout: Unit =
       val off = childsVisibleOffset.get
