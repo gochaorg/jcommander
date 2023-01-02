@@ -12,6 +12,7 @@ import xyz.cofe.term.common.InputKeyEvent
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.term.common.InputMouseButtonEvent
 import xyz.cofe.term.common.MouseButton
+import xyz.cofe.term.buff.ScreenChar
 
 sealed trait Menu 
   extends Widget
@@ -354,6 +355,8 @@ class MenuAction
           else foregroundColor.get
       else
         foregroundColor.get
+
+    lazy val keyStrokeFgColor = Prop.rw(Color.BlueBright)
     
     def paintText( paint:PaintCtx ):Unit =
       paint.foreground = paintTextColor
@@ -363,7 +366,18 @@ class MenuAction
         paint.background = 
           this.asInstanceOf[FillBackground].fillBackgroundColor
 
-      paint.write(0,0,renderText)
+      val str = 
+        (text.get.map { chr => ScreenChar(chr,paintTextColor,fillBackgroundColor) }).toList
+        ++ { keyStroke.get match
+          case None => List()
+          case Some(ks) => 
+            List(ScreenChar(' ',paintTextColor,fillBackgroundColor)) ++
+            ks.toString().map {
+              chr => ScreenChar(chr,keyStrokeFgColor.get,fillBackgroundColor)
+            }
+        }
+         
+      paint.write(0,0,str)
     
     /* #endregion */
 
