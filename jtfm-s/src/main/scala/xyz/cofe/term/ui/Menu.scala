@@ -13,6 +13,7 @@ import xyz.cofe.lazyp.Prop
 import xyz.cofe.term.common.InputMouseButtonEvent
 import xyz.cofe.term.common.MouseButton
 import xyz.cofe.term.buff.ScreenChar
+import xyz.cofe.lazyp.ReadWriteProp
 
 sealed trait Menu 
   extends Widget
@@ -311,7 +312,10 @@ class MenuAction
       this.size = Size(text.length(),1)
     }
 
-    lazy val keyStroke = Prop.rw(None:Option[KeyStroke])
+    object keyStroke extends ReadWriteProp[Option[KeyStroke]](None):
+      def apply(ks:KeyStroke):MenuAction =
+        set(Some(ks))
+        MenuAction.this
 
     private var binded:Option[MenuBar] = None
     private def menuBarOpt:Option[MenuBar] = {
