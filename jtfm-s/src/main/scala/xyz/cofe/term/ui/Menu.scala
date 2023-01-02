@@ -41,16 +41,60 @@ sealed trait Menu
         case _ => 
           false
 
+    def renderText:String
+
 class MenuContainer 
   extends Menu
-  with WidgetChildren[Menu]
-  with PaintText:
+  with WidgetChildren[Menu]:
     def this(text:String) = {
       this()
       this.text = text
       this.size = Size(text.length(),1)
     }
 
+    def renderText: String = 
+      text.get + { 
+        if menuLevel.get > 1
+        then if children.nonEmpty 
+          then "  "+Symbols.Trinagles.right 
+          else "  " 
+        else 
+          ""
+      }
+
+    /* #region paint text */
+
+    paintStack.set(
+      paintStack.get :+ { paint =>
+        paintText(paint)
+      }
+    )
+
+    def paintTextColor:Color =
+      if this.isInstanceOf[WidgetInput]
+      then
+        val foc = this.asInstanceOf[WidgetInput].focus
+        if this.isInstanceOf[FocusOwnerFgColor] && foc.isOwner 
+        then this.asInstanceOf[FocusOwnerFgColor].focusOwnerFgColor.get 
+        else 
+          if this.isInstanceOf[FocusContainerFgColor] && foc.contains 
+          then this.asInstanceOf[FocusContainerFgColor].focusContainerFgColor.get 
+          else foregroundColor.get
+      else
+        foregroundColor.get
+    
+    def paintText( paint:PaintCtx ):Unit =
+      paint.foreground = paintTextColor
+
+      if this.isInstanceOf[FillBackground] 
+      then 
+        paint.background = 
+          this.asInstanceOf[FillBackground].fillBackgroundColor
+
+      paint.write(0,0,renderText)
+
+    /* #endregion */
+          
     /* #region render border */
 
     paintStack.set(
@@ -157,7 +201,7 @@ class MenuContainer
       bindUpDown
 
     private def childsMaxWidth = { 
-      children.map(_.text.length()).maxOption.getOrElse(5) 
+      children.map(_.renderText.length()).maxOption.getOrElse(5) 
     }
     private def contentWidth = childsMaxWidth
     private def contentHeight = childsVisibleItems.get.size
@@ -252,6 +296,8 @@ class MenuAction
       this.text = text
       this.size = Size(text.length(),1)
     }
+
+    def renderText: String = text.get
 
     focus.onLost { _ => checkHideSubMenu }
     def checkHideSubMenu:Unit =
