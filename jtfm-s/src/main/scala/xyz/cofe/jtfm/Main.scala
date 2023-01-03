@@ -34,9 +34,9 @@ object Main:
   implicit val pathPatternEval : Evaluate = Evaluate.defaultEvaluate
 
   lazy val logPathCommon = "{appHome}/log/{yyyy}/{MM}/{dd}/{HH}-{mi}-pid{pid}-"
-  lazy val sesInputLogPath = PathPattern.parse(Path.of(s"${logPathCommon}sesInput.txt"))
+  lazy val sesInputLogPath = PathPattern.parse(Path.of(s"${logPathCommon}sesInput.json"))
   lazy val sesInputOut = AppendableFile(sesInputLogPath,Some(1024*1024*16))
-  given sesInputLog : SesInputLog = SesInputLog.simple(sesInputOut)
+  given sesInputLog : SesInputLog = SesInputLog.writeJsonTo(sesInputOut)
 
   lazy val colorsConfFile = ColorsConf.confFile(appHome)
 

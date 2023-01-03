@@ -22,7 +22,7 @@
 {
   "menu" : {
     "bar" : {
-      "backgroundColor" : "MagentaBright"
+      "backgroundColor" : "CyanBright"
     },
     "container" : {
       "focusContainerFgColor" : "WhiteBright",
