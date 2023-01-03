@@ -3,21 +3,21 @@ package xyz.cofe.term.ui.conf
 import xyz.cofe.term.common.Color
 
 trait FocusColorConfig:
-  def focusContainerFgColor = Color.WhiteBright
-  def focusOwnerFgColor = Color.YellowBright
-  def focusContainerBgColor = Color.BlackBright
-  def focusOwnerBgColor = Color.BlackBright
-  def backgroundColor = Color.Black
-  def foregroundColor = Color.White
+  def focusContainerFgColor : Color
+  def focusOwnerFgColor : Color
+  def focusContainerBgColor : Color
+  def focusOwnerBgColor : Color
+  def backgroundColor : Color
+  def foregroundColor : Color
 
 object FocusColorConfig:
-  given defaultColors: FocusColorConfig = new FocusColorConfig {}
+  given defaultColors: FocusColorConfig = new Conf()
 
   case class Conf(
-    focusContainerFgColor: Color,
-    focusOwnerFgColor: Color,
-    focusContainerBgColor: Color,
-    focusOwnerBgColor: Color,
-    backgroundColor: Color,
-    foregroundColor: Color
-  )
+    focusContainerFgColor: Color = Color.WhiteBright,
+    focusOwnerFgColor: Color = Color.YellowBright,
+    focusContainerBgColor: Color = Color.BlackBright,
+    focusOwnerBgColor: Color = Color.BlackBright,
+    backgroundColor: Color = Color.Black,
+    foregroundColor: Color = Color.White
+  ) extends FocusColorConfig

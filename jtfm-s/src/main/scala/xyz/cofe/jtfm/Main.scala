@@ -24,6 +24,9 @@ import xyz.cofe.term.ui.ses.SesInputLog
 import xyz.cofe.files.log.PathPattern.Evaluate
 import scala.collection.immutable.LazyList.cons
 import xyz.cofe.term.cs._
+import xyz.cofe.jtfm.conf.ColorsConf
+import xyz.cofe.term.ui.conf.MenuBarColorConfig
+import xyz.cofe.term.ui.conf.MenuColorConfig
 
 object Main:
   object appHome extends AppHome("jtfm")
@@ -35,9 +38,15 @@ object Main:
   lazy val sesInputOut = AppendableFile(sesInputLogPath,Some(1024*1024*16))
   given sesInputLog : SesInputLog = SesInputLog.simple(sesInputOut)
 
+  lazy val colorsConfFile = ColorsConf.confFile(appHome)
+
   def main(args:Array[String]):Unit =
     //System.setProperty("xyz.cofe.term.default","telnet")
     //System.setProperty("xyz.cofe.term.telnet.port","12346")
+
+    val colorsConf = colorsConfFile.read
+    implicit val menuBarColors = colorsConf.map(_.menu.bar).getOrElse(new MenuBarColorConfig.Conf)
+    implicit val menuColors = colorsConf.map(_.menu.container).getOrElse(new MenuColorConfig.Conf)
 
     val console = ConsoleBuilder.defaultConsole()
     Session.start(console) {

@@ -1,7 +1,37 @@
+/*
+Определяет настройки цвета/цветовые схемы
+
+Какие есть цвета:
+  Black
+  BlackBright
+  Red
+  RedBright
+  Green
+  GreenBright
+  Yellow
+  YellowBright
+  Blue
+  BlueBright
+  Magenta
+  MagentaBright
+  Cyan
+  CyanBright
+  White
+  WhiteBright
+*/
 {
   "menu" : {
     "bar" : {
-      "backgroundColor" : "CyanBright"
+      "backgroundColor" : "MagentaBright"
+    },
+    "container" : {
+      "focusContainerFgColor" : "WhiteBright",
+      "focusOwnerFgColor" : "YellowBright",
+      "focusContainerBgColor" : "BlackBright",
+      "focusOwnerBgColor" : "BlackBright",
+      "backgroundColor" : "Black",
+      "foregroundColor" : "White",
+      "keyStrokeFgColor" : "BlueBright"
     }
   }
 }
