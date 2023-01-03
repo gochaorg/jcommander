@@ -14,6 +14,8 @@ import xyz.cofe.term.common.InputMouseButtonEvent
 import xyz.cofe.term.common.MouseButton
 import xyz.cofe.term.buff.ScreenChar
 import xyz.cofe.lazyp.ReadWriteProp
+import xyz.cofe.term.ui.conf.MenuColorConfig
+import xyz.cofe.term.ui.conf.MenuBarColorConfig
 
 sealed trait Menu 
   extends Widget
@@ -52,7 +54,8 @@ sealed trait Menu
 
     def renderText:String
 
-class MenuContainer 
+/* #region MenuContainer */
+class MenuContainer(using config: MenuColorConfig)
   extends Menu
   with WidgetChildren[Menu]:
     def this(text:String) = {
@@ -60,6 +63,13 @@ class MenuContainer
       this.text = text
       this.size = Size(text.length(),1)
     }
+
+    foregroundColor = config.foregroundColor
+    backgroundColor = config.backgroundColor
+    focusOwnerFgColor = config.focusOwnerFgColor
+    focusOwnerBgColor = config.focusOwnerBgColor
+    focusContainerFgColor = config.focusContainerFgColor
+    focusContainerBgColor = config.focusContainerBgColor
 
     def renderText: String = 
       text.get + { 
@@ -302,15 +312,25 @@ class MenuContainer
       mi.visible = false
     }
 
+/* #endregion */
+
 /* #region MenuAction */
 
-class MenuAction
+class MenuAction(using config: MenuColorConfig)
   extends Menu:
     def this(text:String) = {
       this()
       this.text = text
       this.size = Size(text.length(),1)
     }
+
+    foregroundColor = config.foregroundColor
+    backgroundColor = config.backgroundColor
+    focusOwnerFgColor = config.focusOwnerFgColor
+    focusOwnerBgColor = config.focusOwnerBgColor
+    focusContainerFgColor = config.focusContainerFgColor
+    focusContainerBgColor = config.focusContainerBgColor
+    keyStrokeFgColor.set(config.keyStrokeFgColor)
 
     object keyStroke extends ReadWriteProp[Option[KeyStroke]](None):
       def apply(ks:KeyStroke):MenuAction =
@@ -413,7 +433,7 @@ class MenuAction
 /* #endregion */
 
 /* #region MenuBar */
-class MenuBar 
+class MenuBar(using config:MenuBarColorConfig) 
   extends Widget
   with WidgetChildren[Menu]
   with VisibleProp
@@ -421,6 +441,8 @@ class MenuBar
   with SizeRWProp
   with FillBackground
   with WidgetInput:
+
+  backgroundColor = config.backgroundColor
 
   paintStack.set(
     paintStack.get :+ { paint => 
@@ -442,8 +464,6 @@ class MenuBar
         case visProp:VisibleProp if visProp.visible.value.get => paintChild()
         case _ => ()
     }
-
-  backgroundColor.set( Color.CyanBright )
 
   protected var rootListeners : List[ReleaseListener] = List.empty
   protected var rootWidget : Option[RootWidget] = None
@@ -524,7 +544,7 @@ class MenuBar
         case Some(prevRect) =>
           mi.size = Size(mi.text.length(), 1)
           mi.location = Position(prevRect.right+1,0)
-          Some( mi.size.leftUpRect(mi.location.get) )      
+          Some( mi.size.leftUpRect(mi.location.get) )
     }
 
     children.foldLeft( None:Option[Menu] ){ case (prevOpt,mi) => 

@@ -93,7 +93,7 @@ object Main:
         but5.location.set(Position(35,10))
         ses.rootWidget.children.append(but5)
 
-        val menuBar = MenuBar()
+        val menuBar = new MenuBar
         val menuFile = MenuContainer("File")
         
         val menuFileOpen = 
