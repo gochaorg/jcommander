@@ -27,6 +27,8 @@ import xyz.cofe.term.cs._
 import xyz.cofe.jtfm.conf.ColorsConf
 import xyz.cofe.term.ui.conf.MenuBarColorConfig
 import xyz.cofe.term.ui.conf.MenuColorConfig
+import xyz.cofe.jtfm.log.JsonLogOutput
+import xyz.cofe.json4s3.derv.ToJson
 
 object Main:
   object appHome extends AppHome("jtfm")
@@ -36,7 +38,8 @@ object Main:
   lazy val logPathCommon = "{appHome}/log/{yyyy}/{MM}/{dd}/{HH}-{mi}-pid{pid}-"
   lazy val sesInputLogPath = PathPattern.parse(Path.of(s"${logPathCommon}sesInput.json"))
   lazy val sesInputOut = AppendableFile(sesInputLogPath,Some(1024*1024*16))
-  given sesInputLog : SesInputLog = SesInputLog.writeJsonTo(sesInputOut)
+  //given sesInputLog : SesInputLog = SesInputLog.writeJsonTo(sesInputOut)
+  given sesInputLog : SesInputLog = SesInputLog.writeTo(new JsonLogOutput[SesInputLog.SesInputEvent](sesInputOut))
 
   lazy val colorsConfFile = ColorsConf.confFile(appHome)
 

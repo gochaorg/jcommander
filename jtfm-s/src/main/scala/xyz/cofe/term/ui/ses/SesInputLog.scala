@@ -18,6 +18,7 @@ import xyz.cofe.term.ui.Widget
 import xyz.cofe.json4s3.derv.ToJson
 import xyz.cofe.json4s3.derv._
 import xyz.cofe.term.ui.log.given
+import xyz.cofe.json4s3.stream.ast.AST
 
 trait SesInputLog:
   def inputEvent[R](inputEvent:CInputEvent)(code: =>R):R = code
@@ -79,11 +80,21 @@ object SesInputLog:
     else
       WidgetId(id)
 
+  private val evIdSeq = new AtomicLong(0)
+
   def writeTo( eventWriter: SesInputEvent => Unit ):SesInputLog = new SesInputLog {
 
     override def inputEvent[R](inputEvent: CInputEvent)(code: => R): R = 
-      InputEvent(inputEvent).foreach( ev => eventWriter(SesInputEvent.Input(ev)) )
-      code
+      var evId : Option[Long] = None
+      InputEvent(inputEvent).foreach{ ev => 
+        evId = Some(evIdSeq.incrementAndGet())
+        eventWriter(SesInputEvent.Input(ev, evId.get)) 
+      } 
+      val res = code
+      evId.foreach { evId => 
+        eventWriter(SesInputEvent.End(evId))
+      }
+      res
 
     override def resize[R](size: Size)(code: => R): R = 
       eventWriter( SesInputEvent.Resize(size) )
@@ -131,7 +142,8 @@ object SesInputLog:
         case _ => None
 
   enum SesInputEvent:
-    case Input(event:InputEvent)
+    case Input(event:InputEvent, id:Long)
+    case End(id:Long)
     case Resize(size:Size)
     case FocusNext
     case FocusPrev
@@ -139,3 +151,22 @@ object SesInputLog:
     case SendInput(wid:WidgetId, inputEvent:InputEvent)
     case TryInput(wid:WidgetId, inputEvent:InputEvent, result:Boolean)
 
+  object SesInputEvent:
+    given ToJson[SesInputEvent] with
+      override def toJson(v: SesInputEvent): Option[AST] = v match
+        case i: SesInputEvent.Input => 
+          summon[ToJson[SesInputEvent.Input]].toJson(i).map(j => AST.JsObj(List("Input"->j)))
+        case i: SesInputEvent.End => 
+          summon[ToJson[SesInputEvent.End]].toJson(i).map(j => AST.JsObj(List("End"->j)))
+        case i: SesInputEvent.Resize => 
+          summon[ToJson[SesInputEvent.Resize]].toJson(i).map(j => AST.JsObj(List("Resize"->j)))
+        case    SesInputEvent.FocusNext => 
+          summon[ToJson[SesInputEvent.FocusNext.type]].toJson(SesInputEvent.FocusNext).map(j => AST.JsObj(List("FocusNext"->j)))
+        case    SesInputEvent.FocusPrev => 
+          summon[ToJson[SesInputEvent.FocusPrev.type]].toJson(SesInputEvent.FocusPrev).map(j => AST.JsObj(List("FocusPrev"->j)))
+        case i: SesInputEvent.SwitchFocus => 
+          summon[ToJson[SesInputEvent.SwitchFocus]].toJson(i).map(j => AST.JsObj(List("SwitchFocus"->j)))
+        case i: SesInputEvent.SendInput => 
+          summon[ToJson[SesInputEvent.SendInput]].toJson(i).map(j => AST.JsObj(List("SendInput"->j)))
+        case i: SesInputEvent.TryInput => 
+          summon[ToJson[SesInputEvent.TryInput]].toJson(i).map(j => AST.JsObj(List("TryInput"->j)))
