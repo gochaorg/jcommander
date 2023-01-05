@@ -91,9 +91,7 @@ object SesInputLog:
         eventWriter(SesInputEvent.Input(ev, evId.get)) 
       } 
       val res = code
-      evId.foreach { evId => 
-        eventWriter(SesInputEvent.End(evId))
-      }
+      evId.foreach { evId => eventWriter(SesInputEvent.End(evId)) }
       res
 
     override def resize[R](size: Size)(code: => R): R = 
@@ -112,8 +110,14 @@ object SesInputLog:
       eventWriter( SesInputEvent.SwitchFocus(from.map(idOf),to.map(idOf)) )
 
     override def sendInput[R](wid: WidgetInput, event: CInputEvent)(code: => R): R = 
-      InputEvent(event).foreach( ev => eventWriter(SesInputEvent.SendInput(idOf(wid), ev)))
-      code
+      var evId : Option[Long] = None
+      InputEvent(event).foreach{ ev => 
+        evId = Some(evIdSeq.incrementAndGet())
+        eventWriter(SesInputEvent.SendInput(idOf(wid), ev, evId.get)) 
+      }
+      val res = code
+      evId.foreach { evId => eventWriter(SesInputEvent.End(evId)) }
+      res
 
     override def tryInput(wid: WidgetInput, event: CInputKeyEvent)(code: => Boolean): Boolean = 
       val res = code
@@ -148,7 +152,7 @@ object SesInputLog:
     case FocusNext
     case FocusPrev
     case SwitchFocus(from:Option[WidgetId], to:Option[WidgetId])
-    case SendInput(wid:WidgetId, inputEvent:InputEvent)
+    case SendInput(wid:WidgetId, inputEvent:InputEvent, id:Long)
     case TryInput(wid:WidgetId, inputEvent:InputEvent, result:Boolean)
 
   object SesInputEvent:
