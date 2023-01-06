@@ -85,8 +85,11 @@ with FillBackground:
             else false
           case _ => false
       case ce:InputCharEvent =>
-        if ce.isControlDown() && ce.getChar()=='a' then
+        if ce.isControlDown() && ce.getChar()=='a' then          
           selectAll()
+        else if ce.getChar()=='c' && ce.isModifiers(altDown = false, controlDown = true, shiftDown = false) then
+          copyToClipboard()
+          true
         else
           if ce.isAltDown()==false && ce.isControlDown()==false then
             insertString(""+ce.getChar())
@@ -195,3 +198,8 @@ with FillBackground:
 
   def clearSelection():Unit =
     selection.set( selection.get.resetTo(cursor.get) )
+
+  def copyToClipboard():Unit =
+    ClipboardAWT.writeString(
+      selection.get.select(text.get)
+    )
