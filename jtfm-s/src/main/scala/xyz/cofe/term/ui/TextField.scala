@@ -95,19 +95,21 @@ with FillBackground:
             false
       case _ => false
 
-  def moveCursorLeft(select:Boolean=false):Boolean = 
-    if cursor.get>0 
-    then
+  private def moveCursor(nextCursor:Int, select:Boolean):Unit =
       if !select 
       then clearSelection() 
       else
         if selection.get.size < 1
         then
-          selection.set(TextSelectRange(cursor.get-1, cursor.get))
+          selection.set(TextSelectRange(nextCursor, cursor.get))
         else
-          selection.set(selection.get.extendTo(cursor.get-1))
+          selection.set(selection.get.extendTo(nextCursor))
+      cursor.set( nextCursor )
 
-      cursor.set( cursor.get-1 )
+  def moveCursorLeft(select:Boolean=false):Boolean = 
+    if cursor.get>0 
+    then
+      moveCursor(cursor.get-1,select)
       true
     else
       false
@@ -115,38 +117,77 @@ with FillBackground:
   def moveCursorRight(select:Boolean=false):Boolean = 
     if cursor.get<text.get.length()
     then
-      cursor.set( cursor.get+1 )
-      if !select then clearSelection()
+      moveCursor(cursor.get+1,select)
       true
     else
       false
 
   def moveCursorEnd(select:Boolean=false):Boolean =
-    false
+    if cursor.get<text.get.length()
+    then
+      moveCursor(text.get.length(),select)
+      true
+    else
+      false
 
   def moveCursorHome(select:Boolean=false):Boolean =
-    false
+    if cursor.get>0 
+    then
+      moveCursor(0,select)
+      false
+    else
+      false
 
   def insertString(string:String):Unit =
-    val (lft,rgt) = text.get.splitAt(cursor.get)
-    text = (lft + string + rgt)
-    moveCursorRight(false)
+    if selection.get.size>0 
+    then
+      val selectRange = selection.get
+      val lft = text.get before selectRange
+      val rgt = text.get after  selectRange
+      text = lft + string + rgt
+      cursor.set( lft.length() + string.length() )
+      clearSelection()
+    else
+      val (lft,rgt) = text.get.splitAt(cursor.get)
+      text = (lft + string + rgt)
+      moveCursorRight(false)
 
   def deleteLeft():Boolean =
-    val (lft,rgt) = text.get.splitAt(cursor.get)
-    text = lft.dropRight(1) + rgt
-    moveCursorLeft(false)
-    true
+    if selection.get.size>0 
+    then
+      val selectRange = selection.get
+      val lft = text.get before selectRange
+      val rgt = text.get after  selectRange
+      text = lft + rgt
+      cursor.set( lft.length() )
+      clearSelection()
+      true
+    else
+      val (lft,rgt) = text.get.splitAt(cursor.get)
+      text = lft.dropRight(1) + rgt
+      moveCursorLeft(false)
+      true
 
   def deleteRight():Boolean =
-    val (lft,rgt) = text.get.splitAt(cursor.get)
-    text = lft + rgt.drop(1)
-    true
+    if selection.get.size>0
+    then
+      val selectRange = selection.get
+      val lft = text.get before selectRange
+      val rgt = text.get after  selectRange
+      text = lft + rgt
+      cursor.set( lft.length() )
+      clearSelection()
+      true
+    else
+      val (lft,rgt) = text.get.splitAt(cursor.get)
+      text = lft + rgt.drop(1)
+      true
 
   def selectAll():Boolean =
     selection.set(
       TextSelectRange(0, text.get.length())
     )
+    cursor.set( text.get.length() )
     true
 
   def selectRange(from:Int, to:Int):Either[String,Unit] =    
