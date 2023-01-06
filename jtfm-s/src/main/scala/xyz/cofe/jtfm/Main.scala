@@ -105,6 +105,12 @@ object Main:
         but5.location.set(Position(35,10))
         ses.rootWidget.children.append(but5)
 
+        val textField = new TextField()
+        textField.location = Position(1,5)
+        textField.size = Size(25,1)
+        textField.text = "sample"
+        ses.rootWidget.children.append(textField)
+
         val menuBar = new MenuBar
         val menuFile = MenuContainer("File")
         

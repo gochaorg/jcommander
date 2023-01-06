@@ -42,7 +42,15 @@ extends PaintCtx {
 
   object cursorInstance extends Cursor {
     def position: Position = Position(cursorX,cursorY)
-    def position_=(newPosition: Position): Either[String, Unit] = ???
+    def position_=(newPosition: Position): Either[String, Unit] = 
+      if clipping && 
+         newPosition.x>=0 && newPosition.y>=0 && 
+         newPosition.x < boundsSize.width && newPosition.y < boundsSize.height()
+      then
+        screenBuffer.cursorPos = absoluteOffset.move(newPosition.x, newPosition.y)
+        Right(())
+      else
+        Left("out of bounds clip")
 
     def visible: Boolean = screenBuffer.cursorVisible
     def visible_=(switchOn: Boolean): Unit = 
