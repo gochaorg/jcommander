@@ -41,6 +41,14 @@ trait ListenerSuppor:
 trait ReleaseListener:
   def release():Unit
 
+object ReleaseListener:
+  def apply( code: =>Unit ):ReleaseListener =
+    new ReleaseListener {
+      override def release(): Unit = {
+        code
+      }
+    }
+
 class ReadWriteProp[V]( initial:V ) extends Prop[V] with ListenerSuppor:
   private var value:V = initial
   def get: V = value
