@@ -6,7 +6,7 @@ import xyz.cofe.lazyp.ReleaseListener
 trait ObserverList[A] extends Iterable[A] with Prop[ObserverList[A]]:
   def insert(index:Int,item:A):Unit
   def insert(index:Int,items:Iterable[A]):Unit
-  def delete(item:A):Unit
+  def delete[A1 >: A](item:A1):Unit
   def delete(items:Iterable[A]):Unit
   def deleteAt(index:Int):Unit
   def update(index:Int, item:A):Unit
@@ -15,6 +15,7 @@ trait ObserverList[A] extends Iterable[A] with Prop[ObserverList[A]]:
   def onDelete(ls: A=>Unit):ReleaseListener
   def append(item:A):Unit = insert(Int.MaxValue,item)
   def append(items:Iterable[A]):Unit = insert(Int.MaxValue,items)
+  def contains[A1 >: A](item:A1):Boolean
 
 class ObserverListImpl[A] extends ObserverList[A]:
   override def get: ObserverList[A] = this
@@ -33,6 +34,8 @@ class ObserverListImpl[A] extends ObserverList[A]:
   var items = List[A]()
   override def iterator: Iterator[A] = items.iterator
 
+  def contains[A1 >: A](item:A1):Boolean = items.contains(item)
+
   def insert(index:Int,item:A):Unit = 
     val (left,right) = items.splitAt(index)
     items = left ++ List(item) ++ right
@@ -45,7 +48,7 @@ class ObserverListImpl[A] extends ObserverList[A]:
     insItems.foreach(fireInserted)
     if insItems.nonEmpty then fireChanged()
 
-  def delete(item:A):Unit = 
+  def delete[A1 >: A](item:A1):Unit = 
     var deleted = List[A]()
     items = items.filter { i => 
       if( i==item ){
