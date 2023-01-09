@@ -2,6 +2,7 @@ package xyz.cofe.term.paint
 
 import xyz.cofe.term.geom._
 import Symbols.Connector
+import scala.reflect.ClassTag
 
 extension (lines:Seq[HVLine])
   private def draw( gr: PaintCtx, line:HVLine, chr:Char ):Unit = {
@@ -35,3 +36,7 @@ extension (lines:Seq[HVLine])
       }
       case _ =>
     }
+
+extension [A <: Seq[Line] : ClassTag](lines:A)
+  def draw(gr: PaintCtx):Unit =
+    lines.map(_.toHVLine()).flatten.draw(gr)

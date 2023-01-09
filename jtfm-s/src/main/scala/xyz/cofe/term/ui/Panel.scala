@@ -12,3 +12,4 @@ class Panel extends Widget
   with SizeRWProp
   with FillBackground
   with PaintChildren
+  with WidgetInput

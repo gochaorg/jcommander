@@ -121,7 +121,7 @@ object Main:
 
         val menuFileExit = MenuAction("Exit").action { println("exit"); ses.stop = true }        
         val menuFileSome = MenuAction("Some else")
-        val menuView = MenuContainer("View")
+        val menuView = MenuContainer("View")        
         val menuViewSome = MenuAction("Some")
 
         val menuViewSub = MenuContainer("Sub")
@@ -144,6 +144,21 @@ object Main:
           val mi = MenuAction(s"menu $i")
           menuFile.children.append(mi)
         }
+
+        menuView.children.append(
+          MenuAction("Dialog 1").action {
+            println("dialog 1")
+            Dialog
+              .title("title").size(Size(25,10))
+              .onHide { println("closed") }
+              .content { dlg => 
+                val lbl = Label("label 12345")
+                lbl.location = Position(1,3)
+                dlg.children.append(lbl)
+              }
+              .show()
+          }
+        )
 
         menuBar.install(ses.rootWidget)
       }

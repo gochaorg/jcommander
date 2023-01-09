@@ -2,13 +2,7 @@ package xyz.cofe.term.ui
 
 import xyz.cofe.term.paint.PaintCtx
 
-trait PaintChildren extends PaintStack with WidgetChildren[_]:
-  paintStack.set(
-    paintStack.get :+ { paint => 
-      paintChildren(paint)
-    }
-  )
-
+trait PaintChildrenMethod extends WidgetChildren[_]:
   def paintChildren(paint:PaintCtx):Unit =
     children.get.foreach { widget => 
       def paintChild():Unit = {
@@ -23,4 +17,8 @@ trait PaintChildren extends PaintStack with WidgetChildren[_]:
         case visProp:VisibleProp if visProp.visible.value.get => paintChild()
         case _ => ()
     }
+
+trait PaintChildren extends PaintStack with PaintChildrenMethod:
+  paintStack.add(paintChildren)
+
 
