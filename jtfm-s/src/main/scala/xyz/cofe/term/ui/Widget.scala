@@ -10,11 +10,14 @@ import xyz.cofe.term.cs.ObserverList
 import xyz.cofe.term.cs.LikeTree
 import xyz.cofe.term.cs.TreePath
 import xyz.cofe.term.cs.RTreePath
+import xyz.cofe.term.geom._
 
 trait Widget:
-  val parent:ReadWriteProp[Option[Widget]] = ReadWriteProp(None)
+  val parent:ReadWriteProp[Option[WidgetChildren[?]]] = ReadWriteProp(None)
   def location:Prop[Position]
-  def size:Prop[Size]
+  def size:Prop[Size]  
+  lazy val locationRect = Prop.eval( location, size ){ case (loc,size) => size.leftUpRect(loc) }
+
   def paint(paintCtx:PaintCtx):Unit = {}
   def repaint:Unit = Session.currentSession.foreach( ses => ses.repaint(this) )
   def toTreePath:TreePath[Widget] = 
