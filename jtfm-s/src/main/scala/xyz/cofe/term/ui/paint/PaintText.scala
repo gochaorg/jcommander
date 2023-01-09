@@ -3,14 +3,7 @@ package xyz.cofe.term.ui
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.paint.PaintCtx
 
-
-trait PaintText extends PaintStack with TextProperty with ForegroundColor:
-  paintStack.set(
-    paintStack.get :+ { paint =>
-      paintText(paint)
-    }
-  )
-
+trait PaintTextColor extends ForegroundColor:
   def paintTextColor:Color =
     if this.isInstanceOf[WidgetInput]
     then
@@ -23,7 +16,10 @@ trait PaintText extends PaintStack with TextProperty with ForegroundColor:
         else foregroundColor.get
     else
       foregroundColor.get
-  
+
+trait PaintText extends PaintStack with TextProperty with PaintTextColor:
+  paintStack.add(paintText)
+
   def paintText( paint:PaintCtx ):Unit =
     paint.foreground = paintTextColor
 

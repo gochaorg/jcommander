@@ -5,13 +5,7 @@ import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.term.buff.ScreenChar
 import xyz.cofe.term.geom._
 
-trait FillBackground extends PaintStack with BackgroundColor:
-  paintStack.set(
-    paintStack.get :+ { paint => 
-      fillBackground(paint)
-    }
-  )
-
+trait FillBackgroundColor extends BackgroundColor:
   def fillBackgroundColor:Color =
     if this.isInstanceOf[WidgetInput]
     then
@@ -24,6 +18,9 @@ trait FillBackground extends PaintStack with BackgroundColor:
         else backgroundColor.get
     else
       backgroundColor.get
+
+trait FillBackground extends PaintStack with FillBackgroundColor:
+  paintStack.add(fillBackground)
 
   def fillBackground(paint:PaintCtx):Unit =    
     paint.background = fillBackgroundColor
