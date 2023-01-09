@@ -40,6 +40,9 @@ object Symbols {
 
   object Action {
     val Close:Char = '\u2573'
+    // 274c
+    // 2717
+    // 2718
   }
 
   trait Border {
