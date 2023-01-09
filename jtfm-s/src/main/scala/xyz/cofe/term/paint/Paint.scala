@@ -22,13 +22,32 @@ trait PaintCtx:
 
   //def read(x:Int,y:Int):Option[ScreenChar]
   def write(x:Int,y:Int,chr:ScreenChar):Unit
+
+  def write(pos:Position,chr:ScreenChar):Unit =
+    write(pos.x,pos.y,chr)
+  
   def write(x:Int,y:Int,chr:Char):Unit
+
+  def write(pos:Position,chr:Char):Unit =
+    write(pos.x,pos.y,chr)
+
   def write(x:Int,y:Int,string:String):Unit
+
+  def write(pos:Position,string:String):Unit =
+    write(pos.x,pos.y,string)
+  
   def write(x:Int,y:Int,string:Seq[ScreenChar]):Unit =
     string.zipWithIndex.foreach { case (chr,i) => write(x+i,y,chr) }
+  
+  def write(pos:Position,string:Seq[ScreenChar]):Unit =
+    write(pos.x, pos.y, string)
+
   def write(chr:ScreenChar):Unit
+
   def write(chr:Char):Unit
+
   def write(string:String):Unit  
+
   def write(string:Seq[ScreenChar]):Unit =
     string.foreach(write)    
 
