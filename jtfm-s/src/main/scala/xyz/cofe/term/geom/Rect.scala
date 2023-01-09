@@ -16,6 +16,12 @@ case class Rect( left:Int, top:Int, width:Int, height:Int ):
   def contains(p:Position):Boolean =
     contains(p.x, p.y)
 
+  def leftTop:Position = Position(left,top)
+  def rightTop:Position = Position(left+width,top)
+  def leftBottom:Position = Position(left,top+height)
+  def rightBottom:Position = Position(left+width,top+height)
+  def center:Position = Position(left+width/2, top+height/2)
+
 extension (size:Size)
   def leftUpRect(pos:Position):Rect =
     Rect(pos.x, pos.y, size.width, size.height)
