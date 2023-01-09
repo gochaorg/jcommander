@@ -19,6 +19,7 @@ trait TreePath[A:LikeTree]:
   def newChild(a:A):TreePath[A]
   def parent:Option[TreePath[A]]
   def listToLeaf:List[A]
+  def root:A = listToLeaf.head
   def selfSibIndex:Option[Int] =
     parent.flatMap { prnt =>
       val i = prnt.node.nodes.indexOf(node) 
