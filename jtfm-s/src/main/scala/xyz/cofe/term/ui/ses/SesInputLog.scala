@@ -111,6 +111,9 @@ object SesInputLog:
     override def switchFocus(from: Option[WidgetInput], to: Option[WidgetInput]): Unit = 
       eventWriter( SesInputEvent.SwitchFocus(from.map(idOf),to.map(idOf)) )
 
+    override def switchFocusCancel(from: Option[WidgetInput], to: Option[WidgetInput], dlg: Dialog): Unit = 
+      eventWriter( SesInputEvent.SwitchFocusCancel(from.map(idOf),to.map(idOf),idOf(dlg)) )
+
     override def sendInput[R](wid: WidgetInput, event: CInputEvent)(code: => R): R = 
       var evId : Option[Long] = None
       InputEvent(event).foreach{ ev => 
@@ -154,6 +157,7 @@ object SesInputLog:
     case FocusNext
     case FocusPrev
     case SwitchFocus(from:Option[WidgetId], to:Option[WidgetId])
+    case SwitchFocusCancel(from:Option[WidgetId], to:Option[WidgetId], dlg:WidgetId)
     case SendInput(wid:WidgetId, inputEvent:InputEvent, id:Long)
     case TryInput(wid:WidgetId, inputEvent:InputEvent, result:Boolean)
 
@@ -176,3 +180,5 @@ object SesInputLog:
           summon[ToJson[SesInputEvent.SendInput]].toJson(i).map(j => AST.JsObj(List("SendInput"->j)))
         case i: SesInputEvent.TryInput => 
           summon[ToJson[SesInputEvent.TryInput]].toJson(i).map(j => AST.JsObj(List("TryInput"->j)))
+        case i: SesInputEvent.SwitchFocusCancel => 
+          summon[ToJson[SesInputEvent.SwitchFocusCancel]].toJson(i).map(j => AST.JsObj(List("SwitchFocusCancel"->j)))
