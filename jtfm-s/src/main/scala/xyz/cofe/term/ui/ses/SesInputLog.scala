@@ -19,6 +19,7 @@ import xyz.cofe.json4s3.derv.ToJson
 import xyz.cofe.json4s3.derv._
 import xyz.cofe.term.ui.log.given
 import xyz.cofe.json4s3.stream.ast.AST
+import xyz.cofe.term.ui.Dialog
 
 trait SesInputLog:
   def inputEvent[R](inputEvent:CInputEvent)(code: =>R):R = code
@@ -26,6 +27,7 @@ trait SesInputLog:
   def focusNext[R](code: =>R):R = code
   def focusPrev[R](code: =>R):R = code
   def switchFocus(from:Option[WidgetInput],to:Option[WidgetInput]):Unit = ()
+  def switchFocusCancel(from:Option[WidgetInput],to:Option[WidgetInput],dlg:Dialog):Unit = ()
   def tryInput(wid:WidgetInput, event:CInputKeyEvent)(code: =>Boolean):Boolean = code
   def sendInput[R](wid:WidgetInput, event:CInputEvent)(code: =>R):R = code
 

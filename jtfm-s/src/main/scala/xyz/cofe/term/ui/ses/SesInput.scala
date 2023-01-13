@@ -15,6 +15,7 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.buff._
 import xyz.cofe.term.geom._
 import xyz.cofe.term.common.MouseButton
+import xyz.cofe.lazyp.Prop
 
 trait SesInputBehavior:
   def switchFocusOnMouseEvent:Boolean = true
@@ -31,6 +32,13 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
     val oldOwner = focusOwnerValue
     focusOwnerValue = newOwner
     log.switchFocus(oldOwner, newOwner)
+
+  def topDialog =
+    rootWidget.children
+      .filter(_.isInstanceOf[Dialog])
+      .map(_.asInstanceOf[Dialog])
+      .filter(_.visible.inTree)
+      .lastOption
 
   /** 
    * подписчики на события ввода
@@ -68,12 +76,14 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
                 case _ => send2focused(ke)
             case me:InputMouseButtonEvent =>
               findWidgetAt(me.position()).headOption.foreach { case (wid,local) => 
-                if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) && me.pressed() 
-                then 
-                  switchFocusTo(wid)
+                if topDialog.map { dlg => wid.toTreePath.listToLeaf.contains(dlg) }.getOrElse( true )
+                then
+                  if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) && me.pressed() 
+                  then 
+                    switchFocusTo(wid)
 
-                val eventForLocal = me.toLocal(local)
-                log.sendInput(wid,eventForLocal)( wid.input( eventForLocal ))
+                  val eventForLocal = me.toLocal(local)
+                  log.sendInput(wid,eventForLocal)( wid.input( eventForLocal ))
               }
             case _ => 
               send2focused(inputEv)
@@ -99,12 +109,19 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
     }
 
   private def switchFocusTo(widInput:WidgetInput):Unit =
-    val oldOwner = focusOwner
-    focusOwner = Some(widInput)
-    oldOwner.foreach( w => w.focus.lost(Some(widInput)) )
-    widInput.focus.accept(oldOwner)
-    widInput.repaint
-    log.switchFocus(oldOwner,Some(widInput))
+    val topDlg = topDialog
+    if topDlg.map { dlg => widInput.toTreePath.listToLeaf.contains(dlg) }.getOrElse( true )
+    then
+      val oldOwner = focusOwner
+      focusOwner = Some(widInput)
+      oldOwner.foreach( w => w.focus.lost(Some(widInput)) )
+      widInput.focus.accept(oldOwner)
+      widInput.repaint
+      log.switchFocus(oldOwner,Some(widInput))
+    else
+      topDlg.foreach { dlg =>
+        log.switchFocusCancel(focusOwner,Some(widInput),dlg)
+      }
 
   private def findWidgetAt( absolutePos:Position ):List[(WidgetInput,Position)] =
     NavigateFrom(rootWidget).forward.typed[WidgetInput].visibleOnly.toList.map { wid => 

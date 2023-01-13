@@ -51,5 +51,11 @@ case class Navigator[W <: Widget : ClassTag]( from:Widget, move:Widget=>Option[W
       case _ => false      
   )
 
+  def visibleWith( test:W=>Boolean ):Navigator[W] = copy(
+    filter = wid => wid match
+      case vp:VisibleProp => vp.visible.inTree && test(wid)
+      case _ => false      
+  )
+
   def typed[W <: Widget:ClassTag]:Navigator[W] = Navigator[W](from, move, skipFirst, (w:W)=>true )
 
