@@ -2,13 +2,15 @@ package xyz.cofe.term.cs
 
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.lazyp.ReleaseListener
+import scala.collection.immutable.SortedSet
 
 trait ObserverList[A] extends Iterable[A] with Prop[ObserverList[A]]:
   def insert(index:Int,item:A):Unit
   def insert(index:Int,items:Iterable[A]):Unit
   def delete[A1 >: A](item:A1):Unit
-  def delete(items:Iterable[A]):Unit
+  def delete[A1 >: A](items:Iterable[A1]):Unit
   def deleteAt(index:Int):Unit
+  def deleteAt(indexes:Iterable[Int]):Unit
   def update(index:Int, item:A):Unit
   def clear():Unit
   def onInsert(ls: A=>Unit):ReleaseListener
@@ -61,7 +63,7 @@ class ObserverListImpl[A] extends ObserverList[A]:
     deleted.foreach(fireDeleted)
     if deleted.nonEmpty then fireChanged()
 
-  def delete(items:Iterable[A]):Unit = 
+  def delete[A1 >: A](items:Iterable[A1]):Unit = 
     items.foreach(delete)
 
   def deleteAt(index:Int):Unit = 
@@ -71,12 +73,23 @@ class ObserverListImpl[A] extends ObserverList[A]:
       fireDeleted(right.head)
       fireChanged()
 
+  def deleteAt(indexes:Iterable[Int]):Unit =
+    SortedSet(indexes).toList.reverse.foreach(deleteAt)
+    
   def update(index:Int, item:A):Unit = 
     val (left,right) = items.splitAt(index)
     items = left ++ (if right.nonEmpty then item :: right.tail else right)
     if right.nonEmpty then
       fireDeleted(right.head)
       fireInserted(item)
+      fireChanged()
+
+  def update(index:Int, newItems:Iterable[A]):Unit =
+    val (left,right) = items.splitAt(index)
+    items = left ++ (if right.nonEmpty then newItems.toList ++ right.tail else right)
+    if right.nonEmpty then
+      fireDeleted(right.head)
+      newItems.foreach(fireInserted)
       fireChanged()
 
   def clear():Unit =
