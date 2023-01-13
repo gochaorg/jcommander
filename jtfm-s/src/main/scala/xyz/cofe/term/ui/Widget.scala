@@ -38,16 +38,6 @@ given LikeTree[Widget] with
       case cw: WidgetChildren[?] => cw.children.toList
       case _ => List()
 
-trait LocationRWProp extends Widget:
-  val location:ReadWriteProp[Position] = ReadWriteProp(Position(0,0))
-  location.onChange { repaint }
-  def location_=(newPos:Position):Unit = location.set(newPos)
-
-trait SizeRWProp extends Widget:
-  val size:ReadWriteProp[Size] = ReadWriteProp(Size(1,1))
-  size.onChange { repaint }
-  def size_=( newSize:Size ):Unit = size.set(newSize)
-
 trait WidgetChildren[C <: Widget] extends Widget:
   val children:ObserverList[C] = ObserverList.empty
   children.onChange { repaint }

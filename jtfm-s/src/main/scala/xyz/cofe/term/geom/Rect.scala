@@ -21,6 +21,7 @@ case class Rect( left:Int, top:Int, width:Int, height:Int ):
   def leftBottom:Position = Position(left,top+height)
   def rightBottom:Position = Position(left+width,top+height)
   def center:Position = Position(left+width/2, top+height/2)
+  def size:Size = Size(width,height)
 
 extension (size:Size)
   def leftUpRect(pos:Position):Rect =
