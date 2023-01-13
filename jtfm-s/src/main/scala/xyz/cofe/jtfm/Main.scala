@@ -153,7 +153,7 @@ object Main:
               .onHide { println("closed") }
               .content { dlg => 
                 val lbl = Label("label 12345")
-                lbl.location = Position(1,3)
+                lbl.location = Position(0,0)
                 dlg.children.append(lbl)
               }
               .show()

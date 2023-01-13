@@ -51,6 +51,10 @@ with WidgetInput:
     hide()
   }
 
+  val content = Panel()
+  children.append(content)
+  content.bind(this){ w => (Position(1,3), Position(w.width-2,w.height-4) ).rect }
+
   var focusableWidget:Option[WidgetInput] = None
   private def findeFocusableChild:Option[WidgetInput] =
     this.walk.path.find { p => p.node.isInstanceOf[WidgetInput] }.map(_.node.asInstanceOf[WidgetInput])
@@ -134,22 +138,22 @@ object Dialog:
     configure:List[Dialog=>Unit]=List.empty,
     location:Option[Position]=None
   ):
-    def onHide( code: =>Unit )=
+    def onHide( code: =>Unit ):Builder =
       copy( configure = configure :+ (_.onHided(code)) )
 
-    def onShow( code: =>Unit )=
+    def onShow( code: =>Unit ):Builder =
       copy( configure = configure :+ (_.onShowed(code)) )
 
-    def content( init: Dialog=>Unit )=
-      copy( configure = configure :+ (dlg => init(dlg)) )
+    def content( init: Panel=>Unit ):Builder =
+      copy( configure = configure :+ (dlg => init(dlg.content)) )
 
-    def size( size:Size )=
+    def size( size:Size ):Builder =
       copy( configure = configure :+ (dlg => dlg.size = size) )
 
-    def location( pos:Position )=
+    def location( pos:Position ):Builder =
       copy( location = Some(pos) )
 
-    def show() =
+    def show():Dialog =
       val dlg = Dialog()
       configure.foreach(_(dlg))
       if location.isDefined then
