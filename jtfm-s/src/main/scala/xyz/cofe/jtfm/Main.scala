@@ -54,62 +54,62 @@ object Main:
     val console = ConsoleBuilder.defaultConsole()
     Session.start(console) {
       Session.currentSession.foreach { ses => 
-        val pnl1 = new FocPanel("pnl1")
-        pnl1.location.set(Position(1,3))
-        pnl1.size.set(Size(30,1))
-        ses.rootWidget.children.append(pnl1)
+        // ses.rootWidget.backgroundColor.set(Color.Green)
 
-        ses.rootWidget.backgroundColor.set(Color.Green)
+        // val pnl1 = new FocPanel("pnl1")
+        // pnl1.location.set(Position(1,3))
+        // pnl1.size.set(Size(30,1))
+        // ses.rootWidget.children.append(pnl1)
 
-        val but1 = Button("exit").action { ses.stop = true }
-        but1.location.set(Position(35,2))
-        ses.rootWidget.children.append(but1)
+        // val but1 = Button("exit").action { ses.stop = true }
+        // but1.location.set(Position(35,2))
+        // ses.rootWidget.children.append(but1)
 
-        val but2 = Button("foc on pnl1").action { pnl1.focus.request }
-        but2.location.set(Position(35,4))
-        ses.rootWidget.children.append(but2)
+        // val but2 = Button("foc on pnl1").action { pnl1.focus.request }
+        // but2.location.set(Position(35,4))
+        // ses.rootWidget.children.append(but2)
 
-        val but3 = Button("clear buff").action {
-          (0 until ses.screenBuffer.height).flatMap { y => 
-            (0 until ses.screenBuffer.width).map { x => (x,y) }
-          }.foreach { case (x,y) => 
-            ses.screenBuffer.set(x,y,ScreenChar(' ',Color.White,Color.Black))
-          }
-        }
-        but3.location.set(Position(35,6))
-        ses.rootWidget.children.append(but3)
+        // val but3 = Button("clear buff").action {
+        //   (0 until ses.screenBuffer.height).flatMap { y => 
+        //     (0 until ses.screenBuffer.width).map { x => (x,y) }
+        //   }.foreach { case (x,y) => 
+        //     ses.screenBuffer.set(x,y,ScreenChar(' ',Color.White,Color.Black))
+        //   }
+        // }
+        // but3.location.set(Position(35,6))
+        // ses.rootWidget.children.append(but3)
 
-        val but4 = Button("clear console").action {
-          console.setBackground(Color.Black)
-          console.setForeground(Color.White)
-          (0 until ses.screenBuffer.height).flatMap { y => 
-            (0 until ses.screenBuffer.width).map { x => (x,y) }
-          }.foreach { case (x,y) => 
-            console.setCursorPosition(x,y)
-            console.write(" ")
-          }
-        }
-        but4.location.set(Position(35,8))
-        ses.rootWidget.children.append(but4)
+        // val but4 = Button("clear console").action {
+        //   console.setBackground(Color.Black)
+        //   console.setForeground(Color.White)
+        //   (0 until ses.screenBuffer.height).flatMap { y => 
+        //     (0 until ses.screenBuffer.width).map { x => (x,y) }
+        //   }.foreach { case (x,y) => 
+        //     console.setCursorPosition(x,y)
+        //     console.write(" ")
+        //   }
+        // }
+        // but4.location.set(Position(35,8))
+        // ses.rootWidget.children.append(but4)
 
-        val but5 = Button("dump").action {
-          ses.rootWidget.walk.path.foreach { path =>
-            print("  "*path.rpath.size)
-            val v = path.node match
-              case vp:VisibleProp => s"${vp.visible.value.get}"
-              case _ => "?"
+        // val but5 = Button("dump").action {
+        //   ses.rootWidget.walk.path.foreach { path =>
+        //     print("  "*path.rpath.size)
+        //     val v = path.node match
+        //       case vp:VisibleProp => s"${vp.visible.value.get}"
+        //       case _ => "?"
             
-            println(s"${path.node} v=${v} ${path.node.location.get} ${path.node.size.get}")
-          }
-        }
-        but5.location.set(Position(35,10))
-        ses.rootWidget.children.append(but5)
+        //     println(s"${path.node} v=${v} ${path.node.location.get} ${path.node.size.get}")
+        //   }
+        // }
+        // but5.location.set(Position(35,10))
+        // ses.rootWidget.children.append(but5)
 
-        val textField = new TextField()
-        textField.location = Position(1,5)
-        textField.size = Size(25,1)
-        textField.text = "sample"
-        ses.rootWidget.children.append(textField)
+        // val textField = new TextField()
+        // textField.location = Position(1,5)
+        // textField.size = Size(25,1)
+        // textField.text = "sample"
+        // ses.rootWidget.children.append(textField)
 
         val menuBar = new MenuBar
         val menuFile = MenuContainer("File")
@@ -120,25 +120,13 @@ object Main:
             .keyStroke( KeyStroke.KeyEvent(KeyName.F2,false,false,false) )
 
         val menuFileExit = MenuAction("Exit").action { println("exit"); ses.stop = true }        
-        val menuFileSome = MenuAction("Some else")
         val menuView = MenuContainer("View")        
         val menuViewSome = MenuAction("Some")
-
-        val menuViewSub = MenuContainer("Sub")
-        menuView.children.append(menuViewSub)
-        (0 until 15).foreach { i => 
-          val miSub = MenuAction(s"sub $i")
-          menuViewSub.children.append(miSub)
-        }
-
-        menuFileExit.size = Size(15,1)
 
         menuBar.children.append(menuFile)        
         menuBar.children.append(menuView)
         menuFile.children.append(menuFileOpen)
         menuFile.children.append(menuFileExit)
-        menuFile.children.append(menuFileSome)
-        menuView.children.append(menuViewSome)
 
         (0 until 15).foreach { i => 
           val mi = MenuAction(s"menu $i")
