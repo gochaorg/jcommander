@@ -37,13 +37,6 @@ given LikeTree[Widget] with
     w match
       case cw: WidgetChildren[?] => cw.children.toList
       case _ => List()
-
-trait WidgetChildren[C <: Widget] extends Widget:
-  val children:ObserverList[C] = ObserverList.empty
-  children.onChange { repaint }
-  children.onInsert { ch => ch.parent.set(Some(this)) }
-  children.onDelete { ch => ch.parent.compareAndSet(Some(this),None) }
-
 trait RootWidget extends Widget with WidgetChildren[Widget] with SizeRWProp with LocationRWProp:
   def session: Session
 
