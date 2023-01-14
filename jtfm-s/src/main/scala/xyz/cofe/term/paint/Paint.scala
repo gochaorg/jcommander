@@ -60,6 +60,13 @@ trait PaintCtx:
       write(x,y,chr)
     }
 
+  def write(x:Int, y:Int, block:TextBlock):Unit =
+    block.lines.zipWithIndex.foreach { case (line, yOffset) => 
+      line.zipWithIndex.foreach { case (chr, xOffset) => 
+        write( x+xOffset, y+yOffset, chr )
+      }
+    }
+
 
 trait Cursor:
   def visible:Boolean

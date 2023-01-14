@@ -5,6 +5,7 @@ import xyz.cofe.lazyp.ReleaseListener
 import scala.collection.immutable.SortedSet
 
 trait ObserverList[A] extends Iterable[A] with Prop[ObserverList[A]]:
+  def getAt(index:Int):Option[A]
   def insert(index:Int,item:A):Unit
   def insert(index:Int,items:Iterable[A]):Unit
   def delete[A1 >: A](item:A1):Unit
@@ -21,6 +22,11 @@ trait ObserverList[A] extends Iterable[A] with Prop[ObserverList[A]]:
 
 class ObserverListImpl[A] extends ObserverList[A]:
   override def get: ObserverList[A] = this
+
+  def getAt(index:Int):Option[A] =
+    if index<0 || index>=items.size
+    then None
+    else Some(items(index))
 
   var onChangeListeners = List[()=>Unit]()
   override def onChange(listener: => Unit): ReleaseListener = 
