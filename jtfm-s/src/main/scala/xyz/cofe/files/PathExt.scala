@@ -66,7 +66,7 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(ReadDir(path)) {
       var files = List[Path]()
       val ds = Files.newDirectoryStream(path)
-      ds.forEach( p => p :: files )
+      ds.forEach( p => files = p :: files )
       ds.close()
       files
     }
