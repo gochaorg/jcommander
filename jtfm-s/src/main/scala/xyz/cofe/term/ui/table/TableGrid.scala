@@ -4,15 +4,16 @@ import xyz.cofe.term.ui.Widget
 import xyz.cofe.term.geom._
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.ui.SizeProp
+import xyz.cofe.lazyp.Prop
 
 
 trait TableGrid[A]:
   this: SizeProp & ColumnsProp[A] & HeaderProp & BorderProp =>
     import TableGrid._
 
-    def columnsLocations:List[ColumnLocation[A]] =
-      val xMin = border.get.left.size
-      val xMax = size.get.width() - border.get.left.size - border.get.right.size
+    val columnsLocations:Prop[List[ColumnLocation[A]]] = Prop.eval(border,size,columns) { case(border,size,columns) =>
+      val xMin = border.left.size
+      val xMax = size.width() - border.left.size - border.right.size
 
       columns.foldLeft( (List.empty[ColumnLocation[A]],xMin) ){ 
         case ((list,x),col) =>           
@@ -34,30 +35,34 @@ trait TableGrid[A]:
             )
           }.getOrElse(List.empty)
       )
+    }
 
-    def headersYPos:Option[(Int,Int)] =
-      if header.visible.get
-      then Some(border.get.top.size, border.get.top.size+1)
+    val headersYPos:Prop[Option[(Int,Int)]] = Prop.eval(header.visible, border) { case (hVisible, border) =>
+      if hVisible
+      then Some(border.top.size, border.top.size+1)
       else None
+    }
 
-    def headersBlocks:List[RenderBlock[A]] =
-      headersYPos match
+    val headersBlocks:Prop[List[RenderBlock[A]]] = Prop.eval( headersYPos,columnsLocations ){ case (hYPos,columnsLocations) =>
+      hYPos match
         case None => List.empty[RenderBlock[A]]
         case Some((yMin, yMax)) =>
           columnsLocations.map { colLoc =>
             RenderBlock.HeaderBlock( (Position(colLoc.x0, yMin), Position(colLoc.x1, yMax)).rect, colLoc.column )
           }
+    }
 
-    def dataYPos:(Int,Int) =
+    val dataYPos:Prop[(Int,Int)] = Prop.eval(headersYPos,border,size) { case(headersYPos,border,size) =>
       val y0 = headersYPos.map { case (headerYMin,headerYMax) =>
         headerYMax + header.delimiter.get.size
       }.getOrElse {
-        border.get.top.size
+        border.top.size
       }
-      val y1 = size.get.height()-border.get.bottom.size
+      val y1 = size.height()-border.bottom.size
       ( y0, y1 )
+    }
 
-    def dataBlocks:List[RenderBlock[A]] =
+    val dataBlocks:Prop[List[RenderBlock[A]]] = Prop.eval(dataYPos,columnsLocations){ case (dataYPos,columnsLocations) =>
       val (yMin,yMax) = dataYPos
       columnsLocations.map { colLoc =>
         RenderBlock.DataBlock(
@@ -65,13 +70,14 @@ trait TableGrid[A]:
           colLoc.column
         )
       }
+    }
 
-    def headerRenderDelims:List[RenderDelim] = 
+    val headerRenderDelims:Prop[List[RenderDelim]] = Prop.eval(headersBlocks,header.delimiter){ case (headersBlocks,delim) =>
       headersBlocks.bounds.map { rect => 
         val y = rect.bottom + 1
         val x0 = rect.left - 1
         val x1 = rect.right
-        header.delimiter.get match
+        delim match
           case Delimeter.None => List.empty[RenderDelim]
           case Delimeter.Space(width) => 
             if width<=0
@@ -82,8 +88,9 @@ trait TableGrid[A]:
           case Delimeter.DoubleLine => 
             List(RenderDelim.RenderLine(Line( Position(x0,y), Position(x1,y), Symbols.Style.Single )))
       }.getOrElse(List.empty)
+    }
       
-    def innerRenderDelims:List[RenderDelim] =
+    val innerRenderDelims:Prop[List[RenderDelim]] = Prop.eval(headersBlocks,dataBlocks,columnsLocations){ case(headersBlocks,dataBlocks,columnsLocations) =>
       val bounds = (headersBlocks ++ dataBlocks).bounds
       bounds.map { bounds =>
         val colCount = columnsLocations.size
@@ -137,75 +144,79 @@ trait TableGrid[A]:
             left ++ right
         }
       }.getOrElse(List.empty[RenderDelim])
+    }
 
-    def outterRenderDelims:List[RenderDelim] =
-      val left = border.get.left match
+    val outterRenderDelims:Prop[List[RenderDelim]] = Prop.eval(border,size){ case(border,size) =>
+      val left = border.left match
         case Delimeter.None => List.empty[RenderDelim]
         case Delimeter.Space(width) => 
           val x0 = 0
           val x1 = width
           val y0 = 0
-          val y1 = size.get.height
+          val y1 = size.height
           List(RenderDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect))
         case Delimeter.SingleLine =>
-          val (x0,y0,x1,y1) = ( 0,0, 0,size.get.height )
+          val (x0,y0,x1,y1) = ( 0,0, 0,size.height )
           List(RenderDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Single)))
         case Delimeter.DoubleLine =>
-          val (x0,y0,x1,y1) = ( 0,0, 0,size.get.height )
+          val (x0,y0,x1,y1) = ( 0,0, 0,size.height )
           List(RenderDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Double)))      
 
-      val right = border.get.right match
+      val right = border.right match
         case Delimeter.None => List.empty[RenderDelim]
         case Delimeter.Space(width) => 
-          val x1 = size.get.width()
+          val x1 = size.width()
           val x0 = x1 - width
           val y0 = 0
-          val y1 = size.get.height
+          val y1 = size.height
           List(RenderDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect))
         case Delimeter.SingleLine =>
-          val x = size.get.width()-1
-          val (x0,y0,x1,y1) = ( x,0, x,size.get.height )
+          val x = size.width()-1
+          val (x0,y0,x1,y1) = ( x,0, x,size.height )
           List(RenderDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Single)))
         case Delimeter.DoubleLine =>
-          val x = size.get.width()-1
-          val (x0,y0,x1,y1) = ( x,0, x,size.get.height )
+          val x = size.width()-1
+          val (x0,y0,x1,y1) = ( x,0, x,size.height )
           List(RenderDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Double)))      
 
-      val top = border.get.top match
+      val top = border.top match
         case Delimeter.None => List.empty[RenderDelim]
         case Delimeter.Space(width) => 
           val x0 = 0
-          val x1 = size.get.width
+          val x1 = size.width
           val y0 = 0
           val y1 = width
           List(RenderDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect))
         case Delimeter.SingleLine =>
-          val (x0,y0,x1,y1) = ( 0,0, size.get.width(),0 )
+          val (x0,y0,x1,y1) = ( 0,0, size.width(),0 )
           List(RenderDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Single)))
         case Delimeter.DoubleLine =>
-          val (x0,y0,x1,y1) = ( 0,0, size.get.width(),0 )
+          val (x0,y0,x1,y1) = ( 0,0, size.width(),0 )
           List(RenderDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Double)))      
 
-      val bottom = border.get.bottom match
+      val bottom = border.bottom match
         case Delimeter.None => List.empty[RenderDelim]
         case Delimeter.Space(width) => 
           val x0 = 0
-          val x1 = size.get.width
-          val y1 = size.get.height()
+          val x1 = size.width
+          val y1 = size.height()
           val y0 = y1 - width
           List(RenderDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect))
         case Delimeter.SingleLine =>
-          val y = size.get.height()-1
-          val (x0,y0,x1,y1) = ( 0,y, size.get.width(),y )
+          val y = size.height()-1
+          val (x0,y0,x1,y1) = ( 0,y, size.width(),y )
           List(RenderDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Single)))
         case Delimeter.DoubleLine =>
-          val y = size.get.height()-1
-          val (x0,y0,x1,y1) = ( 0,y, size.get.width(),y )
+          val y = size.height()-1
+          val (x0,y0,x1,y1) = ( 0,y, size.width(),y )
           List(RenderDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Double)))
 
       left ++ top ++ right ++ bottom
+    }
 
-    def renderDelims = headerRenderDelims ++ innerRenderDelims ++ outterRenderDelims
+    val renderDelims:Prop[List[RenderDelim]] = Prop.eval(headerRenderDelims,innerRenderDelims,outterRenderDelims){ case(headerRenderDelims,innerRenderDelims,outterRenderDelims)=>
+      headerRenderDelims ++ innerRenderDelims ++ outterRenderDelims
+    }
 
 object TableGrid:
   case class ColumnLocation[A](column:Column[A,_], x0:Int, x1:Int):

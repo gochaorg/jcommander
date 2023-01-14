@@ -163,3 +163,93 @@ extension [A,B,C,D,E,F](props:(Prop[A],Prop[B],Prop[C],Prop[D],Prop[E],Prop[F]))
     props._5.onChange { cp.reset() }
     props._6.onChange { cp.reset() }
     cp
+
+extension [A,B,C,D,E,F,G](props:(Prop[A],Prop[B],Prop[C],Prop[D],Prop[E],Prop[F],Prop[G]))
+  def compute[Z]( f:(A,B,C,D,E,F,G)=>Z ):Prop[Z] =
+    val cp = ComputeableProp( f.tupled, ()=>(
+      props._1.get, 
+      props._2.get,
+      props._3.get,
+      props._4.get,
+      props._5.get,
+      props._6.get,
+      props._7.get,
+    ))
+    props._1.onChange { cp.reset() }
+    props._2.onChange { cp.reset() }
+    props._3.onChange { cp.reset() }
+    props._4.onChange { cp.reset() }
+    props._5.onChange { cp.reset() }
+    props._6.onChange { cp.reset() }
+    props._7.onChange { cp.reset() }
+    cp
+
+extension [A,B,C,D,E,F,G,H](props:(Prop[A],Prop[B],Prop[C],Prop[D],Prop[E],Prop[F],Prop[G],Prop[H]))
+  def compute[Z]( f:(A,B,C,D,E,F,G,H)=>Z ):Prop[Z] =
+    val cp = ComputeableProp( f.tupled, ()=>(
+      props._1.get, 
+      props._2.get,
+      props._3.get,
+      props._4.get,
+      props._5.get,
+      props._6.get,
+      props._7.get,
+      props._8.get,
+    ))
+    props._1.onChange { cp.reset() }
+    props._2.onChange { cp.reset() }
+    props._3.onChange { cp.reset() }
+    props._4.onChange { cp.reset() }
+    props._5.onChange { cp.reset() }
+    props._6.onChange { cp.reset() }
+    props._7.onChange { cp.reset() }
+    props._8.onChange { cp.reset() }
+    cp
+extension [A,B,C,D,E,F,G,H,I](props:(Prop[A],Prop[B],Prop[C],Prop[D],Prop[E],Prop[F],Prop[G],Prop[H],Prop[I]))
+  def compute[Z]( f:(A,B,C,D,E,F,G,H,I)=>Z ):Prop[Z] =
+    val cp = ComputeableProp( f.tupled, ()=>(
+      props._1.get, 
+      props._2.get,
+      props._3.get,
+      props._4.get,
+      props._5.get,
+      props._6.get,
+      props._7.get,
+      props._8.get,
+      props._9.get,
+    ))
+    props._1.onChange { cp.reset() }
+    props._2.onChange { cp.reset() }
+    props._3.onChange { cp.reset() }
+    props._4.onChange { cp.reset() }
+    props._5.onChange { cp.reset() }
+    props._6.onChange { cp.reset() }
+    props._7.onChange { cp.reset() }
+    props._8.onChange { cp.reset() }
+    props._9.onChange { cp.reset() }
+    cp
+extension [A,B,C,D,E,F,G,H,I,J](props:(Prop[A],Prop[B],Prop[C],Prop[D],Prop[E],Prop[F],Prop[G],Prop[H],Prop[I],Prop[J]))
+  def compute[Z]( f:(A,B,C,D,E,F,G,H,I,J)=>Z ):Prop[Z] =
+    val cp = ComputeableProp( f.tupled, ()=>(
+      props._1.get, 
+      props._2.get,
+      props._3.get,
+      props._4.get,
+      props._5.get,
+      props._6.get,
+      props._7.get,
+      props._8.get,
+      props._9.get,
+      props._10.get,
+    ))
+    props._1.onChange { cp.reset() }
+    props._2.onChange { cp.reset() }
+    props._3.onChange { cp.reset() }
+    props._4.onChange { cp.reset() }
+    props._5.onChange { cp.reset() }
+    props._6.onChange { cp.reset() }
+    props._7.onChange { cp.reset() }
+    props._8.onChange { cp.reset() }
+    props._9.onChange { cp.reset() }
+    props._10.onChange { cp.reset() }
+    cp
