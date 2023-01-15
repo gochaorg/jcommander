@@ -17,18 +17,9 @@ class Table[A]
   with ColumnsProp[A]
   with HeaderProp
   with BorderProp
+  with TableScroll
+  with TableRows[A]
+  with TableSelection[A]
   with TableGrid[A]
   with TableGridPaint[A]
-  :
   
-  val rows:ObserverList[A] = ObserverList.empty
-  rows.onChange(repaint)
-
-  object scroll:
-    val value = Prop.rw(0)
-    value.onChange(repaint)
-
-  val selection = new ObserverListImpl[A] with FocusedItem[A](rows)
-  selection.onChange(repaint)
-  selection.focusedIndex.onChange(repaint)
-
