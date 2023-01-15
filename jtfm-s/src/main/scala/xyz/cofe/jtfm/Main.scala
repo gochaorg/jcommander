@@ -39,7 +39,6 @@ object Main:
   lazy val logPathCommon = "{appHome}/log/{yyyy}/{MM}/{dd}/{HH}-{mi}-pid{pid}-"
   lazy val sesInputLogPath = PathPattern.parse(Path.of(s"${logPathCommon}sesInput.json"))
   lazy val sesInputOut = AppendableFile(sesInputLogPath,Some(1024*1024*16))
-  //given sesInputLog : SesInputLog = SesInputLog.writeJsonTo(sesInputOut)
   given sesInputLog : SesInputLog = SesInputLog.writeTo(new JsonLogOutput[SesInputLog.SesInputEvent](sesInputOut))
 
   lazy val colorsConfFile = ColorsConf.confFile(appHome)

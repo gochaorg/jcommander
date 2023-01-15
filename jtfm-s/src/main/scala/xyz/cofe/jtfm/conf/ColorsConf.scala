@@ -19,7 +19,7 @@ object ColorsConf:
 
   def confFile(appHome:AppHome):ConfFile[ColorsConf] =
     ConfFile.Fallback(
-      ConfFile.File(appHome.directory.resolve("colors.json")),
-      ConfFile.Resource("/default-config/colors.json")
+      ConfFile.File(appHome.directory.resolve("colors.jsonc")),
+      ConfFile.Resource("/default-config/colors.jsonc")
     )
 
