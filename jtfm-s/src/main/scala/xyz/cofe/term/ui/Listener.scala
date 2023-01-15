@@ -15,3 +15,17 @@ class Listener {
     listeners.foreach( l => l() )
   }
 }
+
+object Listener:
+  class ListenersWithParam[A]:
+    var listeners = List[A=>Unit]()
+    def emit(a:A):Unit = {
+      listeners.foreach( l => l(a) )
+    }
+    def apply( listener: A => Unit ):ReleaseListener =
+      listeners = listener :: listeners
+      ReleaseListener {
+        listeners = listeners.filterNot( _ == listener )
+      }
+
+  def paramter[A] = new ListenersWithParam[A]()

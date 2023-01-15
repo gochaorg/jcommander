@@ -14,11 +14,11 @@ trait ObserverList[A] extends Iterable[A] with Prop[ObserverList[A]]:
   def deleteAt(indexes:Iterable[Int]):Unit
   def update(index:Int, item:A):Unit
   def clear():Unit
-  def onInsert(ls: A=>Unit):ReleaseListener
-  def onDelete(ls: A=>Unit):ReleaseListener
   def append(item:A):Unit = insert(Int.MaxValue,item)
   def append(items:Iterable[A]):Unit = insert(Int.MaxValue,items)
   def contains[A1 >: A](item:A1):Boolean
+  def onInsert(ls: A=>Unit):ReleaseListener
+  def onDelete(ls: A=>Unit):ReleaseListener
 
 class ObserverListImpl[A] extends ObserverList[A]:
   override def get: ObserverList[A] = this
