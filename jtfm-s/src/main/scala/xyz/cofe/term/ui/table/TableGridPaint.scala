@@ -63,8 +63,8 @@ with TableScroll
     val ridxVisibleFrom = scroll
     val ridxVisibleTo = scroll + dataVisibleHeight
 
-    val (head:List[RenderDataRow.Head[A]], 
-         tailRaw:List[RenderDataRow.Render[A] | RenderDataRow.Tail[A]]
+    val (head, 
+         tailRaw
         ) = rows.zipWithIndex.map { case(row,ridx) =>
       val y = dataYMin + (ridx - ridxVisibleFrom)
       if ridx < ridxVisibleFrom 
@@ -82,12 +82,15 @@ with TableScroll
           Right(v)
     } : @unchecked
 
-    val (render:List[RenderDataRow.Render[A]],tail:List[RenderDataRow.Tail[A]]) = tailRaw.partitionMap {
+    val (render:List[RenderDataRow.Render[A]],tail:List[RenderDataRow.Tail[A]]) = 
+      tailRaw
+      .asInstanceOf[List[RenderDataRow.Render[A] | RenderDataRow.Tail[A]]]
+      .partitionMap {
       case r @ RenderDataRow.Render(row, index) => Left(r)
       case v @ RenderDataRow.Tail  (row, index) => Right(v)
     }
 
-    AllDataRowsSum(head, render, tail)
+    AllDataRowsSum(head.asInstanceOf[List[RenderDataRow.Head[A]]], render, tail)
   }
 
   val renderDataRows = Prop.eval(allDataRowsSum) { case AllDataRowsSum(_,renderRows,_) => renderRows }
