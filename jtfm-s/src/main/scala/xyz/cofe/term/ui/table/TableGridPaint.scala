@@ -12,13 +12,21 @@ import xyz.cofe.term.buff.ScreenChar
 import xyz.cofe.term.ui.FillBackgroundColor
 import xyz.cofe.term.paint._
 
+import TableGridPaint._
+import xyz.cofe.lazyp.Prop
+
 trait TableGridPaint[A] 
 extends TableGrid[A]
 with FillBackgroundColor
 with PaintTextColor
-with PaintStack:
+with PaintStack
+with TableRows[A]
+with TableSelection[A]
+with TableScroll
+  :
   paintStack.add(paintTableGrid)
-  paintStack.add(paintHeader)
+  paintStack.add(paintTableHeader)
+  paintStack.add(paintTableData)
 
   def paintTableGrid(paint:PaintCtx):Unit =
     val (lines, rects) = renderDelims.get
@@ -35,7 +43,7 @@ with PaintStack:
 
     lines.draw(paint)
     
-  def paintHeader(paint:PaintCtx):Unit =
+  def paintTableHeader(paint:PaintCtx):Unit =
     paint.foreground = paintTextColor
     paint.background = fillBackgroundColor
     headersBlocks.get.map { hb => 
@@ -47,3 +55,75 @@ with PaintStack:
 
       pctx.write(0,0, hb.col.title.get)
     }
+
+  val allDataRowsSum = Prop.eval(dataYPos,scroll.value,rows){ case (dataYPos,scroll,rows)=>
+    val (dataYMin, dataYMax) = dataYPos
+    
+    val dataVisibleHeight = dataYMax - dataYMin
+    val ridxVisibleFrom = scroll
+    val ridxVisibleTo = scroll + dataVisibleHeight
+
+    val (head:List[RenderDataRow.Head[A]], 
+         tailRaw:List[RenderDataRow.Render[A] | RenderDataRow.Tail[A]]
+        ) = rows.zipWithIndex.map { case(row,ridx) =>
+      val y = dataYMin + (ridx - ridxVisibleFrom)
+      if ridx < ridxVisibleFrom 
+      then RenderDataRow.Head(row, ridx) 
+      else
+        if ridxVisibleFrom <= ridx && ridx < ridxVisibleTo 
+        then RenderDataRow.Render(row, ridx)
+        else RenderDataRow.Tail(row, ridx)
+    }.toList.partitionMap {
+        case h @ RenderDataRow.Head  (row, index) =>
+          Left(h) 
+        case r @ RenderDataRow.Render(row, index) =>
+          Right(r)
+        case v @ RenderDataRow.Tail  (row, index) =>
+          Right(v)
+    } : @unchecked
+
+    val (render:List[RenderDataRow.Render[A]],tail:List[RenderDataRow.Tail[A]]) = tailRaw.partitionMap {
+      case r @ RenderDataRow.Render(row, index) => Left(r)
+      case v @ RenderDataRow.Tail  (row, index) => Right(v)
+    }
+
+    AllDataRowsSum(head, render, tail)
+  }
+
+  val renderDataRows = Prop.eval(allDataRowsSum) { case AllDataRowsSum(_,renderRows,_) => renderRows }
+
+  def paintTableData(paint:PaintCtx):Unit =
+    paint.foreground = paintTextColor
+    paint.background = fillBackgroundColor
+
+    dataBlocks.get.foreach { dataBlock =>
+      val yFrom = dataBlock.rect.top
+      val x0 = dataBlock.rect.left
+      val x1 = dataBlock.rect.right
+      val column = dataBlock.col
+      renderDataRows.get.zipWithIndex.foreach { case (renderRow,idx) =>
+        val row = renderRow.row
+        val y0 = yFrom + idx
+        val y1 = y0 + 1
+        val string = column.textOf(row)
+        
+        val pctx = paint.context
+          .offset(x0,y0)
+          .size(x1-x0, y1-y0)
+          .clipping(true)
+          .build
+        pctx.write(0,0,string)
+      }
+    }
+
+object TableGridPaint:
+  enum RenderDataRow:
+    case Head[A]  ( row:A, index:Int ) extends RenderDataRow
+    case Render[A]( row:A, index:Int ) extends RenderDataRow
+    case Tail[A]  ( row:A, index:Int ) extends RenderDataRow
+
+  case class AllDataRowsSum[A](
+    invisibleHead: List[RenderDataRow.Head[A]],
+    renderRows:    List[RenderDataRow.Render[A]],
+    invisibleTail: List[RenderDataRow.Tail[A]],
+  )

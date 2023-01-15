@@ -6,18 +6,7 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.ui.SizeProp
 import xyz.cofe.lazyp.Prop
 
-trait TableGridLog:
-  def apply[R](msg:String)(code: =>R):R
-
-object TableGridLog:
-  given TableGridLog with
-    def apply[R](msg:String)(code: =>R):R =
-      println(s"[GRID] $msg")
-      val r = code
-      println(s"[GRID] $msg = $r")
-      r
-
-trait TableGrid[A](using log:TableGridLog) extends SizeProp with ColumnsProp[A] with HeaderProp with BorderProp:
+trait TableGrid[A] extends SizeProp with ColumnsProp[A] with HeaderProp with BorderProp:
   import TableGrid._
 
   val columnsLocations:Prop[List[ColumnLocation[A]]] = Prop.eval(border,size,columns) { case(border,size,columns) =>
