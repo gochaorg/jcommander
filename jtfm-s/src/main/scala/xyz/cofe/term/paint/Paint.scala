@@ -67,6 +67,9 @@ trait PaintCtx:
       }
     }
 
+  def write(pos:Position, block:TextBlock):Unit =
+    write(pos.x, pos.y, block)
+
 
 trait Cursor:
   def visible:Boolean

@@ -15,7 +15,6 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.buff.ScreenBufSync
 import java.util.concurrent.atomic.AtomicInteger
-import xyz.cofe.term.paint.ConsoleCtx
 
 import ses._
 

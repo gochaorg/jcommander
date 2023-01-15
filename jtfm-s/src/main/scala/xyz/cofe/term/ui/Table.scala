@@ -18,6 +18,7 @@ class Table[A]
   with HeaderProp
   with BorderProp
   with TableGrid[A]
+  with TableGridPaint[A]
   :
   
   val rows:ObserverList[A] = ObserverList.empty

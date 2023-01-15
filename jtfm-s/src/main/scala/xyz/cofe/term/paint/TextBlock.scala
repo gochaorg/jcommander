@@ -1,6 +1,7 @@
 package xyz.cofe.term.paint
 
 import xyz.cofe.term.buff.ScreenChar
+import xyz.cofe.term.common.Size
 
 case class TextBlock(
   lines: Seq[Seq[ScreenChar]]
@@ -21,7 +22,7 @@ case class TextBlock(
 
 
 object TextBlock:
-  def fill( width:Int, height:Int, chr:ScreenChar ) =
+  def fill( width:Int, height:Int, chr:ScreenChar ):TextBlock =
     new TextBlock(
       (0 until height).map { y => 
         (0 until width).map { x =>
@@ -29,3 +30,6 @@ object TextBlock:
         }.toSeq
       }.toSeq
     )
+
+  def fill( size:Size, chr:ScreenChar ):TextBlock =
+    fill( size.width, size.height, chr )

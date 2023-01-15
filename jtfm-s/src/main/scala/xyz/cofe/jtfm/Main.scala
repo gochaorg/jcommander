@@ -29,6 +29,7 @@ import xyz.cofe.term.ui.conf.MenuBarColorConfig
 import xyz.cofe.term.ui.conf.MenuColorConfig
 import xyz.cofe.jtfm.log.JsonLogOutput
 import xyz.cofe.json4s3.derv.ToJson
+import xyz.cofe.term.ui.table.Column
 
 object Main:
   object appHome extends AppHome("jtfm")
@@ -110,6 +111,36 @@ object Main:
         // textField.size = Size(25,1)
         // textField.text = "sample"
         // ses.rootWidget.children.append(textField)
+
+        ///////////////////////////////////////////////////////////////////////////
+
+        val table = Table[Int]()
+        table.size = Size(60,25)
+        table.location = Position(1,1)
+
+        table.columns.append(
+          List(
+          Column
+            .id("a")
+            .reader( (a:Int) => a )
+            .text ( (a:Int) => a.toString() )
+            .title( "as-is" )
+            .width( 6 )
+            .build,
+          Column
+            .id("a2")
+            .reader( (a:Int) => a*2 )
+            .text ( (a:Int) => a.toString() )
+            .title( "double" )
+            .width( 6 )
+            .build
+          )
+        )
+
+        table.rows.append(List(0,1,2,3,4,5))
+
+        ses.rootWidget.children.append(table)
+
 
         val menuBar = new MenuBar
         val menuFile = MenuContainer("File")
