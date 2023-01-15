@@ -83,7 +83,7 @@ trait TableGrid[A](using log:TableGridLog) extends SizeProp with ColumnsProp[A] 
 
   val headerRenderDelims:Prop[List[RenderDelim]] = Prop.eval(headersBlocks,header.delimiter,size){ case (headersBlocks,delim,size) =>
     headersBlocks.bounds.map { rect => 
-      val y = rect.bottom + 1
+      val y = rect.bottom
       val x0 = 0
       val x1 = size.width()-1
       delim match
@@ -95,7 +95,7 @@ trait TableGrid[A](using log:TableGridLog) extends SizeProp with ColumnsProp[A] 
         case Delimeter.SingleLine =>
           List(RenderDelim.RenderLine(Line( Position(x0,y), Position(x1,y), Symbols.Style.Single )))
         case Delimeter.DoubleLine => 
-          List(RenderDelim.RenderLine(Line( Position(x0,y), Position(x1,y), Symbols.Style.Single )))
+          List(RenderDelim.RenderLine(Line( Position(x0,y), Position(x1,y), Symbols.Style.Double )))
     }.getOrElse(List.empty)
   }
     
@@ -103,26 +103,26 @@ trait TableGrid[A](using log:TableGridLog) extends SizeProp with ColumnsProp[A] 
     val bounds = (headersBlocks ++ dataBlocks).bounds
     bounds.map { bounds =>
       val colCount = columnsLocations.size
-      columnsLocations.zipWithIndex.flatMap { case(colLoc,colIdx) =>
-        val y0 = bounds.top - 1
-        val y1 = bounds.bottom + 1
+      val y0 = bounds.top - 1
+      val y1 = bounds.bottom
 
+      columnsLocations.zipWithIndex.flatMap { case(colLoc,colIdx) =>
         val left = colLoc.column.leftDelimiter.get match
           case Delimeter.None => 
             List.empty[RenderDelim]
           case Delimeter.Space(width) =>
             if width<=0 
             then
-              val x1 = bounds.left
+              val x1 = colLoc.x0-1
               val x0 = x1 - width
-              List( RenderDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect) )
+              List( RenderDelim.Whitespace((Position(x0,y0),Position(x1,y1+1)).rect) )
             else
               List.empty[RenderDelim]
           case Delimeter.SingleLine =>
-            val x = bounds.left - 1
+            val x = colLoc.x0-1
             List(RenderDelim.RenderLine(Line(Position(x,y0),Position(x,y1),Symbols.Style.Single)))
           case Delimeter.DoubleLine =>
-            val x = bounds.left - 1
+            val x = colLoc.x0-1
             List(RenderDelim.RenderLine(Line(Position(x,y0),Position(x,y1),Symbols.Style.Double)))          
 
         val right = colLoc.column.rightDelimiter.get match
@@ -131,16 +131,16 @@ trait TableGrid[A](using log:TableGridLog) extends SizeProp with ColumnsProp[A] 
           case Delimeter.Space(width) =>
             if width<=0 
             then
-              val x2 = bounds.right
+              val x2 = colLoc.x1
               val x3 = x2 + width
               List( RenderDelim.Whitespace((Position(x2,y0),Position(x3,y1)).rect) )
             else
               List.empty[RenderDelim]
           case Delimeter.SingleLine =>
-            val x = bounds.left + 1
+            val x = colLoc.x1
             List(RenderDelim.RenderLine(Line(Position(x,y0),Position(x,y1),Symbols.Style.Single)))
           case Delimeter.DoubleLine =>          
-            val x = bounds.left + 1
+            val x = colLoc.x1
             List(RenderDelim.RenderLine(Line(Position(x,y0),Position(x,y1),Symbols.Style.Double)))
 
         if colCount==1 then

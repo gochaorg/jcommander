@@ -45,5 +45,5 @@ with PaintStack:
         .clipping(true)
         .build
 
-      pctx.write(0,0, hb.col.id)
+      pctx.write(0,0, hb.col.title.get)
     }

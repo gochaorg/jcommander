@@ -41,7 +41,7 @@ object Column:
     titleOpt:Option[String]=None,
     widthOpt:Option[Int]=None,
     leftDelimOpt:Option[Delimeter]=None,
-    rightDelimOpt:Option[Delimeter]=None,
+    rightDelimOpt:Option[Delimeter]=Some(Delimeter.SingleLine),
     alignOpt:Option[HorizontalAlign]=None
   ):
     def title(string:String) = copy( titleOpt=Some(string) )

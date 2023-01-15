@@ -14,7 +14,7 @@ object HeaderProp:
     visible.onChange(repaint)
     visible.onChange(listeners.emit())
 
-    val delimiter = Prop.rw(Delimeter.SingleLine)
+    val delimiter = Prop.rw(Delimeter.DoubleLine)
     delimiter.onChange(repaint)
     delimiter.onChange(listeners.emit())
 

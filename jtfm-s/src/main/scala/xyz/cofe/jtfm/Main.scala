@@ -133,7 +133,21 @@ object Main:
             .text ( (a:Int) => a.toString() )
             .title( "double" )
             .width( 6 )
-            .build
+            .build,
+          Column
+            .id("a3")
+            .reader( (a:Int) => a*3 )
+            .text ( (a:Int) => a.toString() )
+            .title( "three" )
+            .width( 6 )
+            .build,
+          Column
+            .id("a4")
+            .reader( (a:Int) => a*4 )
+            .text ( (a:Int) => a.toString() )
+            .title( "four" )
+            .width( 6 )
+            .build,
           )
         )
 
