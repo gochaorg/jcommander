@@ -11,6 +11,7 @@ import xyz.cofe.term.cs.LikeTree
 import xyz.cofe.term.cs.TreePath
 import xyz.cofe.term.cs.RTreePath
 import xyz.cofe.term.geom._
+import xyz.cofe.term.ui.prop._
 
 trait Widget:
   val parent:ReadWriteProp[Option[WidgetChildren[?]]] = ReadWriteProp(None)

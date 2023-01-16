@@ -1,5 +1,6 @@
 package xyz.cofe.term.ui
 
+import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.term.paint._
 import xyz.cofe.term.geom._

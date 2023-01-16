@@ -1,6 +1,7 @@
 package xyz.cofe.term.ui
 
 import xyz.cofe.term.paint.PaintCtx
+import xyz.cofe.term.ui.prop._
 
 trait PaintChildrenMethod extends WidgetChildren[_]:
   def paintChildren(paint:PaintCtx):Unit =

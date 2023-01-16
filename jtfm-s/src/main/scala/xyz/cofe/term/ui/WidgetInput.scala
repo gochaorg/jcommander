@@ -2,6 +2,7 @@ package xyz.cofe.term.ui
 
 import xyz.cofe.term.common.InputEvent
 import xyz.cofe.lazyp.ReleaseListener
+import xyz.cofe.term.ui.prop._
 
 import ses._
 

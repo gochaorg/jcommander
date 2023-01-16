@@ -5,6 +5,7 @@ import table._
 import xyz.cofe.term.cs.ObserverList
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.term.cs.ObserverListImpl
+import xyz.cofe.term.ui.prop._
 
 import xyz.cofe.term.ui.table.TableGridProp
 class Table[A]

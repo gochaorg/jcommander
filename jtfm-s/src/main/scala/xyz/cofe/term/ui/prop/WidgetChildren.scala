@@ -1,4 +1,5 @@
 package xyz.cofe.term.ui
+package prop
 
 import xyz.cofe.term.cs.ObserverList
 

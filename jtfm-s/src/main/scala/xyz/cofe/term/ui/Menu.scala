@@ -16,6 +16,7 @@ import xyz.cofe.term.buff.ScreenChar
 import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.term.ui.conf.MenuColorConfig
 import xyz.cofe.term.ui.conf.MenuBarColorConfig
+import xyz.cofe.term.ui.prop._
 
 sealed trait Menu 
   extends Widget

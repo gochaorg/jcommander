@@ -1,6 +1,7 @@
 package xyz.cofe.term.ui
 
 import xyz.cofe.term.cs.ObserverList
+import xyz.cofe.term.ui.prop._
 
 class NestedWidgetIterator(roots:Seq[Widget]) extends Iterator[List[Widget]]:
   var workSet: List[List[Widget]] = roots.toList.map { root => List(root) }
