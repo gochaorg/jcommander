@@ -13,6 +13,8 @@ import TableGridProp.ContentDelim
 import TableGridPaint._
 
 import xyz.cofe.term.ui.prop.color.colorProp2Color
+import xyz.cofe.term.common.Color
+import xyz.cofe.lazyp.ReleaseListener
 trait TableGridPaint[A] 
 extends TableGridProp[A]
 with FillBackgroundColor
@@ -97,6 +99,13 @@ with WidgetInput
 
   val renderDataRows = Prop.eval(allDataRowsSum) { case AllDataRowsSum(_,renderRows,_) => renderRows }
 
+  protected var cellFormatters : List[CellStyle[A] => CellStyle[A]] = List.empty
+  def addCellFormat( formatter:CellStyle[A] => CellStyle[A] ):ReleaseListener =
+    cellFormatters = cellFormatters :+ formatter
+    ReleaseListener {
+      cellFormatters = cellFormatters.filter( _ != formatter )
+    }
+
   def paintTableData(paint:PaintCtx):Unit =
     dataBlocks.get.foreach { dataBlock =>
       val yFrom = dataBlock.rect.top
@@ -119,16 +128,32 @@ with WidgetInput
             if renderRow.selected
             then (selection.selectionFgColor.get, selection.selectionBgColor.get)
             else (foregroundColor.get, backgroundColor.get)
+
+        val cellStyle = cellFormatters.foldLeft(
+          CellStyle(
+            row = row,
+            index = renderRow.index,
+            selected = renderRow.selected,
+            focused = renderRow.focused,
+            column = column,
+            string = string,
+            foreground = fg,
+            background = bg,
+          )
+        ){ case(cellStyle, fmt) => 
+          fmt(cellStyle)
+        }
         
-        paint.foreground = fg
-        paint.background = bg
 
         val pctx = paint.context
           .offset(x0,y0)
           .size(x1-x0, y1-y0)
           .clipping(true)
           .build
-        pctx.write(0,0,string)
+
+        pctx.foreground = cellStyle.foreground
+        pctx.background = cellStyle.background
+        pctx.write(0,0,cellStyle.string)
       }
     }  
 
@@ -142,4 +167,15 @@ object TableGridPaint:
     invisibleHead: List[RenderDataRow.Head[A]],
     renderRows:    List[RenderDataRow.Render[A]],
     invisibleTail: List[RenderDataRow.Tail[A]],
+  )
+
+  case class CellStyle[A](
+    row: A,
+    index: Int,
+    selected: Boolean,
+    focused: Boolean,
+    column: Column[A,_],
+    string: String,
+    foreground: Color,
+    background: Color,
   )
