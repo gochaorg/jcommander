@@ -2,6 +2,7 @@ package xyz.cofe.term.ui
 
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.paint.PaintCtx
+import xyz.cofe.term.ui.prop._
 
 trait PaintText extends PaintStack with TextProperty with PaintTextColor:
   paintStack.add(paintText)

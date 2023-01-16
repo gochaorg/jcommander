@@ -1,6 +1,7 @@
 package xyz.cofe.term.ui
 
 import xyz.cofe.term.common.Color
+import xyz.cofe.term.ui.prop.color._
 
 trait FillBackgroundColor extends BackgroundColor:
   def fillBackgroundColor:Color =

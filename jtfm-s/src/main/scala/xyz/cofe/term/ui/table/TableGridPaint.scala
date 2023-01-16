@@ -3,12 +3,15 @@ package xyz.cofe.term.ui.table
 import xyz.cofe.term.ui._
 import xyz.cofe.term.buff.ScreenChar
 import xyz.cofe.term.paint._
+import xyz.cofe.term.ui.prop._
+import xyz.cofe.term.ui.prop.color._
 
 import xyz.cofe.lazyp.Prop
 
 import TableGridProp.RenderDelim
 import TableGridPaint._
 
+import xyz.cofe.term.ui.prop.color.colorProp2Color
 trait TableGridPaint[A] 
 extends TableGridProp[A]
 with FillBackgroundColor

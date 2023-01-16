@@ -1,4 +1,5 @@
 package xyz.cofe.term.ui
+package prop
 
 import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.lazyp.Prop

@@ -17,6 +17,7 @@ import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.term.ui.conf.MenuColorConfig
 import xyz.cofe.term.ui.conf.MenuBarColorConfig
 import xyz.cofe.term.ui.prop._
+import xyz.cofe.term.ui.prop.color._
 
 sealed trait Menu 
   extends Widget
