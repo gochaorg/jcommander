@@ -150,7 +150,7 @@ object Main:
           )
         )
 
-        table.rows.append(List(0,1,2,3,4,5))
+        table.rows.append( (0 until 100).toList )
 
         ses.rootWidget.children.append(table)
 

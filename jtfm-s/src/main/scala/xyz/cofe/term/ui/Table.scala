@@ -26,4 +26,4 @@ class Table[A]
   with TableSelectionProp[A]
   with TableGridProp[A]
   with TableGridPaint[A]
-  
+  with TableInput[A]

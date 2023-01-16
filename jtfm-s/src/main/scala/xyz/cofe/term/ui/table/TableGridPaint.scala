@@ -16,13 +16,12 @@ import xyz.cofe.term.ui.prop.color.colorProp2Color
 trait TableGridPaint[A] 
 extends TableGridProp[A]
 with FillBackgroundColor
-with PaintTextColor
+with ForegroundColor
 with PaintStack
 with TableRowsProp[A]
 with TableSelectionProp[A]
 with TableScrollProp
-with FocusOwnerBgColor
-with FocusOwnerFgColor
+with WidgetInput
   :
   paintStack.add(paintTableGrid)
   paintStack.add(paintTableHeader)
@@ -35,16 +34,16 @@ with FocusOwnerFgColor
         case RenderDelim.Whitespace(rect) => Right(rect)
       }
 
-    paint.foreground = paintTextColor
+    paint.foreground = foregroundColor
     paint.background = fillBackgroundColor
 
-    rects.map { r => (r.leftTop, TextBlock.fill(r.size,ScreenChar(' ',paintTextColor, fillBackgroundColor)) ) }
+    rects.map { r => (r.leftTop, TextBlock.fill(r.size,ScreenChar(' ',foregroundColor, fillBackgroundColor)) ) }
       .foreach { case (at, textBlock) => paint.write(at,textBlock) }
 
     lines.draw(paint)
     
   def paintTableHeader(paint:PaintCtx):Unit =
-    paint.foreground = paintTextColor
+    paint.foreground = foregroundColor
     paint.background = fillBackgroundColor
     headersBlocks.get.map { hb => 
       val pctx = paint.context
@@ -109,9 +108,20 @@ with FocusOwnerFgColor
         val y0 = yFrom + idx
         val y1 = y0 + 1
         val string = column.textOf(row)
+
+        val (fg,bg) = 
+          if renderRow.focused
+          then 
+            if focus.isOwner
+            then (selection.focusOwnerFgColor.get,     selection.focusOwnerBgColor.get)
+            else (selection.focusContainerFgColor.get, selection.focusContainerBgColor.get)
+          else
+            if renderRow.selected
+            then (selection.selectionFgColor.get, selection.selectionBgColor.get)
+            else (foregroundColor.get, backgroundColor.get)
         
-        paint.foreground = foregroundColor
-        paint.background = backgroundColor
+        paint.foreground = fg
+        paint.background = bg
 
         val pctx = paint.context
           .offset(x0,y0)
