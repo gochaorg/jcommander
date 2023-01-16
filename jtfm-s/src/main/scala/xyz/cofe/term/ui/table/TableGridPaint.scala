@@ -3,7 +3,7 @@ package xyz.cofe.term.ui.table
 import xyz.cofe.term.ui.PaintStack
 import xyz.cofe.term.ui.SizeProp
 
-import TableGridProp._
+import TableGridProp.RenderDelim
 import xyz.cofe.term.ui.add
 import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.term.paint.TextBlock
@@ -12,9 +12,9 @@ import xyz.cofe.term.buff.ScreenChar
 import xyz.cofe.term.ui.FillBackgroundColor
 import xyz.cofe.term.paint._
 
-import TableGridPaint._
 import xyz.cofe.lazyp.Prop
 
+import TableGridPaint._
 trait TableGridPaint[A] 
 extends TableGridProp[A]
 with FillBackgroundColor
