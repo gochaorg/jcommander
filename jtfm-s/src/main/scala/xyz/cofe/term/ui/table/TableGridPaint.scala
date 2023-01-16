@@ -9,7 +9,7 @@ import xyz.cofe.term.ui.prop.color._
 
 import xyz.cofe.lazyp.Prop
 
-import TableGridProp.RenderDelim
+import TableGridProp.ContentDelim
 import TableGridPaint._
 
 import xyz.cofe.term.ui.prop.color.colorProp2Color
@@ -30,8 +30,8 @@ with WidgetInput
   def paintTableGrid(paint:PaintCtx):Unit =
     val (lines, rects) = renderDelims.get
       .partitionMap {
-        case RenderDelim.RenderLine(line) => Left(line) 
-        case RenderDelim.Whitespace(rect) => Right(rect)
+        case ContentDelim.RenderLine(line) => Left(line) 
+        case ContentDelim.Whitespace(rect) => Right(rect)
       }
 
     paint.foreground = foregroundColor
