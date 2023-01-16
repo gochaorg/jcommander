@@ -6,6 +6,7 @@ import xyz.cofe.term.cs.ObserverList
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.term.cs.ObserverListImpl
 
+import xyz.cofe.term.ui.table.TableGridProp
 class Table[A]
   extends Widget
   with WidgetInput
