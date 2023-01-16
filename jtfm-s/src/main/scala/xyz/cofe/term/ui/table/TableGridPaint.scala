@@ -20,9 +20,9 @@ extends TableGrid[A]
 with FillBackgroundColor
 with PaintTextColor
 with PaintStack
-with TableRows[A]
-with TableSelection[A]
-with TableScroll
+with TableRowsProp[A]
+with TableSelectionProp[A]
+with TableScrollProp
   :
   paintStack.add(paintTableGrid)
   paintStack.add(paintTableHeader)

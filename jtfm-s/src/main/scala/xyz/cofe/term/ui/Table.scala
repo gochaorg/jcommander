@@ -17,9 +17,9 @@ class Table[A]
   with ColumnsProp[A]
   with HeaderProp
   with BorderProp
-  with TableScroll
-  with TableRows[A]
-  with TableSelection[A]
+  with TableScrollProp
+  with TableRowsProp[A]
+  with TableSelectionProp[A]
   with TableGrid[A]
   with TableGridPaint[A]
   
