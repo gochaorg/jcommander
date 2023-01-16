@@ -3,6 +3,7 @@ package xyz.cofe.jtfm
 import xyz.cofe.term.ui.Panel
 import xyz.cofe.term.ui.WidgetInput
 import xyz.cofe.term.ui._
+import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.common.InputEvent
 import xyz.cofe.term.common.InputMouseButtonEvent
 

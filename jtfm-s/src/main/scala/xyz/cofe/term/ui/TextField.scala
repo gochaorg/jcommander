@@ -10,6 +10,7 @@ import xyz.cofe.term.buff.colors
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.term.buff._
+import xyz.cofe.term.ui.prop._
 
 class TextField 
 extends Widget 

@@ -2,7 +2,7 @@ package xyz.cofe.term.ui.ses
 
 import xyz.cofe.term.ui.Widget
 import scala.reflect.ClassTag
-import xyz.cofe.term.ui.VisibleProp
+import xyz.cofe.term.ui.prop._
 
 case class Navigator[W <: Widget : ClassTag]( from:Widget, move:Widget=>Option[Widget], skipFirst:Boolean=true, filter:W=>Boolean=(w:W)=>true ) extends Iterator[W]:
   def fetch( from:Widget ):Option[W] =

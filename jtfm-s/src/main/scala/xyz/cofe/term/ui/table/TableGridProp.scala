@@ -3,8 +3,8 @@ package xyz.cofe.term.ui.table
 import xyz.cofe.term.ui.Widget
 import xyz.cofe.term.geom._
 import xyz.cofe.term.common.Position
-import xyz.cofe.term.ui.SizeProp
 import xyz.cofe.lazyp.Prop
+import xyz.cofe.term.ui.prop.SizeProp
 
 trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with BorderProp:
   import TableGridProp._
