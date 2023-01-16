@@ -6,8 +6,8 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.ui.SizeProp
 import xyz.cofe.lazyp.Prop
 
-trait TableGrid[A] extends SizeProp with ColumnsProp[A] with HeaderProp with BorderProp:
-  import TableGrid._
+trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with BorderProp:
+  import TableGridProp._
 
   val columnsLocations:Prop[List[ColumnLocation[A]]] = Prop.eval(border,size,columns) { case(border,size,columns) =>
     val xMin = (border.left.size)
@@ -217,7 +217,7 @@ trait TableGrid[A] extends SizeProp with ColumnsProp[A] with HeaderProp with Bor
     headerRenderDelims ++ innerRenderDelims ++ outterRenderDelims
   }
 
-object TableGrid:
+object TableGridProp:
   case class ColumnLocation[A](column:Column[A,_], x0:Int, x1:Int):
     require( x0 <= x1 )
     def isBeetwin( xMin:Int, xMax:Int ):Boolean =

@@ -20,6 +20,6 @@ class Table[A]
   with TableScrollProp
   with TableRowsProp[A]
   with TableSelectionProp[A]
-  with TableGrid[A]
+  with TableGridProp[A]
   with TableGridPaint[A]
   
