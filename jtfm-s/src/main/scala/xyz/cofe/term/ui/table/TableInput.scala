@@ -5,6 +5,8 @@ import xyz.cofe.term.common.InputEvent
 import xyz.cofe.term.common.InputMouseButtonEvent
 
 import TableGridProp.ContentBlock.HeaderBlock
+import xyz.cofe.term.common.MouseButton
+import xyz.cofe.term.ui.isModifiersDown
 
 trait TableInput[A]
 extends WidgetInput
@@ -36,13 +38,21 @@ with TableGridPaint[A]
       }
      }
 
-    false
+    matchedHeadBlock.orElse(matchedDataBlock).getOrElse(processDefaultInput(me))
 
   protected def processHeaderInput(me:InputMouseButtonEvent, block:HeaderBlock[A]):Boolean =
     println(s"header ${block.col.id} ${block.col.title.get} / ${me.button()} ${me.pressed()}")
-    false
+    if me.button()==MouseButton.Left && me.pressed() && !me.isModifiersDown 
+    then true
+    else false
 
   protected def processCellInput(me:InputMouseButtonEvent, dataRow:A, column:Column[A,_], rowIndex:Int):Boolean =
     println(s"cell ${dataRow} ${column.id} ${rowIndex} / ${me.button()} ${me.pressed()}")
-    false
-
+    if me.button()==MouseButton.Left && me.pressed() && !me.isModifiersDown 
+    then true
+    else false
+    
+  protected def processDefaultInput(me:InputMouseButtonEvent):Boolean =
+    if me.button()==MouseButton.Left && me.pressed() && !me.isModifiersDown 
+    then true
+    else false
