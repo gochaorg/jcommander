@@ -12,6 +12,7 @@ import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.term.buff._
 import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.ui.prop.color._
+import xyz.cofe.term.ui.paint._
 
 import xyz.cofe.term.ui.prop.color.colorProp2Color
 class TextField 

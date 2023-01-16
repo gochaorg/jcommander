@@ -1,4 +1,5 @@
 package xyz.cofe.term.ui
+package paint
 
 import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.lazyp.ReadWriteProp

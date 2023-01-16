@@ -11,6 +11,8 @@ import xyz.cofe.term.common.KeyName
 import xyz.cofe.term.common.MouseButton
 import xyz.cofe.lazyp.ReleaseListener
 import xyz.cofe.term.common.Size
+import xyz.cofe.term.ui.paint._
+import xyz.cofe.term.ui.prop.color._
 
 class Button extends Label with WidgetInput:
   def this(text:String) = {

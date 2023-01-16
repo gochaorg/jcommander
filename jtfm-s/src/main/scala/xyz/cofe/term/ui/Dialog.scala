@@ -7,6 +7,7 @@ import xyz.cofe.term.geom._
 import xyz.cofe.term.common.Position
 import xyz.cofe.lazyp.ReleaseListener
 import xyz.cofe.term.common.Size
+import xyz.cofe.term.ui.paint._
 
 class Dialog
 extends Widget 

@@ -3,6 +3,7 @@ package xyz.cofe.term.ui
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.ui.prop.color._
+import xyz.cofe.term.ui.paint._
 
 class Label extends Widget 
   with VisibleProp
