@@ -13,14 +13,16 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
     val xMin = (border.left.size)
     val xMax = (size.width() - border.left.size - border.right.size)
 
-    columns.foldLeft( (List.empty[ColumnLocation[A]],xMin) ){ 
+    val cols = columns.foldLeft( (List.empty[ColumnLocation[A]],xMin) ){ 
       case ((list,x),col) =>
         val wBefore = col.leftDelimiter.get.size
         val wAfter = col.rightDelimiter.get.size
         val w = col.width.get
         val lst = list :+ ColumnLocation( col,x + wBefore,x + wBefore + w )
         (lst,x + w + wBefore + wAfter)
-    }._1.flatMap( colLoc => 
+    }._1
+    
+    val cuttedCols = cols.flatMap{ case(colLoc) => 
       if colLoc.isBeetwin(xMin,xMax)
       then List(colLoc)
       else
@@ -32,7 +34,16 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
             )
           )
         }.getOrElse(List.empty)
-    )
+      }
+
+    if cuttedCols.nonEmpty
+    then cuttedCols.updated(cuttedCols.size-1, {
+      val lastCol = cuttedCols.last
+      if lastCol.x1 < xMax 
+      then lastCol.copy(x1 = xMax)
+      else lastCol
+    })
+    else cuttedCols
   }
 
   val headersYPos:Prop[Option[(Int,Int)]] = Prop.eval(header.visible, border) { case (hVisible, border) =>

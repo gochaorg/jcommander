@@ -4,14 +4,45 @@ import xyz.cofe.term.ui.WidgetInput
 import xyz.cofe.term.common.InputEvent
 import xyz.cofe.term.common.InputMouseButtonEvent
 
+import TableGridProp.ContentBlock.HeaderBlock
+
 trait TableInput[A]
 extends WidgetInput
 with TableRowsProp[A]
-with TableGridProp[A]
+with TableGridPaint[A]
 :
   override def input(inputEvent: InputEvent): Boolean = 
     inputEvent match
-      case me:InputMouseButtonEvent =>
-        println(s"mouse ${me.position()} ${me.button()} ${me.pressed()}")
-        
+      case me:InputMouseButtonEvent => processInput(me)
+      case _ => false
+
+  protected def processInput(me:InputMouseButtonEvent):Boolean =
+    val matchedHeadBlock = headersBlocks.get.map { block =>
+      (block.rect.contains(me.position()), block)
+    }.filter((matched,_)=>matched)
+     .map((_,headBlock)=>headBlock)
+     .headOption.map(b => processHeaderInput(me,b))
+
+    val matchedDataBlock = dataBlocks.get.map { dataBlock => 
+      (dataBlock.rect.contains(me.position()), dataBlock)
+    }.filter((matched,_)=>matched)
+     .map((_,dataBlock)=>dataBlock)
+     .headOption
+     .flatMap { dataBlock => 
+       val rowVisibleOffset = me.position.y - dataBlock.rect.top
+       val rowIndex = scroll.value.get + rowVisibleOffset
+       rows.getAt(rowIndex).map { dataRow => 
+        processCellInput(me,dataRow,dataBlock.col,rowIndex) 
+      }
+     }
+
     false
+
+  protected def processHeaderInput(me:InputMouseButtonEvent, block:HeaderBlock[A]):Boolean =
+    println(s"header ${block.col.id} ${block.col.title.get} / ${me.button()} ${me.pressed()}")
+    false
+
+  protected def processCellInput(me:InputMouseButtonEvent, dataRow:A, column:Column[A,_], rowIndex:Int):Boolean =
+    println(s"cell ${dataRow} ${column.id} ${rowIndex} / ${me.button()} ${me.pressed()}")
+    false
+
