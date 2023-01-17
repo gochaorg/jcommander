@@ -20,7 +20,8 @@ trait PaintCtx:
   def foreground:Color
   def foreground_=(c:Color):Unit
 
-  //def read(x:Int,y:Int):Option[ScreenChar]
+  def read(x:Int,y:Int):Option[ScreenChar]
+  def read(pos:Position):Option[ScreenChar]
   def write(x:Int,y:Int,chr:ScreenChar):Unit
 
   def write(pos:Position,chr:ScreenChar):Unit =
