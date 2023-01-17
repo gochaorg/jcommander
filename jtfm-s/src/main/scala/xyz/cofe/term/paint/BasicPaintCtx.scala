@@ -63,6 +63,7 @@ extends PaintCtx {
   def read(x:Int,y:Int):Option[ScreenChar]  = screenBuffer.get(x,y)
   def read(pos:Position):Option[ScreenChar] = screenBuffer.get(pos)
 
+
   override def write(string: String):Unit = 
     write(cursorX,cursorY,string)
 
