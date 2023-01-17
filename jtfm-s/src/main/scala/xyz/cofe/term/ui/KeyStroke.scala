@@ -5,6 +5,10 @@ import xyz.cofe.term.common.InputEvent
 import xyz.cofe.term.common.InputKeyEvent
 import xyz.cofe.term.common.InputCharEvent
 import java.util.regex.Pattern
+import scala.collection.immutable.SortedSet
+import xyz.cofe.lazyp.Prop
+import xyz.cofe.lazyp.ReleaseListener
+import scala.collection.immutable.TreeMap
 
 enum KeyStroke( val sequenceSize:Int ):
   case KeyEvent( keyName:KeyName, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean ) extends KeyStroke(1)
@@ -64,7 +68,6 @@ enum KeyStroke( val sequenceSize:Int ):
   def matchLeft(events:Seq[InputEvent]):Boolean =
     val (res,tail) = matchLeft0(events)
     res
-
 object KeyStroke:
   def char2str( char:Char ):String =
     val code = char.toInt
@@ -318,3 +321,4 @@ object KeyStroke:
       case ke:InputKeyEvent => Some(parse(ke))
       case ce:InputCharEvent => Some(parse(ce))
       case _ => None
+      
