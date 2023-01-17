@@ -93,14 +93,45 @@ with TableGridPaint[A]
         renderDataRows.get.headOption.foreach { dataRow => 
           selection.focusedIndex.set(Some(dataRow.index))
           selection.set(dataRow.index)
+          scrollTo(dataRow.index)
         }
-      case Some(focusedIndex) =>        
+      case Some(focusedIndex) =>
+        val nextIndex = focusedIndex + 1
+        if nextIndex < (rows.size - 1)
+        then
+          selection.focusedIndex.set(Some(nextIndex))
+          selection.set(nextIndex)
+          scrollTo(nextIndex)
 
   def moveUp():Unit =
     println("moveUp")
+    selection.focusedIndex.get match
+      case None => 
+        renderDataRows.get.headOption.foreach { dataRow => 
+          selection.focusedIndex.set(Some(dataRow.index))
+          selection.set(dataRow.index)
+          scrollTo(dataRow.index)
+        }
+      case Some(focusedIndex) =>
+        val nextIndex = focusedIndex - 1
+        if nextIndex > 0
+        then
+          selection.focusedIndex.set(Some(nextIndex))
+          selection.set(nextIndex)
+          scrollTo(nextIndex)
 
   def movePageDown():Unit =
     println("movePageDown")
 
   def movePageUp():Unit =
     println("movePageUp")
+
+  private def scrollTo( rowIndex:Int ):Unit =
+    val (dataYMin, dataYMax) = dataYPos.get
+    val scrollHeight = dataYMax - dataYMin
+    val dataMinVisibleIndex = scroll.value.get
+    val dataMinInVisibleTailIndex = scroll.value.get + scrollHeight
+    if rowIndex < dataMinVisibleIndex then
+      scroll.value.set(rowIndex)            
+    else if rowIndex >= (dataMinInVisibleTailIndex) then
+      scroll.value.set( rowIndex - scrollHeight + 1 )
