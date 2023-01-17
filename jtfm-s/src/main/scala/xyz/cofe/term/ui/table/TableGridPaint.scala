@@ -73,8 +73,6 @@ with WidgetInput
       val selected = selection.contains(ridx)
       val focused = focusedIndex.map(idx => idx == ridx).getOrElse(false)
 
-      println(s"allDataRowsSum ridx=$ridx selected=$selected focused=$focused")
-
       if ridx < ridxVisibleFrom 
       then RenderDataRow.Head(row, ridx, selected, focused) 
       else
@@ -102,6 +100,8 @@ with WidgetInput
   allDataRowsSum.onChange(repaint)
 
   val renderDataRows = Prop.eval(allDataRowsSum) { case AllDataRowsSum(_,renderRows,_) => renderRows }
+  val nonRenderTailDataRows = Prop.eval(allDataRowsSum) { case AllDataRowsSum(_,_,rows) => rows }
+  val nonRenderHeadDataRows = Prop.eval(allDataRowsSum) { case AllDataRowsSum(rows,_,_) => rows }
 
   protected var cellFormatters : List[CellStyle[A] => CellStyle[A]] = List.empty
   def addCellFormat( formatter:CellStyle[A] => CellStyle[A] ):ReleaseListener =
@@ -143,12 +143,12 @@ with WidgetInput
             string = string,
             foreground = fg,
             background = bg,
+            fillCell = true,
           )
         ){ case(cellStyle, fmt) => 
           fmt(cellStyle)
         }
         
-
         val pctx = paint.context
           .offset(x0,y0)
           .size(x1-x0, y1-y0)
@@ -158,6 +158,18 @@ with WidgetInput
         pctx.foreground = cellStyle.foreground
         pctx.background = cellStyle.background
         pctx.write(0,0,cellStyle.string)
+
+        if cellStyle.fillCell then
+          (x0 until x1).foreach { x => 
+            (y0 until y1).foreach { y =>
+              paint.read(x,y).foreach { schr => 
+                paint.write(x,y,schr.copy(
+                  foreground = cellStyle.foreground,
+                  background = cellStyle.background,
+                ))
+              }
+            }
+          }
       }
     }  
 
@@ -182,4 +194,5 @@ object TableGridPaint:
     string: String,
     foreground: Color,
     background: Color,
+    fillCell: Boolean,
   )

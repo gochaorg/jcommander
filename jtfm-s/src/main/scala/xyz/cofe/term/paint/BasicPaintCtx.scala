@@ -60,8 +60,8 @@ extends PaintCtx {
   var foreground : Color = Color.White
   var background : Color = Color.Black
 
-  def read(x:Int,y:Int):Option[ScreenChar]  = screenBuffer.get(x,y)
-  def read(pos:Position):Option[ScreenChar] = screenBuffer.get(pos)
+  def read(x:Int,y:Int):Option[ScreenChar]  = screenBuffer.get(x + absoluteOffset.x,y + absoluteOffset.y)
+  def read(pos:Position):Option[ScreenChar] = screenBuffer.get(absoluteOffset.move(pos.x, pos.y))
 
 
   override def write(string: String):Unit = 

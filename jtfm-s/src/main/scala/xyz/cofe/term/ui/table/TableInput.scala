@@ -59,7 +59,6 @@ with TableGridPaint[A]
     then 
       selection.set(rowIndex)
       selection.focusedIndex.set(Some(rowIndex))
-      println(s"selection ${selection.focusedIndex.get}")
       true
     else false
     
@@ -95,8 +94,7 @@ with TableGridPaint[A]
           selection.focusedIndex.set(Some(dataRow.index))
           selection.set(dataRow.index)
         }
-      case Some(focusedIndex) =>
-
+      case Some(focusedIndex) =>        
 
   def moveUp():Unit =
     println("moveUp")
