@@ -35,3 +35,8 @@ with FocusContainerBgColor
       itmOpt.map { itm => itm :: lst }.getOrElse( lst )
     }
   }
+  def clear():Unit = indexes.clear()
+  def set(index:Int):Unit =
+    require(index>=0)
+    indexes.clear()
+    indexes.include(index)

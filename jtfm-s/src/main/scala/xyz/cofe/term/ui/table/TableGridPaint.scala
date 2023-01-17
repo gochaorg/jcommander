@@ -57,7 +57,8 @@ with WidgetInput
       pctx.write(0,0, hb.col.title.get)
     }
 
-  val allDataRowsSum = Prop.eval(dataYPos,scroll.value,rows){ case (dataYPos,scroll,rows)=>
+  val allDataRowsSum = Prop.eval(dataYPos, scroll.value, rows, selection.indexes, selection.focusedIndex)
+                         { case (dataYPos, scroll      , rows, selection        , focusedIndex)=>
     val (dataYMin, dataYMax) = dataYPos
     
     val dataVisibleHeight = dataYMax - dataYMin
@@ -69,15 +70,17 @@ with WidgetInput
         ) = rows.zipWithIndex.map { case(row,ridx) =>
       
       val y = dataYMin + (ridx - ridxVisibleFrom)
-      val selected = selection.indexes.contains(ridx)
-      val focused = selection.focusedIndex.get.map(idx => idx == ridx).getOrElse(false)
+      val selected = selection.contains(ridx)
+      val focused = focusedIndex.map(idx => idx == ridx).getOrElse(false)
+
+      println(s"allDataRowsSum ridx=$ridx selected=$selected focused=$focused")
 
       if ridx < ridxVisibleFrom 
       then RenderDataRow.Head(row, ridx, selected, focused) 
       else
         if ridxVisibleFrom <= ridx && ridx < ridxVisibleTo 
         then 
-          val sel = selection.indexes.contains(ridx)
+          val sel = selection.contains(ridx)
           RenderDataRow.Render( row, ridx, selected, focused )
         else RenderDataRow.Tail(row, ridx, selected, focused)
     }.toList.partitionMap {
@@ -96,6 +99,7 @@ with WidgetInput
 
     AllDataRowsSum(head.asInstanceOf[List[RenderDataRow.Head[A]]], render, tail)
   }
+  allDataRowsSum.onChange(repaint)
 
   val renderDataRows = Prop.eval(allDataRowsSum) { case AllDataRowsSum(_,renderRows,_) => renderRows }
 

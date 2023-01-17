@@ -16,6 +16,7 @@ trait ObserverSet[A] extends Iterable[A] with Prop[ObserverSet[A]]:
   def include(items:Iterable[A]):Int
   def exclude(a:A):Boolean
   def exclude(items:Iterable[A]):Int
+  def clear():Unit
 
   def onInsert(ls: A=>Unit):ReleaseListener
   def onDelete(ls: A=>Unit):ReleaseListener
@@ -25,6 +26,7 @@ trait ObserverSortedSet[A:Ordering] extends ObserverSet[A]
 trait SetOp[A,S[_]]:
   def filter(s:S[A], test:A=>Boolean):S[A]
   def join(s:S[A], a:A):S[A]
+  def clear:S[A]
 
 object SetOp:
   given simpleSet[A]:SetOp[A,Set] with
@@ -34,17 +36,23 @@ object SetOp:
     override def join(s: Set[A], a: A): Set[A] = 
       s ++ Set(a)
 
-  given sortedSet[A]:SetOp[A,SortedSet] with
+    override def clear: Set[A] = Set.empty
+
+  given sortedSet[A:Ordering]:SetOp[A,SortedSet] with
     override def filter(s: SortedSet[A], test: A => Boolean): SortedSet[A] = 
       s.filter(test)
     override def join(s: SortedSet[A], a: A): SortedSet[A] = 
       s ++ Set(a)
+    
+    override def clear: SortedSet[A] = SortedSet.empty
 
-  given treeSet[A]:SetOp[A,TreeSet] with
+  given treeSet[A:Ordering]:SetOp[A,TreeSet] with
     override def filter(s: TreeSet[A], test: A => Boolean): TreeSet[A] = 
       s.filter(test)
     override def join(s: TreeSet[A], a: A): TreeSet[A] = 
       s ++ Set(a)
+
+    override def clear: TreeSet[A] = TreeSet.empty
 
 class ObserverSetBase[A,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) extends ObserverSet[A]:
   var values:S[A] = initial
@@ -98,5 +106,11 @@ class ObserverSetBase[A,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) 
 
   override def get: ObserverSet[A] = this
   override def iterator: Iterator[A] = values.iterator
+
+  override def clear(): Unit = 
+    val items = values
+    items.foreach(deleteListeners.emit)
+    changeListeners.emit()
+    values = setOp.clear
 
 class ObserverSetImplSortted[A:Ordering,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) extends ObserverSetBase(initial) with ObserverSortedSet[A]

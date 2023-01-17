@@ -56,7 +56,11 @@ with TableGridPaint[A]
 
   protected def processCellMouseInput(me:InputMouseButtonEvent, dataRow:A, column:Column[A,_], rowIndex:Int):Boolean =
     if me.button()==MouseButton.Left && me.pressed() && !me.isModifiersDown 
-    then true
+    then 
+      selection.set(rowIndex)
+      selection.focusedIndex.set(Some(rowIndex))
+      println(s"selection ${selection.focusedIndex.get}")
+      true
     else false
     
   protected def processDefaultMouseInput(me:InputMouseButtonEvent):Boolean =
@@ -85,6 +89,14 @@ with TableGridPaint[A]
 
   def moveDown():Unit =
     println("moveDown")
+    selection.focusedIndex.get match
+      case None => 
+        renderDataRows.get.headOption.foreach { dataRow => 
+          selection.focusedIndex.set(Some(dataRow.index))
+          selection.set(dataRow.index)
+        }
+      case Some(focusedIndex) =>
+
 
   def moveUp():Unit =
     println("moveUp")
