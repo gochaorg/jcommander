@@ -87,38 +87,29 @@ with TableGridPaint[A]
   )
 
   def moveDown():Unit =
-    println("moveDown")
     selection.focusedIndex.get match
       case None => 
         renderDataRows.get.headOption.foreach { dataRow => 
-          selection.focusedIndex.set(Some(dataRow.index))
-          selection.set(dataRow.index)
-          scrollTo(dataRow.index)
+          moveTo(dataRow.index)
         }
       case Some(focusedIndex) =>
-        val nextIndex = focusedIndex + 1
-        if nextIndex < (rows.size - 1)
-        then
-          selection.focusedIndex.set(Some(nextIndex))
-          selection.set(nextIndex)
-          scrollTo(nextIndex)
+        moveTo(focusedIndex + 1)
 
   def moveUp():Unit =
-    println("moveUp")
     selection.focusedIndex.get match
       case None => 
         renderDataRows.get.headOption.foreach { dataRow => 
-          selection.focusedIndex.set(Some(dataRow.index))
-          selection.set(dataRow.index)
-          scrollTo(dataRow.index)
+          moveTo(dataRow.index)
         }
       case Some(focusedIndex) =>
-        val nextIndex = focusedIndex - 1
-        if nextIndex > 0
-        then
-          selection.focusedIndex.set(Some(nextIndex))
-          selection.set(nextIndex)
-          scrollTo(nextIndex)
+        moveTo(focusedIndex - 1)
+
+  def moveTo(nextIndex:Int):Unit =
+    if nextIndex >= 0 && nextIndex < rows.size
+    then
+      selection.focusedIndex.set(Some(nextIndex))
+      selection.set(nextIndex)
+      scrollTo(nextIndex)
 
   def movePageDown():Unit =
     println("movePageDown")

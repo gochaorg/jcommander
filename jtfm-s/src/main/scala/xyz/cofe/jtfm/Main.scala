@@ -150,7 +150,7 @@ object Main:
           )
         )
 
-        table.rows.append( (0 until 100).toList )
+        table.rows.append( (0 until 40).toList )
 
         // table.addCellFormat { cf => 
         //   if cf.row % 3 == 0 then cf.copy(foreground = Color.GreenBright)

@@ -74,13 +74,14 @@ with WidgetInput
       val focused = focusedIndex.map(idx => idx == ridx).getOrElse(false)
 
       if ridx < ridxVisibleFrom 
-      then RenderDataRow.Head(row, ridx, selected, focused) 
+      then 
+        RenderDataRow.Head(row, ridx, selected, focused) 
       else
         if ridxVisibleFrom <= ridx && ridx < ridxVisibleTo 
         then 
-          val sel = selection.contains(ridx)
           RenderDataRow.Render( row, ridx, selected, focused )
-        else RenderDataRow.Tail(row, ridx, selected, focused)
+        else 
+          RenderDataRow.Tail(row, ridx, selected, focused)
     }.toList.partitionMap {
         case h : RenderDataRow.Head[_]   => Left(h) 
         case r : RenderDataRow.Render[_] => Right(r)
