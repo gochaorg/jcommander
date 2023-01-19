@@ -30,6 +30,7 @@ import xyz.cofe.term.ui.conf.MenuColorConfig
 import xyz.cofe.jtfm.log.JsonLogOutput
 import xyz.cofe.json4s3.derv.ToJson
 import xyz.cofe.term.ui.table.Column
+import xyz.cofe.term.ui.table.HorizontalAlign
 
 object Main:
   object appHome extends AppHome("jtfm")
@@ -131,7 +132,8 @@ object Main:
             .reader( (a:Int) => a*2 )
             .text ( (a:Int) => a.toString() )
             .title( "double" )
-            .width( 6 )
+            .width( 10 )
+            .halign(HorizontalAlign.Center)
             .build,
           Column
             .id("a3")
@@ -139,6 +141,7 @@ object Main:
             .text ( (a:Int) => a.toString() )
             .title( "three" )
             .width( 6 )
+            .halign(HorizontalAlign.Right)
             .build,
           Column
             .id("a4")

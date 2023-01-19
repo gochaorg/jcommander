@@ -40,6 +40,7 @@ object Column:
   ):
     def title(string:String) = copy( titleOpt=Some(string) )
     def width(w:Int) = copy( widthOpt=Some(w) )
+    def halign(align:HorizontalAlign) = copy(alignOpt = Some(align))
     def build =
       val col = ColumnImpl(id,reader)
       col.title.set( titleOpt.getOrElse("?"))

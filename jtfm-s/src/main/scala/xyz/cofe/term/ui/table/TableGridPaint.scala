@@ -54,7 +54,9 @@ with WidgetInput
         .clipping(true)
         .build
 
-      pctx.write(0,0, hb.col.title.get)
+      pctx.write(0,0, 
+        align(hb.col.horizontalAlign.get, hb.rect.width, hb.col.title.get)
+      )
     }
 
   val allDataRowsSum = Prop.eval(dataYPos, scroll.value, rows, selection.indexes, selection.focusedIndex)
@@ -111,6 +113,33 @@ with WidgetInput
       cellFormatters = cellFormatters.filter( _ != formatter )
     }
 
+  private def align(halign:HorizontalAlign, renderStringWidth:Int, string:String):String =
+    if string.length < renderStringWidth 
+    then 
+      val remaider = renderStringWidth - string.length
+      val remStr = " "*remaider
+      halign match
+        case HorizontalAlign.Left => 
+          string + remStr
+        case HorizontalAlign.Right => 
+          remStr + string
+        case HorizontalAlign.Center => 
+          val leftSize = remStr.length() / 2
+          remStr.take(leftSize) + string + remStr.drop(leftSize)
+    else if string.length > renderStringWidth
+    then 
+      val remaider = (renderStringWidth - string.length).abs
+      halign match
+        case HorizontalAlign.Left => 
+          string.take(renderStringWidth)
+        case HorizontalAlign.Center =>
+          val leftSize = remaider / 2
+          string.drop(leftSize).take(renderStringWidth)
+        case HorizontalAlign.Right =>
+          string.drop(remaider)
+    else
+      string
+
   def paintTableData(paint:PaintCtx):Unit =
     dataBlocks.get.foreach { dataBlock =>
       val yFrom = dataBlock.rect.top
@@ -144,12 +173,12 @@ with WidgetInput
             string = string,
             foreground = fg,
             background = bg,
-            fillCell = true,
+            halign = column.horizontalAlign.get,
           )
         ){ case(cellStyle, fmt) => 
           fmt(cellStyle)
         }
-        
+
         val pctx = paint.context
           .offset(x0,y0)
           .size(x1-x0, y1-y0)
@@ -158,19 +187,7 @@ with WidgetInput
 
         pctx.foreground = cellStyle.foreground
         pctx.background = cellStyle.background
-        pctx.write(0,0,cellStyle.string)
-
-        if cellStyle.fillCell then
-          (x0 until x1).foreach { x => 
-            (y0 until y1).foreach { y =>
-              paint.read(x,y).foreach { schr => 
-                paint.write(x,y,schr.copy(
-                  foreground = cellStyle.foreground,
-                  background = cellStyle.background,
-                ))
-              }
-            }
-          }
+        pctx.write(0,0,align(cellStyle.halign, x1 - x0, cellStyle.string))
       }
     }  
 
@@ -195,5 +212,5 @@ object TableGridPaint:
     string: String,
     foreground: Color,
     background: Color,
-    fillCell: Boolean,
+    halign: HorizontalAlign,
   )
