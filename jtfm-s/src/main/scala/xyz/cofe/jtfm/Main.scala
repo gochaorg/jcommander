@@ -155,11 +155,11 @@ object Main:
 
         table.rows.append( (0 until 40).toList )
 
-        // table.addCellFormat { cf => 
-        //   if cf.row % 3 == 0 then cf.copy(foreground = Color.GreenBright)
-        //   else if cf.row % 3 == 1 then cf.copy(foreground = Color.YellowBright)
-        //   else cf.copy(foreground = Color.Cyan)
-        // }
+        table.addCellFormat { cf => 
+          if cf.row % 3 == 0 && cf.column.id=="a2" then cf.copy(foreground = Color.GreenBright)
+          else if cf.row % 3 == 1 && cf.column.id=="a3" then cf.copy(foreground = Color.YellowBright)
+          else cf
+        }
 
         ses.rootWidget.children.append(table)
 

@@ -27,7 +27,8 @@ with TableScrollProp
 with WidgetInput
   :
   paintStack.add(paintTableGrid)
-  paintStack.add(paintFocusRow)
+  paintStack.add(paintCrossColumnsSelect)
+  paintStack.add(paintCrossColumnsFocus)
   paintStack.add(paintTableHeader)
   paintStack.add(paintTableData)
 
@@ -193,31 +194,62 @@ with WidgetInput
       }
     }
 
-  def paintFocusRow(paint:PaintCtx):Unit =
-    val (fg,bg) = 
-      if focus.isOwner 
-      then (selection.focusOwnerFgColor.get, selection.focusOwnerBgColor.get)
-      else (selection.focusContainerFgColor.get, selection.focusContainerBgColor.get)
+  val crossColumnsFocusPaint = Prop.rw(true)
+  crossColumnsFocusPaint.onChange(repaint)
 
-    val (dataYmin,_) = dataYPos.get
+  def paintCrossColumnsFocus(paint:PaintCtx):Unit =
+    if crossColumnsFocusPaint.get then
+      val (fg,bg) = 
+        if focus.isOwner 
+        then (selection.focusOwnerFgColor.get, selection.focusOwnerBgColor.get)
+        else (selection.focusContainerFgColor.get, selection.focusContainerBgColor.get)
 
-    val ys = 
-      renderDataRows.get.zipWithIndex
-        .filter( (r,i)=>r.focused )
-        .map( (r,i) => (i+dataYmin) )
+      val (dataYmin,_) = dataYPos.get
 
-    dataBlocks.get.bounds.foreach { dataBoundRect =>
-      ys.foreach { y =>
-        (dataBoundRect.left until dataBoundRect.right).foreach { x =>
-          paint.read(x,y).foreach( chr =>
-            paint.write(x,y,chr.copy(
-              foreground = fg,
-              background = bg,
-            ))
-          )
+      val ys = 
+        renderDataRows.get.zipWithIndex
+          .filter( (r,i)=>r.focused )
+          .map( (r,i) => (i+dataYmin) )
+
+      dataBlocks.get.bounds.foreach { dataBoundRect =>
+        ys.foreach { y =>
+          (dataBoundRect.left until dataBoundRect.right).foreach { x =>
+            paint.read(x,y).foreach( chr =>
+              paint.write(x,y,chr.copy(
+                foreground = fg,
+                background = bg,
+              ))
+            )
+          }
         }
       }
-    }
+
+  val crossColumnsSelectPaint = Prop.rw(true)
+  crossColumnsSelectPaint.onChange(repaint)
+
+  def paintCrossColumnsSelect(paint:PaintCtx):Unit =
+    if crossColumnsSelectPaint.get then
+      val (fg,bg) = (selection.selectionFgColor.get, selection.selectionBgColor.get)
+
+      val (dataYmin,_) = dataYPos.get
+
+      val ys = 
+        renderDataRows.get.zipWithIndex
+          .filter( (r,i)=>r.selected )
+          .map( (r,i) => (i+dataYmin) )
+
+      dataBlocks.get.bounds.foreach { dataBoundRect =>
+        ys.foreach { y =>
+          (dataBoundRect.left until dataBoundRect.right).foreach { x =>
+            paint.read(x,y).foreach( chr =>
+              paint.write(x,y,chr.copy(
+                foreground = fg,
+                background = bg,
+              ))
+            )
+          }
+        }
+      }
 
 object TableGridPaint:
   enum RenderDataRow:
