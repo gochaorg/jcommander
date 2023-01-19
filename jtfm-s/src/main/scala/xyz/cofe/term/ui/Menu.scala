@@ -46,7 +46,7 @@ sealed trait Menu
             action.map { a => a() ; true }.getOrElse(false)
           else false
         case me: InputMouseButtonEvent =>
-          if !me.isModifiersDown && me.button() == MouseButton.Left
+          if me.button() == MouseButton.Left
           then
             selectMenu
             true

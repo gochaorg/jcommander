@@ -53,26 +53,21 @@ with TableGridPaint[A]
     matchedHeadBlock.orElse(matchedDataBlock).getOrElse(processDefaultMouseInput(me))
 
   protected def processHeaderMouseInput(me:InputMouseButtonEvent, block:HeaderBlock[A]):Boolean =
-    if me.button()==MouseButton.Left && me.pressed() && !me.isModifiersDown 
+    if me.button()==MouseButton.Left && me.pressed()
     then true
     else false
 
   protected def processCellMouseInput(me:InputMouseButtonEvent, dataRow:A, column:Column[A,_], rowIndex:Int):Boolean =
-    if me.button()==MouseButton.Left && me.pressed() && !me.isModifiersDown 
+    println(s"${me}")
+    if me.button()==MouseButton.Left && me.pressed()
     then 
       selection.set(rowIndex)
       selection.focusedIndex.set(Some(rowIndex))
       true
-    else if me.button()==MouseButton.Left && me.pressed() && me.isModifiers(altDown = false,controlDown = true,shiftDown = false)
-    then
-      if selection.indexes.contains(rowIndex) 
-      then selection.indexes.exclude(rowIndex)
-      else selection.indexes.include(rowIndex)
-      true
     else false
     
   protected def processDefaultMouseInput(me:InputMouseButtonEvent):Boolean =
-    if me.button()==MouseButton.Left && me.pressed() && !me.isModifiersDown 
+    if me.button()==MouseButton.Left && me.pressed()
     then true
     else false
 

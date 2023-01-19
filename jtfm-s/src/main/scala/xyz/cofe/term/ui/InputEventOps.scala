@@ -3,8 +3,9 @@ package xyz.cofe.term.ui
 import xyz.cofe.term.common.InputEvent
 import xyz.cofe.term.common.InputKeyEvent
 import xyz.cofe.term.common.InputCharEvent
+import xyz.cofe.term.common.InputKeyboardEvent
 
-extension (inputEvent:InputEvent)
+extension (inputEvent:InputKeyboardEvent)
   def isModifiersDown:Boolean =
     inputEvent match
       case ke:InputKeyEvent  => ke.isAltDown() || ke.isControlDown() || ke.isShiftDown()
