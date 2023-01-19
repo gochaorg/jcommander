@@ -15,6 +15,7 @@ import TableGridPaint._
 import xyz.cofe.term.ui.prop.color.colorProp2Color
 import xyz.cofe.term.common.Color
 import xyz.cofe.lazyp.ReleaseListener
+import xyz.cofe.term.geom.Rect
 trait TableGridPaint[A] 
 extends TableGridProp[A]
 with FillBackgroundColor
@@ -26,6 +27,7 @@ with TableScrollProp
 with WidgetInput
   :
   paintStack.add(paintTableGrid)
+  paintStack.add(paintFocusRow)
   paintStack.add(paintTableHeader)
   paintStack.add(paintTableData)
 
@@ -33,7 +35,7 @@ with WidgetInput
     val (lines, rects) = renderDelims.get
       .partitionMap {
         case ContentDelim.RenderLine(line) => Left(line) 
-        case ContentDelim.Whitespace(rect) => Right(rect)
+        case ContentDelim.Whitespace(rect,_) => Right(rect)
       }
 
     paint.foreground = foregroundColor
@@ -189,7 +191,33 @@ with WidgetInput
         pctx.background = cellStyle.background
         pctx.write(0,0,align(cellStyle.halign, x1 - x0, cellStyle.string))
       }
-    }  
+    }
+
+  def paintFocusRow(paint:PaintCtx):Unit =
+    val (fg,bg) = 
+      if focus.isOwner 
+      then (selection.focusOwnerFgColor.get, selection.focusOwnerBgColor.get)
+      else (selection.focusContainerFgColor.get, selection.focusContainerBgColor.get)
+
+    val (dataYmin,_) = dataYPos.get
+
+    val ys = 
+      renderDataRows.get.zipWithIndex
+        .filter( (r,i)=>r.focused )
+        .map( (r,i) => (i+dataYmin) )
+
+    dataBlocks.get.bounds.foreach { dataBoundRect =>
+      ys.foreach { y =>
+        (dataBoundRect.left until dataBoundRect.right).foreach { x =>
+          paint.read(x,y).foreach( chr =>
+            paint.write(x,y,chr.copy(
+              foreground = fg,
+              background = bg,
+            ))
+          )
+        }
+      }
+    }
 
 object TableGridPaint:
   enum RenderDataRow:

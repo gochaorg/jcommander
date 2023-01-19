@@ -91,7 +91,7 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
         case Delimeter.Space(width) => 
           if width<=0
           then List.empty[ContentDelim]
-          else List(ContentDelim.Whitespace(((Position(x0,y), Position(x1+1,y+width)).rect)))
+          else List(ContentDelim.Whitespace((Position(x0,y), Position(x1+1,y+width)).rect, WhitespaceOrient.Horizontal))
         case Delimeter.SingleLine =>
           List(ContentDelim.RenderLine(Line( Position(x0,y), Position(x1,y), Symbols.Style.Single )))
         case Delimeter.DoubleLine => 
@@ -115,7 +115,7 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
             then
               val x1 = colLoc.x0-1
               val x0 = x1 - width
-              List( ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1+1)).rect) )
+              List( ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1+1)).rect, WhitespaceOrient.Vertical) )
             else
               List.empty[ContentDelim]
           case Delimeter.SingleLine =>
@@ -133,7 +133,7 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
             then
               val x2 = colLoc.x1
               val x3 = x2 + width
-              List( ContentDelim.Whitespace((Position(x2,y0),Position(x3,y1)).rect) )
+              List( ContentDelim.Whitespace((Position(x2,y0),Position(x3,y1)).rect, WhitespaceOrient.Vertical) )
             else
               List.empty[ContentDelim]
           case Delimeter.SingleLine =>
@@ -163,7 +163,7 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
         val x1 = width
         val y0 = 0
         val y1 = size.height
-        List(ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect))
+        List(ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect, WhitespaceOrient.Vertical))
       case Delimeter.SingleLine =>
         val (x0,y0,x1,y1) = ( 0,0, 0,size.height-1 )
         List(ContentDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Single)))
@@ -178,7 +178,7 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
         val x0 = x1 - width
         val y0 = 0
         val y1 = size.height
-        List(ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect))
+        List(ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect, WhitespaceOrient.Vertical))
       case Delimeter.SingleLine =>
         val x = size.width()-1
         val (x0,y0,x1,y1) = ( x,0, x,size.height-1 )
@@ -195,7 +195,7 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
         val x1 = size.width
         val y0 = 0
         val y1 = width
-        List(ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect))
+        List(ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect, WhitespaceOrient.Horizontal))
       case Delimeter.SingleLine =>
         val (x0,y0,x1,y1) = ( 0,0, size.width-1,0 )
         List(ContentDelim.RenderLine(Line(Position(x0,y0),Position(x1,y1),Symbols.Style.Single)))
@@ -210,7 +210,7 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
         val x1 = size.width
         val y1 = size.height()
         val y0 = y1 - width
-        List(ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect))
+        List(ContentDelim.Whitespace((Position(x0,y0),Position(x1,y1)).rect, WhitespaceOrient.Horizontal))
       case Delimeter.SingleLine =>
         val y = size.height()-1
         val (x0,y0,x1,y1) = ( 0,y, size.width-1,y )
@@ -263,4 +263,22 @@ object TableGridProp:
 
   enum ContentDelim:
     case RenderLine( line:Line )
-    case Whitespace( rect:Rect )
+    case Whitespace( rect:Rect, orient:WhitespaceOrient )
+    def delimSize:Int = this match
+      case RenderLine(line) => 1
+      case Whitespace(rect, orient) => orient match
+        case WhitespaceOrient.Horizontal => rect.height
+        case WhitespaceOrient.Vertical => rect.width
+    def delimRect:Rect = this match
+      case RenderLine(line) => 
+        val x0 = line.a.x min line.b.x
+        val x1 = (line.a.x max line.b.x)+1
+        val y0 = line.a.y min line.b.y
+        val y1 = (line.a.y max line.b.y)+1
+        (Position(x0,y0),Position(x1,y1)).rect
+      case Whitespace(rect, orient) =>
+        rect    
+      
+  enum WhitespaceOrient:
+    case Horizontal
+    case Vertical
