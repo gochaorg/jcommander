@@ -20,6 +20,7 @@ import xyz.cofe.json4s3.derv._
 import xyz.cofe.term.ui.log.given
 import xyz.cofe.json4s3.stream.ast.AST
 import xyz.cofe.term.ui.Dialog
+import xyz.cofe.term.ui.KeyStroke
 
 trait SesInputLog:
   def inputEvent[R](inputEvent:CInputEvent)(code: =>R):R = code
@@ -136,16 +137,16 @@ object SesInputLog:
     }
 
   enum InputEvent:
-    case Key(  keyName:KeyName, altDown:Boolean, shiftDown:Boolean, ctrlDown:Boolean )
-    case Char( char:String,     altDown:Boolean, shiftDown:Boolean, ctrlDown:Boolean )
+    case Key(  keyName:KeyName, altDown:Boolean, shiftDown:Boolean, ctrlDown:Boolean, keyStroke: KeyStroke )
+    case Char( char:String,     altDown:Boolean, shiftDown:Boolean, ctrlDown:Boolean, keyStroke: KeyStroke )
     case Mouse( position:Position, button:MouseButton, pressed:Boolean )
     case Resize( size:Size )
 
   object InputEvent:
     def apply(ev:CInputEvent):Option[InputEvent] =
       ev match
-        case ke:CInputKeyEvent => Some(InputEvent.Key(ke.getKey(), ke.isAltDown(), ke.isShiftDown(), ke.isControlDown()))
-        case ke:CInputCharEvent => Some(InputEvent.Char(""+ke.getChar(), ke.isAltDown(), ke.isShiftDown(), ke.isControlDown()))
+        case ke:CInputKeyEvent => Some(InputEvent.Key(ke.getKey(), ke.isAltDown(), ke.isShiftDown(), ke.isControlDown(), KeyStroke.parse(ke) ))
+        case ke:CInputCharEvent => Some(InputEvent.Char(""+ke.getChar(), ke.isAltDown(), ke.isShiftDown(), ke.isControlDown(), KeyStroke.parse(ke) ))
         case me:CInputMouseButtonEvent => Some(InputEvent.Mouse(me.position(), me.button(), me.pressed()))
         case re:CInputResizeEvent => Some(InputEvent.Resize(re.size()))
         case _ => None

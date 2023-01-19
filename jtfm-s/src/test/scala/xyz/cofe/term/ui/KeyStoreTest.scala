@@ -96,3 +96,58 @@ class KeyStoreTest extends munit.FunSuite:
     val inpEvents = List(ef4,ef3,ef2,ef1)
     assert( seq.matchLeft(inpEvents) )
   }
+
+  test("parse/toString") {
+    assert( List(
+      KeyStroke.KeyEvent(KeyName.F1,false,false,false),
+      KeyStroke.CharEvent('a', false,false,false),
+      KeyStroke.CharEvent('a', true,false,false),
+      KeyStroke.CharEvent('a', false,true,false),
+      KeyStroke.CharEvent('a', false,false,false),
+      KeyStroke.CharEvent(' ', false,false,false),
+      KeyStroke.CharEvent('Я', false,false,false),
+      KeyStroke.CharEvent('\t',false,false,false),
+      KeyStroke.CharEvent('\n',false,false,false),
+      KeyStroke.CharEvent('\r',false,false,false),
+      KeyStroke.CharEvent('+', false,false,false),
+      KeyStroke.CharEvent('-', false,false,false),
+      KeyStroke.CharEvent(',', false,false,false),
+      KeyStroke.CharEvent('%', false,false,false),
+      KeyStroke.CharEvent('<', false,false,false),
+      KeyStroke.CharEvent('>', false,false,false),
+      KeyStroke.CharEvent('(', false,false,false),
+      KeyStroke.CharEvent(')', false,false,false),
+      KeyStroke.CharEvent('{', false,false,false),
+      KeyStroke.CharEvent('}', false,false,false),
+      KeyStroke.CharEvent('[', false,false,false),
+      KeyStroke.CharEvent(']', false,false,false),
+      KeyStroke.CharEvent('=', false,false,false),
+      KeyStroke.CharEvent('!', false,false,false),
+      KeyStroke.CharEvent('/', false,false,false),
+      KeyStroke.CharEvent('\\',false,false,false),
+      KeyStroke.CharEvent('@', false,false,false),
+      KeyStroke.CharEvent('\'',false,false,false),
+      KeyStroke.CharEvent('\"',false,false,false),
+      KeyStroke.CharEvent('_', false,false,false),
+      KeyStroke.CharEvent('|', false,false,false),
+      KeyStroke.CharEvent('#', false,false,false),
+      KeyStroke.CharEvent(':', false,false,false),
+      KeyStroke.CharEvent(';', false,false,false),
+      KeyStroke.CharEvent('^', false,false,false),
+      KeyStroke.CharEvent('?', false,false,false),
+      KeyStroke.CharEvent('&', false,false,false),
+      KeyStroke.CharEvent('*', false,false,false),
+      KeyStroke.CharEvent('$', false,false,false),
+      KeyStroke.CharEvent('~', false,false,false),
+      KeyStroke.CharEvent('.', false,false,false),
+      KeyStroke.CharEvent('`', false,false,false),
+    ).foldLeft( true ){ case (res,ks) => 
+      print(s"ks $ks")
+      if res then
+        val res1 = KeyStroke.parse(ks.toString()).map(k => k==ks).getOrElse(false)
+        println(" "+(if res1 then "matched" else ""))
+        res1
+      else        
+        false
+    })
+  }

@@ -9,6 +9,11 @@ import scala.collection.immutable.SortedSet
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.lazyp.ReleaseListener
 import scala.collection.immutable.TreeMap
+import xyz.cofe.json4s3.derv.ToJson
+import xyz.cofe.json4s3.stream.ast.AST
+import xyz.cofe.json4s3.derv.FromJson
+import xyz.cofe.json4s3.derv.errors.DervError
+import xyz.cofe.json4s3.derv.errors.TypeCastFail
 
 enum KeyStroke( val sequenceSize:Int ):
   case KeyEvent( keyName:KeyName, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean ) extends KeyStroke(1)
@@ -69,7 +74,17 @@ enum KeyStroke( val sequenceSize:Int ):
     val (res,tail) = matchLeft0(events)
     res
 object KeyStroke:
-  def char2str( char:Char ):String =
+  given ToJson[KeyStroke] with
+    override def toJson(t: KeyStroke): Option[AST] = 
+      summon[ToJson[String]].toJson(t.toString())
+
+  given FromJson[KeyStroke] with
+    override def fromJson(j: AST): Either[DervError, KeyStroke] = 
+      summon[FromJson[String]].fromJson(j).flatMap( str => 
+        parse(str).map(k => Right(k)).getOrElse(Left(TypeCastFail(s"can't cast to KeyStroke from $str")))
+      )
+
+  private def char2str( char:Char ):String =
     val code = char.toInt
     if Character.isLetterOrDigit(char) 
     then ""+char
@@ -85,42 +100,43 @@ object KeyStroke:
         case '%' => "<pct>"
         case '<' => "<less>"
         case '>' => "<more>"
-        case '(' => "<(>"
-        case ')' => "<)>"
-        case '{' => "<{>"
-        case '}' => "<}>"
-        case '[' => "<[>"
-        case ']' => "<]>"
+        case '(' => "<o-parenthesis>"
+        case ')' => "<c-parenthesis>"
+        case '{' => "<o-brace>"
+        case '}' => "<c-brace>"
+        case '[' => "<o-square>"
+        case ']' => "<c-square>"
         case '=' => "<eq>"
-        case '!' => "<!>"
-        case '/' => "</>"
-        case '\\' => "<\\>"
-        case '@' => "<@>"
+        case '!' => "<screamer>"
+        case '/' => "<slash>"
+        case '\\' => "<b-slash>"
+        case '@' => "<commat>"
         case '"' => "<d-quot>"
         case '\'' => "<apos>"
         case '_' => "<u-line>"
         case '|' => "<v-line>"
-        case '#' => "<#>"
+        case '#' => "<num>"
         case ':' => "<colon>"
         case ';' => "<s-colon>"
-        case '^' => "<^>"
+        case '^' => "<Hat>"
         case '?' => "<?>"
-        case '&' => "<&>"
-        case '*' => "<*>"
-        case '$' => "<$>"
+        case '&' => "<amp>"
+        case '*' => "<ast>"
+        case '$' => "<dollar>"
         case '~' => "<tilde>"
         case '.' => "<dot>"
         case '`' => "<grave>"
         case _ =>
           s"<${code.toHexString}>"
 
-  val hexCharPattern = Pattern.compile("(<([a-fA-F0-9]+)>)")
+  private val hexCharPattern = Pattern.compile("(<([a-fA-F0-9]+)>)")
 
-  def str2char( string:String, off:Int ):Option[(Char,Int)] =
-    val str = string.substring(off).toLowerCase()
+  private def str2char( string:String, off:Int ):Option[(Char,Int)] =
+    val strLoCase   = string.substring(off).toLowerCase()
+    val strAsIsCase = string.substring(off)
 
     def hexChar:Option[(Char,Int)]=
-      val m = hexCharPattern.matcher(str)
+      val m = hexCharPattern.matcher(strLoCase)
       if m.matches()
       then
         val digits = m.group(2)
@@ -132,28 +148,59 @@ object KeyStroke:
         None
 
     def letterOrDigit:Option[(Char,Int)]=
-      if str.length()>0 && Character.isLetterOrDigit(str.charAt(0))
-      then Some(str.charAt(0),off+1)
+      if strAsIsCase.length()>0 && (Character.isLetterOrDigit(strAsIsCase.charAt(0)))
+      then Some(strAsIsCase.charAt(0),off+1)
       else None
 
     val mapping = List(
-      "<spc>"->' ', "<tab>"->'\t', "<lf>"->'\n', "<cr>"->'\r', "<plus>"->'+', "<minus>"->'-', "<comma>"->',', "<pct>"->'%',
-      "<less>"->'<', "<more>"->'>', "<(>"->'(', "<(>"->'(', "<)>"->')', "<{>"->'{', "<}>"->'}', "<[>"->'[', "<]>"->']',
-      "<eq>"->'=', "<!>"->'!', "</>"->'/', "<\\>"->'\\', "<@>"->'@', "<\">"->'\"', "<d-quot>"->'\"', "<apos>"->'\'', "<u-line>"->'_',
-      "<v-line>"->'|', "<#>"->'#', "<colon>"->':', "<s-colon>"->';', "<^>"->'^', "<?>"->'?', "<&>"->'&', "<*>"->'*', "<$>"->'$',
-      "<tilde>"->'~', "<dot>"->'.', "<grave>"->'`'
+      "<spc>"->' ', 
+      "<tab>"->'\t', 
+      "<lf>"->'\n', 
+      "<cr>"->'\r', 
+      "<plus>"->'+', 
+      "<minus>"->'-', 
+      "<comma>"->',', 
+      "<pct>"->'%',
+      "<less>"->'<', 
+      "<more>"->'>', 
+      "<o-parenthesis>"->'(', 
+      "<c-parenthesis>"->')', 
+      "<o-brace>"->'{', 
+      "<c-brace>"->'}', 
+      "<o-square>"->'[', 
+      "<c-square>"->']',
+      "<eq>"->'=', 
+      "<screamer>"->'!', 
+      "<slash>"->'/', 
+      "<b-slash>"->'\\', 
+      "<commat>"->'@', 
+      "<d-quot>"->'\"', 
+      "<apos>"->'\'', 
+      "<u-line>"->'_',
+      "<v-line>"->'|', 
+      "<num>"->'#', 
+      "<colon>"->':', 
+      "<s-colon>"->';', 
+      "<Hat>"->'^', 
+      "<?>"->'?', 
+      "<amp>"->'&', 
+      "<ast>"->'*', 
+      "<dollar>"->'$',
+      "<tilde>"->'~', 
+      "<dot>"->'.', 
+      "<grave>"->'`'
     )
     mapping.foldLeft( None:Option[(Char,Int)] ){ case (opt,(ptrn,kn)) => 
       opt match
         case None => 
-          if str.startsWith(ptrn.toLowerCase())
+          if strLoCase.startsWith(ptrn.toLowerCase())
           then Some( (kn,off + ptrn.length()) )
           else opt
         case Some(value) =>
           opt
     }.orElse(hexChar).orElse(letterOrDigit)
 
-  def keyName2str( keyName:KeyName ):String =
+  private def keyName2str( keyName:KeyName ):String =
     keyName match
       case KeyName.F1 => "F1"
       case KeyName.F2 => "F2"
@@ -183,7 +230,7 @@ object KeyStroke:
       case KeyName.Tab => "Tab"
       case KeyName.ReverseTab => "RTab"
 
-  def str2keyName( string:String, off:Int ):Option[(KeyName,Int)] =
+  private def str2keyName( string:String, off:Int ):Option[(KeyName,Int)] =
     val str = string.substring(off).toLowerCase()
     val mapping = List(
       "F1"->KeyName.F1
@@ -253,11 +300,11 @@ object KeyStroke:
         case e:KeyStroke.CharEvent => Some(apply(e))
         case e:KeyStroke.Sequence => None
       
-  def modifiers2str(mod:Modifiers):String =
+  private def modifiers2str(mod:Modifiers):String =
     s"${if mod.alt then "A" else ""}${if mod.ctrl then "C" else ""}${if mod.shift then "S" else ""}"
 
-  val modPattern = Pattern.compile("(\\+(?<mod>[ACS]{1,3}))")
-  def str2modifiers(string:String, off:Int):Option[(Modifiers,Int)]=
+  private val modPattern = Pattern.compile("(\\+(?<mod>[ACS]{1,3}))")
+  private def str2modifiers(string:String, off:Int):Option[(Modifiers,Int)]=
     val str = string.substring(off)
     var alt = false
     var ctrl = false
@@ -274,7 +321,7 @@ object KeyStroke:
     else
       None
       
-  def parseOne(string:String,off:Int) =
+  private def parseOne(string:String,off:Int):Option[(KeyStroke,Int)] =
     str2keyName(string,off).flatMap { case(kn,off) => 
       str2modifiers(string,off).map { case(mod,off) => 
         (mod(KeyStroke.KeyEvent(kn,false,false,false)),off)
@@ -291,7 +338,7 @@ object KeyStroke:
       }
     )
 
-  def parse0(string:String,off:Int,ks0:Option[KeyStroke]):Option[(KeyStroke,Int)] =
+  private def parse0(string:String,off:Int,ks0:Option[KeyStroke]):Option[(KeyStroke,Int)] =
     parseOne(string,off).map { case(ks1,off) => 
       ks0 match
         case Some(k0:KeyStroke.Sequence) => 
@@ -308,7 +355,7 @@ object KeyStroke:
       }
     }
 
-  def parse(string:String) = parse0(string,0,None).map(_._1)
+  def parse(string:String):Option[KeyStroke] = parse0(string,0,None).map(_._1)
 
   def parse(ev:InputKeyEvent):KeyStroke =
     KeyStroke.KeyEvent( ev.getKey(), ev.isAltDown(), ev.isControlDown(), ev.isShiftDown() )
