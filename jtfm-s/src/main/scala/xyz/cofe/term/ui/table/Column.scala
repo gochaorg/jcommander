@@ -4,12 +4,6 @@ import xyz.cofe.lazyp.Prop
 
 enum PreferredWidth:
   case Auto
-
-enum HorizontalAlign:
-  case Left
-  case Center
-  case Right
-
 trait Column[R,V:CellText]:
   def id:String
   def read(row:R):V
