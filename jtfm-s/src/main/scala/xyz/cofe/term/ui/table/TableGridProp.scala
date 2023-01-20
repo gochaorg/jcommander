@@ -36,14 +36,18 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
         }.getOrElse(List.empty)
       }
 
-    if cuttedCols.nonEmpty
-    then cuttedCols.updated(cuttedCols.size-1, {
-      val lastCol = cuttedCols.last
-      if lastCol.x1 < xMax 
-      then lastCol.copy(x1 = xMax)
-      else lastCol
-    })
-    else cuttedCols
+    val result = {
+      if cuttedCols.nonEmpty
+      then cuttedCols.updated(cuttedCols.size-1, {
+        val lastCol = cuttedCols.last
+        if lastCol.x1 < xMax 
+        then lastCol.copy(x1 = xMax)
+        else lastCol
+      })
+      else cuttedCols
+    }
+
+    result
   }
 
   val headersYPos:Prop[Option[(Int,Int)]] = Prop.eval(header.visible, border) { case (hVisible, border) =>

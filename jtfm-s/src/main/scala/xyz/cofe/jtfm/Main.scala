@@ -125,14 +125,14 @@ object Main:
             .reader( (a:Int) => a )
             .text ( (a:Int) => a.toString() )
             .title( "as-is" )
-            .width( 6 )
+            //.width( 5 )
             .build,
           Column
             .id("a2")
             .reader( (a:Int) => a*2 )
             .text ( (a:Int) => a.toString() )
             .title( "double" )
-            .width( 10 )
+            //.width( 10 )
             .halign(HorizontalAlign.Center)
             .build,
           Column
@@ -140,7 +140,7 @@ object Main:
             .reader( (a:Int) => a*3 )
             .text ( (a:Int) => a.toString() )
             .title( "three" )
-            .width( 6 )
+            //.width( 6 )
             .halign(HorizontalAlign.Right)
             .build,
           Column
@@ -148,7 +148,7 @@ object Main:
             .reader( (a:Int) => a*4 )
             .text ( (a:Int) => a.toString() )
             .title( "four" )
-            .width( 6 )
+            .width( 5 )
             .build,
           )
         )
@@ -181,11 +181,6 @@ object Main:
         menuFile.children.append(menuFileOpen)
         menuFile.children.append(menuFileExit)
 
-        (0 until 15).foreach { i => 
-          val mi = MenuAction(s"menu $i")
-          menuFile.children.append(mi)
-        }
-
         menuView.children.append(
           MenuAction("Dialog 1").action {
             println("dialog 1")
@@ -200,6 +195,12 @@ object Main:
               .show()
           }
         )
+
+        menuView.children.append((
+          MenuAction("columns size").action {
+            table.columns.foreach( col => println(s"column ${col.id} ${col.width.get}") )
+          }
+        ))
 
         menuBar.install(ses.rootWidget)
       }

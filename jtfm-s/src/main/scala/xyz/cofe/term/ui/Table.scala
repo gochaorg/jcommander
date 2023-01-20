@@ -27,3 +27,4 @@ class Table[A]
   with TableGridProp[A]
   with TableGridPaint[A]
   with TableInput[A]
+  with TableAutoResize
