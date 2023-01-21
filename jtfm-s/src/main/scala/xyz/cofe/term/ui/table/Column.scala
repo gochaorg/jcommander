@@ -44,6 +44,9 @@ object Column:
     def width(w:Int) = copy(preferredWidthOpt=Some(PreferredWidth.Const(w)))
     def widthAuto = copy(preferredWidthOpt=Some(PreferredWidth.Auto))
     def halign(align:HorizontalAlign) = copy(alignOpt = Some(align))
+    def leftAlign   = copy(alignOpt = Some(HorizontalAlign.Left))
+    def centerAlign = copy(alignOpt = Some(HorizontalAlign.Center))
+    def rightAlign  = copy(alignOpt = Some(HorizontalAlign.Right))
     def build =
       val col = ColumnImpl(id,reader)
       col.title.set( titleOpt.getOrElse("?"))

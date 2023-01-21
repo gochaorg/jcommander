@@ -11,4 +11,9 @@ object FilesTable:
       .id("file.name")
       .reader { (path:Path) => path.name }
       .text( text => text )
-      
+      .title("name")
+      .widthAuto
+      .leftAlign
+      .build
+
+    
