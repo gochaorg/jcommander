@@ -20,9 +20,10 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
         val wAfter = col.rightDelimiter.get.size
         val w = col.width.get
         val lst = list :+ ColumnLocation( col,x + wBefore,x + wBefore + w )
-        (lst,x + w + wBefore + wAfter)
+        var nextX = x + w + wBefore + wAfter
+        (lst,nextX)
     }._1
-    
+
     val cuttedCols = cols.flatMap{ case(colLoc) => 
       if colLoc.isBeetwin(xMin,xMax)
       then List(colLoc)
@@ -36,28 +37,6 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
           )
         }.getOrElse(List.empty)
       }
-
-    // if cuttedCols.nonEmpty && cuttedCols.last.x1 < xMax then
-    //   val diff = (xMax - cuttedCols.last.x1)
-    //   Session.addJob {
-    //     cuttedCols.map(_.column)
-    //       .find(_.preferredWidth.get match
-    //         case PreferredWidth.Auto => true
-    //         case PreferredWidth.Const(size) => false
-    //       )
-    //       .map{ col => 
-    //         col.width.set(col.width.get + diff)
-    //         println(s"1 $diff")
-    //         ()
-    //       }.getOrElse {
-    //         val col = cuttedCols.last.column
-    //         col.width.set(
-    //           col.width.get + diff
-    //         )
-    //         println("2")
-    //         ()
-    //       }
-    //   }
 
     val result = {
       if cuttedCols.nonEmpty
@@ -262,7 +241,7 @@ object TableGridProp:
       x0 >= xMin && x1 <= xMax
     def intersect( xMin:Int, xMax:Int ):Option[(Int,Int)] =
       if x0 >= xMin && x0 <= xMax then
-        Some( xMin min x0, xMax min x1 )
+        Some( xMin max x0, xMax min x1 )
       else
         None
 

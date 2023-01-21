@@ -48,21 +48,21 @@ trait TableAutoResize extends PaintStack with ColumnsProp[_] with BorderProp:
     val constWidthSum = constWidthColumns.map((_,w)=>w max minWidth).sum
     val autoRemainer = remeainderInner - constWidthSum
     val autoOneWidth = (autoRemainer / columnsWidthAuto.size) max minWidth
+    val autoDivRem = autoRemainer % columnsWidthAuto.size
     
-    constWidthColumns.foreach { case (col,w) => col.width.set(w) }
+    constWidthColumns.foreach { case (col,w) => 
+      col.width.set(w) 
+    }
     
-    // println(s"""|widWidth $widWidth
-    //             |
-    //             |""".stripMargin)
-
     if autoRemainer>0
     then
-      columnsWidthAuto.foldLeft( autoRemainer ){ case (rem,col) => 
+      columnsWidthAuto.foldLeft( (autoRemainer,autoDivRem) ){ case ((rem,drem),col) => 
         if rem>0 
         then
-          val w = autoOneWidth max minWidth
+          val wadd = if drem>0 then 1 else 0
+          val w = autoOneWidth + wadd
           col.width.set( w )
-          rem - w
+          (rem - w, drem - wadd)
         else
-          rem
+          (rem, drem)
       }
