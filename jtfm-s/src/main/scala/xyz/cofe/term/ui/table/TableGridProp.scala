@@ -5,6 +5,7 @@ import xyz.cofe.term.geom._
 import xyz.cofe.term.common.Position
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.term.ui.prop.SizeProp
+import xyz.cofe.term.ui.Session
 
 trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with BorderProp:
   import TableGridProp._
@@ -35,6 +36,28 @@ trait TableGridProp[A] extends SizeProp with ColumnsProp[A] with HeaderProp with
           )
         }.getOrElse(List.empty)
       }
+
+    // if cuttedCols.nonEmpty && cuttedCols.last.x1 < xMax then
+    //   val diff = (xMax - cuttedCols.last.x1)
+    //   Session.addJob {
+    //     cuttedCols.map(_.column)
+    //       .find(_.preferredWidth.get match
+    //         case PreferredWidth.Auto => true
+    //         case PreferredWidth.Const(size) => false
+    //       )
+    //       .map{ col => 
+    //         col.width.set(col.width.get + diff)
+    //         println(s"1 $diff")
+    //         ()
+    //       }.getOrElse {
+    //         val col = cuttedCols.last.column
+    //         col.width.set(
+    //           col.width.get + diff
+    //         )
+    //         println("2")
+    //         ()
+    //       }
+    //   }
 
     val result = {
       if cuttedCols.nonEmpty
