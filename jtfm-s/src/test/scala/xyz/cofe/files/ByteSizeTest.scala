@@ -33,3 +33,8 @@ class ByteSizeTest extends munit.FunSuite:
   test("sizes parse") {
     println(SizeSuff.parseSizes("12m 5k 34"))
   }
+
+  test("hs") {
+    val s = ByteSize(1024L*1024L*2 + 1024L*256)
+    println(s.humanReadable)
+  }

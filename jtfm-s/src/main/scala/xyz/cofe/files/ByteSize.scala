@@ -11,11 +11,38 @@ object ByteSize:
 extension (size:ByteSize)
   def value:Long = size
   def bytePart:Int  = (size % 1024).toInt
+
   def kbytePart:Int = ((value >> 10) % 1024).toInt
+  def kbytes:Long = value >> 10
+
   def mbytePart:Int = ((value >> 20) % 1024).toInt
+  def mbytes:Long = value >> 20
+
   def gbytePart:Int = ((value >> 30) % 1024).toInt
+  def gbytes:Long = value >> 30
+  
   def tbytePart:Int = ((value >> 40) % 1024).toInt
+  def tbytes:Long = value >> 40
+
   def pbytePart:Int = ((value >> 50) % 1024).toInt
+  def humanReadable:HumanReadable =
+    if pbytePart>0   then HumanReadable( pbytePart.toDouble + (tbytePart.toDouble / 1024.0), "p" )
+    else if tbytes>0 then HumanReadable( tbytePart.toDouble + (gbytePart.toDouble / 1024.0), "t" )
+    else if gbytes>0 then HumanReadable( gbytePart.toDouble + (mbytePart.toDouble / 1024.0), "g" )
+    else if mbytes>0 then HumanReadable( mbytePart.toDouble + (kbytePart.toDouble / 1024.0), "m" )
+    else if kbytes>0 then HumanReadable( kbytePart.toDouble + (bytePart.toDouble / 1024.0), "k" )
+    else HumanReadable( value.toDouble, "" )
+
+case class HumanReadable(value:Double, suff:String):
+  override def toString(): String = 
+    val str = value.toString()
+    val i = str.indexOf(".")
+    if i>=0 then
+      val head = str.take(i+1)
+      val sub = str.substring(i+1)
+      head + sub.take(2) + suff
+    else
+      str + suff
 
 enum SizeSuff(multiplier:Long, name:List[String]):
   case Byte(count:Long)  extends SizeSuff(1,List("b"))
