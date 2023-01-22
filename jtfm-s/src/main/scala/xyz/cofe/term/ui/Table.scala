@@ -28,3 +28,4 @@ class Table[A]
   with TableGridPaint[A]
   with TableInput[A]
   with TableAutoResize
+  with TableScrollPaint[A]

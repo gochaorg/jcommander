@@ -24,6 +24,15 @@ U+21Fx	⇰	⇱	⇲	⇳	⇴	⇵	⇶	⇷	⇸	⇹	⇺	⇻	⇼	⇽	⇾	⇿
 U+2BCx	⯀	⯁	⯂	⯃	⯄	⯅	⯆	⯇	⯈	⯉	⯊	⯋	⯌	⯍	⯎	⯏
 */
 object Symbols {
+  object Scroll {
+    object Vert {
+      val begin : Char = '\u2537'
+      val block : Char = '\u2588'
+      val shade : Char = '\u2592'
+      val end   : Char = '\u252f'
+    }
+  }
+
   object Trinagles {
     val up    : Char = '\u25b2'
     val down  : Char = '\u25bc'
