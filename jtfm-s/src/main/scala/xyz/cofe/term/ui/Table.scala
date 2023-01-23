@@ -10,7 +10,7 @@ import xyz.cofe.term.ui.prop.color._
 import xyz.cofe.term.ui.paint._
 
 import xyz.cofe.term.ui.table.TableGridProp
-class Table[A]
+class Table[A]( using tableInputConf:TableInputConf )
   extends Widget
   with WidgetInput
   with WidgetChildren[Widget] 

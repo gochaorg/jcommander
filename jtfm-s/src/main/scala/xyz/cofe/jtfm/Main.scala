@@ -114,7 +114,7 @@ object Main:
 
         ///////////////////////////////////////////////////////////////////////////
 
-        val table = Table[Int]()
+        val table = Table[Int]
         table.size = Size(60,25)
         table.location = Position(1,1)
 
@@ -162,7 +162,6 @@ object Main:
         }
 
         ses.rootWidget.children.append(table)
-
 
         val menuBar = new MenuBar
         val menuFile = MenuContainer("File")

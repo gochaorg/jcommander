@@ -17,8 +17,12 @@ import xyz.cofe.term.common.InputKeyboardEvent
 import xyz.cofe.term.ui.isModifiers
 
 import TableInput._
+import xyz.cofe.json4s3.derv._
+import xyz.cofe.json4s3.stream.ast.AST
+import xyz.cofe.json4s3.derv.errors.DervError
+import xyz.cofe.json4s3.derv.errors.TypeCastFail
 
-trait TableInput[A]
+trait TableInput[A]( using tableInputConf:TableInputConf )
 extends WidgetInput
 with TableRowsProp[A]
 with TableGridPaint[A]
@@ -82,72 +86,70 @@ with TableGridPaint[A]
     }
     matched
 
-  private lazy val predefKeyStrokes : Map[KeyStroke,Set[()=>Unit]] = Map(
-    KeyStroke.KeyEvent(KeyName.Down,     altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveDown),
-    KeyStroke.KeyEvent(KeyName.Up,       altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveUp),
-    KeyStroke.KeyEvent(KeyName.PageDown, altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.movePageDown),
-    KeyStroke.KeyEvent(KeyName.PageUp,   altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.movePageUp),
-    KeyStroke.KeyEvent(KeyName.Home,     altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveHome),
-    KeyStroke.KeyEvent(KeyName.End,      altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveEnd),
+  private def predefKeyStrokes : Map[KeyStroke,Set[()=>Unit]] = 
+    tableInputConf.keyStrokeActionMap(this).mapValues(v=>Set(v)).toMap
+  // Map(
+  //   KeyStroke.KeyEvent(KeyName.Down,     altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveDown),
+  //   KeyStroke.KeyEvent(KeyName.Up,       altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveUp),
+  //   KeyStroke.KeyEvent(KeyName.PageDown, altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.movePageDown),
+  //   KeyStroke.KeyEvent(KeyName.PageUp,   altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.movePageUp),
+  //   KeyStroke.KeyEvent(KeyName.Home,     altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveHome),
+  //   KeyStroke.KeyEvent(KeyName.End,      altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveEnd),
 
-    KeyStroke.KeyEvent(KeyName.Down,     altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveDownWithSelect),
-    KeyStroke.KeyEvent(KeyName.Up,       altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveUpWithSelect),
-    KeyStroke.KeyEvent(KeyName.PageDown, altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.movePageDownWithSelect),
-    KeyStroke.KeyEvent(KeyName.PageUp,   altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.movePageUpWithSelect),
-    KeyStroke.KeyEvent(KeyName.Home,     altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveHomeWithSelect),
-    KeyStroke.KeyEvent(KeyName.End,      altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveEndWithSelect),
+  //   KeyStroke.KeyEvent(KeyName.Down,     altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveDownWithSelect),
+  //   KeyStroke.KeyEvent(KeyName.Up,       altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveUpWithSelect),
+  //   KeyStroke.KeyEvent(KeyName.PageDown, altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.movePageDownWithSelect),
+  //   KeyStroke.KeyEvent(KeyName.PageUp,   altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.movePageUpWithSelect),
+  //   KeyStroke.KeyEvent(KeyName.Home,     altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveHomeWithSelect),
+  //   KeyStroke.KeyEvent(KeyName.End,      altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveEndWithSelect),
 
-    KeyStroke.KeyEvent(KeyName.Insert,   altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveDownWithSelect),
+  //   KeyStroke.KeyEvent(KeyName.Insert,   altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveDownWithSelect),
 
-    KeyStroke.CharEvent('a', altDown=false, ctrlDown=true ,shiftDown=false) -> Set(this.selectAll),
-  )
+  //   KeyStroke.CharEvent('a', altDown=false, ctrlDown=true ,shiftDown=false) -> Set(this.selectAll),
+  // )
 
-  def selectAll():Unit =    
-    selection.indexes.include( (0 until rows.size) )
+  // def selectAll():Unit =
+  //   selection.indexes.include( (0 until rows.size) )
 
-  def moveDown():Unit =
-    moveTo(MoveSelection.Target) { focusIdx => focusIdx+1 }
+  // def moveDown():Unit =
+  //   moveTo(MoveSelection.Target) { focusIdx => focusIdx+1 }
 
-  def moveDownWithSelect():Unit =
-    moveTo(MoveSelection.Include) { focusIdx => focusIdx+1 }
+  // def moveDownWithSelect():Unit =
+  //   moveTo(MoveSelection.Include) { focusIdx => focusIdx+1 }
 
-  def moveUp():Unit =
-    moveTo(MoveSelection.Target) { focusIdx => focusIdx-1 }
+  // def moveUp():Unit =
+  //   moveTo(MoveSelection.Target) { focusIdx => focusIdx-1 }
 
-  def moveUpWithSelect():Unit =
-    moveTo(MoveSelection.Include) { focusIdx => focusIdx-1 }
+  // def moveUpWithSelect():Unit =
+  //   moveTo(MoveSelection.Include) { focusIdx => focusIdx-1 }
 
-  def movePageDown():Unit =
+  private def scrollHeight:Int = 
     val (dataYMin, dataYMax) = dataYPos.get
-    val scrollHeight = dataYMax - dataYMin
-    moveTo(MoveSelection.Target) { focusIdx => focusIdx+(scrollHeight-1) min rows.size-1 }
+    dataYMax - dataYMin
 
-  def movePageDownWithSelect():Unit =
-    val (dataYMin, dataYMax) = dataYPos.get
-    val scrollHeight = dataYMax - dataYMin
-    moveTo(MoveSelection.Include) { focusIdx => focusIdx+(scrollHeight-1) min rows.size-1 }
+  // def movePageDown():Unit =
+  //   moveTo(MoveSelection.Target) { focusIdx => focusIdx+(scrollHeight-1) min rows.size-1 }
 
-  def movePageUp():Unit =
-    val (dataYMin, dataYMax) = dataYPos.get
-    val scrollHeight = dataYMax - dataYMin
-    moveTo(MoveSelection.Target) { focusIdx => focusIdx-(scrollHeight-1) max 0 }
+  // def movePageDownWithSelect():Unit =
+  //   moveTo(MoveSelection.Include) { focusIdx => focusIdx+(scrollHeight-1) min rows.size-1 }
 
-  def movePageUpWithSelect():Unit =
-    val (dataYMin, dataYMax) = dataYPos.get
-    val scrollHeight = dataYMax - dataYMin
-    moveTo(MoveSelection.Include) { focusIdx => focusIdx-(scrollHeight-1) max 0 }
+  // def movePageUp():Unit =
+  //   moveTo(MoveSelection.Target) { focusIdx => focusIdx-(scrollHeight-1) max 0 }
 
-  def moveHome():Unit =
-    moveTo(MoveSelection.Target) { _ => 0 }
+  // def movePageUpWithSelect():Unit =
+  //   moveTo(MoveSelection.Include) { focusIdx => focusIdx-(scrollHeight-1) max 0 }
 
-  def moveHomeWithSelect():Unit =
-    moveTo(MoveSelection.Include) { _ => 0 }
+  // def moveHome():Unit =
+  //   moveTo(MoveSelection.Target) { _ => 0 }
 
-  def moveEnd():Unit =
-    moveTo(MoveSelection.Target) { _ => rows.size-1 }
+  // def moveHomeWithSelect():Unit =
+  //   moveTo(MoveSelection.Include) { _ => 0 }
 
-  def moveEndWithSelect():Unit =
-    moveTo(MoveSelection.Include) { _ => rows.size-1 }
+  // def moveEnd():Unit =
+  //   moveTo(MoveSelection.Target) { _ => rows.size-1 }
+
+  // def moveEndWithSelect():Unit =
+  //   moveTo(MoveSelection.Include) { _ => rows.size-1 }
 
   def moveTo(select:MoveSelection)(focusedIndex:Int=>Int):Unit =
     selection.focusedIndex.get match
@@ -172,6 +174,24 @@ with TableGridPaint[A]
               selection.indexes.include(
                 (( nextIndex min focusedIndex ) until ((nextIndex max focusedIndex)+1))
               )
+        case MoveSelection.Exclude =>
+          selection.focusedIndex.get match
+            case None => 
+            case Some(focusedIndex) =>
+              selection.indexes.exclude(
+                (( nextIndex min focusedIndex ) until ((nextIndex max focusedIndex)+1))
+              )
+        case MoveSelection.Invert => 
+          selection.focusedIndex.get match
+            case None => 
+            case Some(focusedIndex) =>
+              (( nextIndex min focusedIndex ) 
+                 until 
+              ((nextIndex max focusedIndex)+1)).foreach( ridx =>
+                if selection.indexes.contains(ridx) 
+                then selection.indexes.exclude(ridx)
+                else selection.indexes.include(ridx)
+              )
 
       selection.focusedIndex.set(Some(nextIndex))
       scrollTo(nextIndex)
@@ -186,8 +206,170 @@ with TableGridPaint[A]
     else if rowIndex >= (dataMinInVisibleTailIndex) then
       scroll.value.set( rowIndex - scrollHeight + 1 )
 
+  def executorOf( action:Action ):()=>Unit =
+    action match
+      case Action.Selection(what) => what match
+        case SelectWhat.All => ()=>{
+          selection.indexes.include( (0 until rows.size) )
+        }
+        case SelectWhat.Invert => ()=>{
+          (0 until rows.size).foreach { ridx =>
+            if selection.indexes.contains(ridx)
+            then selection.indexes.exclude(ridx)
+            else selection.indexes.include(ridx)
+          }
+        }
+        case SelectWhat.Clear => ()=>{
+          selection.indexes.clear()
+        }
+      case Action.FocusSelection(what) => what match
+        case FocusSelAction.Include => () => {
+          selection.focusedIndex.get.foreach { ridx =>
+            selection.indexes.include(ridx)
+          }
+        }
+        case FocusSelAction.Exclude => () => {
+          selection.focusedIndex.get.foreach { ridx =>
+            selection.indexes.exclude(ridx)
+          }
+        }
+        case FocusSelAction.Invert => () => {
+          selection.focusedIndex.get.foreach { ridx =>
+            if selection.indexes.contains(ridx)
+            then selection.indexes.exclude(ridx)
+            else selection.indexes.include(ridx)
+          }
+        }      
+      case Action.FocusMove(direction, selection) => 
+        () => {
+          moveTo(selection) { focusIdx => 
+            direction match
+              case FocusMoveDirection.Up => 
+                focusIdx-1
+              case FocusMoveDirection.Down =>
+                focusIdx+1
+              case FocusMoveDirection.PageUp =>
+                focusIdx-(scrollHeight-1) max 0
+              case FocusMoveDirection.PageDown =>
+                focusIdx+(scrollHeight-1) min rows.size-1
+              case FocusMoveDirection.Home =>
+                0
+              case FocusMoveDirection.End =>
+                rows.size-1
+          }
+        }
+
+  def executorOf( actions:List[Action] ):()=>Unit =
+    val execs = actions.map(executorOf)
+    ()=>{
+      execs.foreach( e => e() )
+    }
+
 object TableInput:
   enum MoveSelection:
     case NoChange
     case Include
+    case Exclude
+    case Invert
     case Target
+
+  object MoveSelection:
+    given ToJson[MoveSelection] with
+      override def toJson(v: MoveSelection): Option[AST] = 
+        summon[ToJson[String]].toJson( v match
+          case NoChange => "no-change"
+          case Include => "include"
+          case Exclude => "exclude"
+          case Invert => "invert"
+          case Target => "target"
+         )
+
+    given FromJson[MoveSelection] with
+      override def fromJson(j: AST): Either[DervError, MoveSelection] = 
+        summon[FromJson[String]].fromJson(j).flatMap {
+          case "no-change" => Right(MoveSelection.NoChange)
+          case "include" => Right(MoveSelection.Include)
+          case "exclude" => Right(MoveSelection.Exclude)
+          case "invert" => Right(MoveSelection.Invert)
+          case "target" => Right(MoveSelection.Target)
+          case str => Left(TypeCastFail(s"can't cast to MoveSelection from '$str'"))
+        }
+
+  enum FocusMoveDirection:
+    case Up, Down, PageUp, PageDown, Home, End
+
+  object FocusMoveDirection:
+    given ToJson[FocusMoveDirection] with
+      override def toJson(v: FocusMoveDirection): Option[AST] = 
+        summon[ToJson[String]].toJson( v match
+          case Up => "up"
+          case Down => "down"
+          case PageUp => "page-up"
+          case PageDown => "page-down"
+          case Home => "home"
+          case End => "end"
+         )
+
+    given FromJson[FocusMoveDirection] with
+      override def fromJson(j: AST): Either[DervError, FocusMoveDirection] = 
+        summon[FromJson[String]].fromJson(j).flatMap {
+          case "up" => Right(FocusMoveDirection.Up)
+          case "down" => Right(FocusMoveDirection.Down)
+          case "page-up" => Right(FocusMoveDirection.PageUp)
+          case "page-down" => Right(FocusMoveDirection.PageDown)
+          case "home" => Right(FocusMoveDirection.Home)
+          case "end" => Right(FocusMoveDirection.End)
+          case str => Left(TypeCastFail(s"can't cast to FocusMoveDirection from '$str'"))
+        }
+
+  enum FocusSelAction:
+    case Include, Exclude, Invert
+
+  object FocusSelAction:
+    given ToJson[FocusSelAction] with
+      override def toJson(v: FocusSelAction): Option[AST] = 
+        summon[ToJson[String]].toJson( v match
+          case Include => "include"
+          case Exclude => "exclude"
+          case Invert => "invert"
+         )
+
+    given FromJson[FocusSelAction] with
+      override def fromJson(j: AST): Either[DervError, FocusSelAction] = 
+        summon[FromJson[String]].fromJson(j).flatMap {
+          case "invert" => Right(FocusSelAction.Invert)
+          case "include" => Right(FocusSelAction.Include)
+          case "exclude" => Right(FocusSelAction.Exclude)
+          case str => Left(TypeCastFail(s"can't cast to FocusSelAction from '$str'"))
+        }
+
+  enum SelectWhat:
+    case All, Invert, Clear
+
+  object SelectWhat:
+    given ToJson[SelectWhat] with
+      override def toJson(v: SelectWhat): Option[AST] = 
+        summon[ToJson[String]].toJson( v match
+          case All => "all"
+          case Clear => "clear"
+          case Invert => "invert"
+         )
+
+    given FromJson[SelectWhat] with
+      override def fromJson(j: AST): Either[DervError, SelectWhat] = 
+        summon[FromJson[String]].fromJson(j).flatMap {
+          case "invert" => Right(SelectWhat.Invert)
+          case "all" => Right(SelectWhat.All)
+          case "clear" => Right(SelectWhat.Clear)
+          case str => Left(TypeCastFail(s"can't cast to SelectWhat from '$str'"))
+        }
+
+  enum Action:
+    case Selection(what:SelectWhat)
+    case FocusSelection(what:FocusSelAction)
+    case FocusMove(direction:FocusMoveDirection, selection:MoveSelection)
+
+  case class KeyStrokeBinding(
+    keyStroke: KeyStroke,
+    actions: List[Action]
+  )

@@ -15,6 +15,96 @@ import xyz.cofe.json4s3.derv.FromJson
 import xyz.cofe.json4s3.derv.errors.DervError
 import xyz.cofe.json4s3.derv.errors.TypeCastFail
 
+/**
+ * = Комбинация клавиш
+ * 
+ * Есть три типа комбинаций
+ * 
+ *  - Функциональные клавиши (F1,F2,...Backspace,...) и модификаторы (alt, ctrl, shift)
+ *  - Символьные комбинации (a,B,Я,у,...) и модификаторы (alt, ctrl, shift)
+ *  - Последовательность комбинаций
+ * 
+ * Комбинации могут быть прдеставлены ввиде строки (`toString()/parse()`)
+ * 
+ * Общий синтаксис:
+ *
+ * KeyStroke ::= sequence
+ * 
+ * sequence ::= single-ks { `','` single-ks }
+ * 
+ * single-ks ::= fun-ks | char-ks
+ * 
+ * fun-ks ::= fun-name [ mods ]
+ * 
+ * char-ks ::= char-name [ mods ]
+ * 
+ * mods ::= `'+'` mod [ mod ] [ mod ]
+ * 
+ * mod ::= alt-mod | shift-mod | ctrl-mod
+ * 
+ * alt-mod   ::= `'a'` | `'A'`
+ * 
+ * shift-mod ::= `'s'` | `'S'`
+ * 
+ * ctrl-mod  ::= `'c'` | `'C'`
+ * 
+ * <pre>
+ * fun-name 
+ *   ::= 'F1'  | 'F2'
+ *     | 'F3'  | 'F4'
+ *     | 'F5'  | 'F6'
+ *     | 'F7'  | 'F8'
+ *     | 'F9'  | 'F10'
+ *     | 'F11' | 'F12'
+ *     | 'Esc' | 'Enter'
+ *     | 'Left' | 'Right' | 'Up' | 'Down'
+ *     | 'Ins'  | 'Del' | 'Back'
+ *     | 'Home' | 'End' | 'PgUp' | 'PgDn'
+ *     | 'Tab'  | 'RTab'
+ * </pre>
+ * 
+ * char-name ::=
+ *   c-name | letter
+ * 
+ * c-name ::=
+ *
+ *     &lt;spc&gt; ' '
+ *     &lt;tab&gt; '\t'
+ *     &lt;lf&gt; '\n'
+ *     &lt;cr&gt; '\r'
+ *     &lt;plus&gt; +
+ *     &lt;minus&gt; -
+ *     &lt;comma&gt; ,
+ *     &lt;pct&gt; %
+ *     &lt;less&gt; &lt;
+ *     &lt;more&gt; &gt;
+ *     &lt;o-parenthesis&gt; (
+ *     &lt;c-parenthesis&gt; )
+ *     &lt;o-brace&gt; {
+ *     &lt;c-brace&gt; }
+ *     &lt;o-square&gt; [
+ *     &lt;c-square&gt; ]
+ *     &lt;eq&gt; =
+ *     &lt;screamer&gt; !
+ *     &lt;slash&gt; /
+ *     &lt;b-slash&gt; \
+ *     &lt;commat&gt; @
+ *     &lt;d-quot&gt; "
+ *     &lt;apos&gt; '
+ *     &lt;u-line&gt; _
+ *     &lt;v-line&gt; |
+ *     &lt;num&gt; #
+ *     &lt;colon&gt; :
+ *     &lt;s-colon&gt; ;
+ *     &lt;Hat&gt; ^
+ *     &lt;quest&gt; ? 
+ *     &lt;amp&gt; &
+ *     &lt;ast&gt; *
+ *     &lt;dollar&gt; $
+ *     &lt;tilde&gt; ~
+ *     &lt;dot&gt; .
+ *     &lt;grave&gt; `
+ */
 enum KeyStroke( val sequenceSize:Int ):
   case KeyEvent( keyName:KeyName, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean ) extends KeyStroke(1)
   case CharEvent( char:Char, altDown:Boolean, ctrlDown:Boolean, shiftDown:Boolean ) extends KeyStroke(1)
@@ -84,6 +174,40 @@ object KeyStroke:
         parse(str).map(k => Right(k)).getOrElse(Left(TypeCastFail(s"can't cast to KeyStroke from $str")))
       )
 
+  // given ToJson[KeyStroke.KeyEvent] with
+  //   override def toJson(t: KeyEvent): Option[AST] = 
+  //     summon[ToJson[KeyStroke]].toJson(t)
+
+  // given FromJson[KeyStroke.KeyEvent] with
+  //   override def fromJson(j: AST): Either[DervError, KeyEvent] = 
+  //     summon[FromJson[KeyStroke]].fromJson(j).flatMap { 
+  //       case ke: KeyEvent => Right(ke)
+  //       case e => Left(TypeCastFail(s"can't cast to KeyEvent from $e"))
+  //     }
+
+  // given ToJson[KeyStroke.CharEvent] with
+  //   override def toJson(t: CharEvent): Option[AST] = 
+  //     summon[ToJson[KeyStroke]].toJson(t)
+
+  // given FromJson[KeyStroke.CharEvent] with
+  //   override def fromJson(j: AST): Either[DervError, CharEvent] = 
+  //     summon[FromJson[KeyStroke]].fromJson(j).flatMap { 
+  //       case ke: CharEvent => Right(ke)
+  //       case e => Left(TypeCastFail(s"can't cast to CharEvent from $e"))
+  //     }
+
+  // given ToJson[KeyStroke.Sequence] with
+  //   override def toJson(t: Sequence): Option[AST] = 
+  //     summon[ToJson[KeyStroke]].toJson(t)
+
+  // given FromJson[KeyStroke.Sequence] with
+  //   override def fromJson(j: AST): Either[DervError, Sequence] = 
+  //     summon[FromJson[KeyStroke]].fromJson(j).flatMap { 
+  //       case ke: Sequence => Right(ke)
+  //       case e => Left(TypeCastFail(s"can't cast to Sequence from $e"))
+  //     }
+      
+
   private def char2str( char:Char ):String =
     val code = char.toInt
     if Character.isLetterOrDigit(char) 
@@ -119,7 +243,7 @@ object KeyStroke:
         case ':' => "<colon>"
         case ';' => "<s-colon>"
         case '^' => "<Hat>"
-        case '?' => "<?>"
+        case '?' => "<quest>"
         case '&' => "<amp>"
         case '*' => "<ast>"
         case '$' => "<dollar>"
@@ -182,7 +306,7 @@ object KeyStroke:
       "<colon>"->':', 
       "<s-colon>"->';', 
       "<Hat>"->'^', 
-      "<?>"->'?', 
+      "<quest>"->'?', 
       "<amp>"->'&', 
       "<ast>"->'*', 
       "<dollar>"->'$',
