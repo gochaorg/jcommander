@@ -33,6 +33,8 @@ import xyz.cofe.term.ui.table.Column
 import xyz.cofe.term.ui.table.HorizontalAlign
 import xyz.cofe.term.ui.table.TableInputConf
 import xyz.cofe.jtfm.conf.TableConf
+import xyz.cofe.jtfm.ui.table.FilesTable
+import xyz.cofe.files.readDir
 
 object Main:
   object appHome extends AppHome("jtfm")
@@ -120,51 +122,18 @@ object Main:
 
         ///////////////////////////////////////////////////////////////////////////
 
-        val table = Table[Int]
+        val table = Table[Path]
         table.size = Size(60,25)
         table.location = Position(1,1)
 
-        table.columns.append(
-          List(
-          Column
-            .id("a")
-            .reader( (a:Int) => a )
-            .text ( (a:Int) => a.toString() )
-            .title( "as-is" )
-            //.width( 5 )
-            .build,
-          Column
-            .id("a2")
-            .reader( (a:Int) => a*2 )
-            .text ( (a:Int) => a.toString() )
-            .title( "double" )
-            //.width( 10 )
-            .halign(HorizontalAlign.Center)
-            .build,
-          Column
-            .id("a3")
-            .reader( (a:Int) => a*3 )
-            .text ( (a:Int) => a.toString() )
-            .title( "three" )
-            //.width( 6 )
-            .halign(HorizontalAlign.Right)
-            .build,
-          Column
-            .id("a4")
-            .reader( (a:Int) => a*4 )
-            .text ( (a:Int) => a.toString() )
-            .title( "four" )
-            .width( 5 )
-            .build,
+        table.columns.append(FilesTable.columns)
+
+        Path.of(".").readDir.foreach { files => 
+          table.rows.append(
+            FilesTable.sort( 
+              Path.of("..") :: files, 
+              FilesTable.sort.defaultSort )
           )
-        )
-
-        table.rows.append( (0 until 40).toList )
-
-        table.addCellFormat { cf => 
-          if cf.row % 3 == 0 && cf.column.id=="a2" then cf.copy(foreground = Color.GreenBright)
-          else if cf.row % 3 == 1 && cf.column.id=="a3" then cf.copy(foreground = Color.YellowBright)
-          else cf
         }
 
         ses.rootWidget.children.append(table)

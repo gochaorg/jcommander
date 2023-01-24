@@ -38,15 +38,29 @@ object Column:
     leftDelimOpt:Option[Delimeter]=None,
     rightDelimOpt:Option[Delimeter]=Some(Delimeter.SingleLine),
     alignOpt:Option[HorizontalAlign]=None,
-    preferredWidthOpt:Option[PreferredWidth]=None,
+    preferredWidthOpt:Option[PreferredWidth]=None,    
   ):
     def title(string:String) = copy( titleOpt=Some(string) )
     def width(w:Int) = copy(preferredWidthOpt=Some(PreferredWidth.Const(w)))
     def widthAuto = copy(preferredWidthOpt=Some(PreferredWidth.Auto))
+    
     def halign(align:HorizontalAlign) = copy(alignOpt = Some(align))
     def leftAlign   = copy(alignOpt = Some(HorizontalAlign.Left))
     def centerAlign = copy(alignOpt = Some(HorizontalAlign.Center))
     def rightAlign  = copy(alignOpt = Some(HorizontalAlign.Right))
+    
+    def leftDelim( delim:Delimeter ) = copy(leftDelimOpt = Some(delim))
+    def leftDelimSpace( w:Int ) = leftDelim(Delimeter.Space(w))
+    def leftDelimSingle = leftDelim(Delimeter.SingleLine)
+    def leftDelimDouble = leftDelim(Delimeter.DoubleLine)
+    def leftDelimNone = leftDelim(Delimeter.None)
+
+    def rightDelim( delim:Delimeter ) = copy(rightDelimOpt = Some(delim))
+    def rightDelimSpace( w:Int ) = rightDelim(Delimeter.Space(w))
+    def rightDelimSingle = rightDelim(Delimeter.SingleLine)
+    def rightDelimDouble = rightDelim(Delimeter.DoubleLine)
+    def rightDelimNone = rightDelim(Delimeter.None)
+
     def build =
       val col = ColumnImpl(id,reader)
       col.title.set( titleOpt.getOrElse("?"))
