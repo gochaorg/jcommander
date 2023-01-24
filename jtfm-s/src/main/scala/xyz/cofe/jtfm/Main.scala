@@ -31,6 +31,8 @@ import xyz.cofe.jtfm.log.JsonLogOutput
 import xyz.cofe.json4s3.derv.ToJson
 import xyz.cofe.term.ui.table.Column
 import xyz.cofe.term.ui.table.HorizontalAlign
+import xyz.cofe.term.ui.table.TableInputConf
+import xyz.cofe.jtfm.conf.TableConf
 
 object Main:
   object appHome extends AppHome("jtfm")
@@ -43,6 +45,7 @@ object Main:
   given sesInputLog : SesInputLog = SesInputLog.writeTo(new JsonLogOutput[SesInputLog.SesInputEvent](sesInputOut))
 
   lazy val colorsConfFile = ColorsConf.confFile(appHome)
+  lazy val tableInputConfFile = TableConf.confFile(appHome)
 
   def main(args:Array[String]):Unit =
     //System.setProperty("xyz.cofe.term.default","telnet")
@@ -51,6 +54,9 @@ object Main:
     val colorsConf = colorsConfFile.read
     implicit val menuBarColors = colorsConf.map(_.menu.bar).getOrElse(new MenuBarColorConfig.Conf)
     implicit val menuColors = colorsConf.map(_.menu.container).getOrElse(new MenuColorConfig.Conf)
+
+    val tableConf = tableInputConfFile.read
+    implicit val tableInputConf = tableConf.map(x => x:TableInputConf).getOrElse(TableInputConf.defaultConfig)
 
     val console = ConsoleBuilder.defaultConsole()
     Session.start(console) {

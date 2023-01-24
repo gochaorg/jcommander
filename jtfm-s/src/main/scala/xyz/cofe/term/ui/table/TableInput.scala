@@ -88,68 +88,10 @@ with TableGridPaint[A]
 
   private def predefKeyStrokes : Map[KeyStroke,Set[()=>Unit]] = 
     tableInputConf.keyStrokeActionMap(this).mapValues(v=>Set(v)).toMap
-  // Map(
-  //   KeyStroke.KeyEvent(KeyName.Down,     altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveDown),
-  //   KeyStroke.KeyEvent(KeyName.Up,       altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveUp),
-  //   KeyStroke.KeyEvent(KeyName.PageDown, altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.movePageDown),
-  //   KeyStroke.KeyEvent(KeyName.PageUp,   altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.movePageUp),
-  //   KeyStroke.KeyEvent(KeyName.Home,     altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveHome),
-  //   KeyStroke.KeyEvent(KeyName.End,      altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveEnd),
-
-  //   KeyStroke.KeyEvent(KeyName.Down,     altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveDownWithSelect),
-  //   KeyStroke.KeyEvent(KeyName.Up,       altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveUpWithSelect),
-  //   KeyStroke.KeyEvent(KeyName.PageDown, altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.movePageDownWithSelect),
-  //   KeyStroke.KeyEvent(KeyName.PageUp,   altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.movePageUpWithSelect),
-  //   KeyStroke.KeyEvent(KeyName.Home,     altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveHomeWithSelect),
-  //   KeyStroke.KeyEvent(KeyName.End,      altDown=false, ctrlDown=false, shiftDown=true)  -> Set(this.moveEndWithSelect),
-
-  //   KeyStroke.KeyEvent(KeyName.Insert,   altDown=false, ctrlDown=false, shiftDown=false) -> Set(this.moveDownWithSelect),
-
-  //   KeyStroke.CharEvent('a', altDown=false, ctrlDown=true ,shiftDown=false) -> Set(this.selectAll),
-  // )
-
-  // def selectAll():Unit =
-  //   selection.indexes.include( (0 until rows.size) )
-
-  // def moveDown():Unit =
-  //   moveTo(MoveSelection.Target) { focusIdx => focusIdx+1 }
-
-  // def moveDownWithSelect():Unit =
-  //   moveTo(MoveSelection.Include) { focusIdx => focusIdx+1 }
-
-  // def moveUp():Unit =
-  //   moveTo(MoveSelection.Target) { focusIdx => focusIdx-1 }
-
-  // def moveUpWithSelect():Unit =
-  //   moveTo(MoveSelection.Include) { focusIdx => focusIdx-1 }
 
   private def scrollHeight:Int = 
     val (dataYMin, dataYMax) = dataYPos.get
     dataYMax - dataYMin
-
-  // def movePageDown():Unit =
-  //   moveTo(MoveSelection.Target) { focusIdx => focusIdx+(scrollHeight-1) min rows.size-1 }
-
-  // def movePageDownWithSelect():Unit =
-  //   moveTo(MoveSelection.Include) { focusIdx => focusIdx+(scrollHeight-1) min rows.size-1 }
-
-  // def movePageUp():Unit =
-  //   moveTo(MoveSelection.Target) { focusIdx => focusIdx-(scrollHeight-1) max 0 }
-
-  // def movePageUpWithSelect():Unit =
-  //   moveTo(MoveSelection.Include) { focusIdx => focusIdx-(scrollHeight-1) max 0 }
-
-  // def moveHome():Unit =
-  //   moveTo(MoveSelection.Target) { _ => 0 }
-
-  // def moveHomeWithSelect():Unit =
-  //   moveTo(MoveSelection.Include) { _ => 0 }
-
-  // def moveEnd():Unit =
-  //   moveTo(MoveSelection.Target) { _ => rows.size-1 }
-
-  // def moveEndWithSelect():Unit =
-  //   moveTo(MoveSelection.Include) { _ => rows.size-1 }
 
   def moveTo(select:MoveSelection)(focusedIndex:Int=>Int):Unit =
     selection.focusedIndex.get match
@@ -373,3 +315,51 @@ object TableInput:
     keyStroke: KeyStroke,
     actions: List[Action]
   )
+  
+  case class MouseTrigger(
+    button:  MouseButton,
+    pressed: Boolean
+  )
+
+  object MouseTrigger:
+    given ToJson[MouseTrigger] with
+      override def toJson(v: MouseTrigger): Option[AST] = 
+        Some(AST.JsObj(List(
+          "button" -> AST.JsStr({ v.button match
+            case MouseButton.Left => "left"
+            case MouseButton.Right => "right"
+            case MouseButton.Middle => "middle"
+           }),
+           "pressed" -> AST.JsBool(v.pressed)
+        )))
+
+    given FromJson[MouseTrigger] with
+      override def fromJson(json: AST): Either[DervError, MouseTrigger] = 
+        json match
+          case js @ AST.JsObj(fields) =>
+            js.get("button").flatMap { 
+              case AST.JsStr("left")   => Some(MouseButton.Left)
+              case AST.JsStr("right")  => Some(MouseButton.Right)
+              case AST.JsStr("middle") => Some(MouseButton.Middle)
+              case _ => None
+            }.map( x => Right(x) )
+             .getOrElse(
+                Left(TypeCastFail(
+                  s"can't cast button field from ${js.get("button")}"
+                ):DervError)
+              )
+             .flatMap { mb => 
+               js.get("pressed").flatMap {  
+                case AST.JsBool(x) => Some(x)
+                case _ => None
+               }
+               .map( x => Right(x) )
+               .getOrElse(Right(true))
+               .map { pressed => 
+                  MouseTrigger(mb, pressed)
+                }
+             }
+          case _ =>
+            Left(TypeCastFail("button field not found"):DervError)
+        
+  

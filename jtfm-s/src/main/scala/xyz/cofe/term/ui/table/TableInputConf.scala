@@ -64,3 +64,13 @@ object TableInputConf:
         KeyStroke.CharEvent('i', altDown=false, ctrlDown=true ,shiftDown=false) -> 
           table.executorOf(Action.Selection(SelectWhat.Invert)),
       )
+
+  case class Conf(
+    keyboard: List[KeyStrokeBinding]
+  ) extends TableInputConf:
+    override def keyStrokeActionMap(table: TableInput[?]): Map[KeyStroke, () => Unit] = 
+      keyboard.map { ksBind => 
+        ( ksBind.keyStroke
+        , table.executorOf(ksBind.actions)
+        )
+      }.toMap
