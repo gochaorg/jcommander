@@ -34,7 +34,7 @@ object FilesOption:
     def openOptions: Seq[OpenOption] = Seq()
   }
 
-  final case class Opts(
+  case class Opts(
     linkOptions:Seq[LinkOption],
     fileAttributes:Seq[FileAttribute[_]],
     copyOptions:Seq[CopyOption],
@@ -43,7 +43,7 @@ object FilesOption:
 
   object Opts:
     import xyz.cofe.jtfm.json._
-    given toJson:ToJson[Opts] with
+    given optsToJson:ToJson[Opts] with
       def toJson(opts: Opts): Option[AST] = Some({
         val linksAst = summon[ToJson[List[LinkOption]]].toJson(opts.linkOptions.toList)
         val copyAst = summon[ToJson[List[CopyOption]]].toJson(opts.copyOptions.toList)
@@ -64,7 +64,7 @@ object FilesOption:
         )
       })
 
-    given fromJson:FromJson[Opts] with
+    given optsFromJson:FromJson[Opts] with
       override def fromJson(j_ast: AST): Either[DervError, Opts] = 
         j_ast match
           case jsObj:JsObj =>

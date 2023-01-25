@@ -16,6 +16,9 @@ import xyz.cofe.json4s3.derv.errors.DervError
 import xyz.cofe.json4s3.derv.errors.TypeCastFail
 import xyz.cofe.json4s3.derv.errors.FieldNotFound
 import java.nio.charset.StandardCharsets
+import xyz.cofe.json4s3.derv._
+import xyz.cofe.json4s3.derv.given
+import xyz.cofe.files.given
 
 trait FilesLogger:
   def apply[R](op:FilesOperation)(code: => R):Either[Throwable,R] =
@@ -57,12 +60,28 @@ enum FilesOperation:
   case ReadString(path:Path,charset:Charset) 
   case WriteString(path:Path,charset:Charset,string:String,opts:FilesOption.Opts) 
   case ReadBytes(path:Path)
-  case ReadPosixAttib(path:Path,opts:FilesOption.Opts)
+  case ReadPosixAttib(path:Path,optsz:FilesOption.Opts)
+
+  def json:String =
+    this.json
 
 object FilesOperation:
   import xyz.cofe.jtfm.json.charsetToJson
   import xyz.cofe.jtfm.json.charsetFromJson
   import xyz.cofe.files.given
+  import xyz.cofe.jtfm.json.instantFromJson
+  import xyz.cofe.jtfm.json.instantToJson
+  import xyz.cofe.files.FilesOption.Opts.optsToJson
+  import xyz.cofe.files.FilesOption.Opts.optsFromJson
+  import xyz.cofe.files.pathFromJson
+  import xyz.cofe.files.pathToJson
+  import xyz.cofe.json4s3.derv.FromJson.given
+  //import xyz.cofe.json4s3.derv.FromJson.given
+
+  //given fr:FromJson[xyz.cofe.files.FilesOption.Opts] = ???
+
+  def fromJson(jsonString:String) = 
+    jsonString.jsonAs[FilesOperation]
 
   given ToJson[WriteString] with
     override def toJson(ws: WriteString): Option[AST] = 

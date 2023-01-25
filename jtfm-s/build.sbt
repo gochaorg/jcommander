@@ -12,6 +12,10 @@ resolvers += "maven central" at "https://repo1.maven.org/maven2"
 libraryDependencies += "xyz.cofe" % "term-common" % "0.3" from "file:/home/user/code/term-common-parent/term-common/target/term-common-0.3.1-SNAPSHOT.jar"
 libraryDependencies += "xyz.cofe" %% "json4s3" % "0.1.2" 
 
+scalacOptions ++= Seq(
+  "-Xmax-inlines:64"
+)
+
 lazy val root = project
   .in(file("."))
   .settings(
