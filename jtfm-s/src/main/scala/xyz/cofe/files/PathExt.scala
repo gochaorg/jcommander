@@ -18,6 +18,8 @@ import xyz.cofe.json4s3.derv.FromJson
 import xyz.cofe.json4s3.derv.errors.DervError
 import xyz.cofe.json4s3.derv.errors.TypeCastFail.apply
 import xyz.cofe.json4s3.derv.errors.TypeCastFail
+import java.nio.file.attribute.PosixFileAttributeView
+import java.nio.file.attribute.PosixFilePermission
 
 extension (path:Path)(using log:FilesLogger, opts:FilesOption)
   def name: String = path.getFileName.toString
@@ -137,8 +139,38 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
   // def posixPerm:Either[Throwable,PosixPerm]
   // def setPosixPerm(perm:PosixPerm):Either[Throwable,Unit]
 
+  def posixAttributes:Either[Throwable,PosixAttib] =
+    log(ReadPosixAttib(path,opts.copy)){
+      val cls:Class[PosixFileAttributeView] = classOf[PosixFileAttributeView]
+      val attr = Files.getFileAttributeView(path,cls,opts.linkOptions:_*)
+      val posixAttr = attr.readAttributes()
+      PosixAttib(
+        posixAttr.owner().getName(),
+        posixAttr.group().getName(),
+        PosixPerm(
+          posixAttr.permissions().contains(PosixFilePermission.OWNER_READ),
+          posixAttr.permissions().contains(PosixFilePermission.OWNER_WRITE),
+          posixAttr.permissions().contains(PosixFilePermission.OWNER_EXECUTE),
+
+          posixAttr.permissions().contains(PosixFilePermission.GROUP_READ),
+          posixAttr.permissions().contains(PosixFilePermission.GROUP_WRITE),
+          posixAttr.permissions().contains(PosixFilePermission.GROUP_EXECUTE),
+
+          posixAttr.permissions().contains(PosixFilePermission.OTHERS_READ),
+          posixAttr.permissions().contains(PosixFilePermission.OTHERS_WRITE),
+          posixAttr.permissions().contains(PosixFilePermission.OWNER_EXECUTE),
+        )
+      )
+    }
+
   def walk:TreeWalk = new TreeWalk(List(path))
     
+
+case class PosixAttib(
+  owner: String,
+  group: String,
+  perm: PosixPerm
+)
 
 case class PosixPerm(
   ownerRead:Boolean,
@@ -152,7 +184,19 @@ case class PosixPerm(
   othersRead:Boolean,
   othersWrite:Boolean,
   othersExecute:Boolean,
-)
+):
+  lazy val rwxString:String =
+    List(
+      if ownerRead     then "r" else "-",
+      if ownerWrite    then "w" else "-",
+      if ownerExecute  then "x" else "-",
+      if groupRead     then "r" else "-",
+      if groupWrite    then "w" else "-",
+      if groupExecute  then "x" else "-",
+      if othersRead    then "r" else "-",
+      if othersWrite   then "w" else "-",
+      if othersExecute then "x" else "-",
+    ).mkString
 
 given pathToJson:ToJson[Path] with
   def toJson(path: Path): Option[AST] = 

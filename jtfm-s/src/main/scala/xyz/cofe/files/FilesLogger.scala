@@ -31,40 +31,39 @@ object FilesLogger:
 enum FilesOperation:
   case WriterOp(path:Path, charset:Charset, opts:FilesOption.Opts)
   case ReaderOp(path:Path, charset:Charset)
-  case IsDirectory(path:Path, opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Boolean]
-  case IsRegularFile(path:Path, opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Boolean]
-  case LastModified(path:Path, opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Instant]
-  case SetLastModified(path:Path, time:Instant ) //  extends FilesOperation with OperationResult.OutResult[Unit]
-  case Size(path:Path) // extends FilesOperation with OperationResult.OutResult[Long]
-  case Exists(path:Path, opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Boolean]
-  case ReadDir(path:Path) // extends FilesOperation with OperationResult.OutResult[List[Path]]
-  case IsSameFile(path:Path,other:Path) // extends FilesOperation with OperationResult.OutResult[Boolean]
-  case IsSymbolicLink(path:Path) // extends FilesOperation with OperationResult.OutResult[Boolean]
+  case IsDirectory(path:Path, opts:FilesOption.Opts)
+  case IsRegularFile(path:Path, opts:FilesOption.Opts)
+  case LastModified(path:Path, opts:FilesOption.Opts)
+  case SetLastModified(path:Path, time:Instant ) 
+  case Size(path:Path)
+  case Exists(path:Path, opts:FilesOption.Opts) 
+  case ReadDir(path:Path) 
+  case IsSameFile(path:Path,other:Path) 
+  case IsSymbolicLink(path:Path)
 
-  case CreateDirectories(path:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Unit]
-  case CreateFile(path:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Unit]
-  case CreateLink(path:Path,target:Path) // extends FilesOperation with OperationResult.OutResult[Unit]
-  case CreateSymbolicLink(path:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Unit]
-  case CreateTempDirectory(path:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Path]
-  case CreateTempFile(path:Path,opts:FilesOption.Opts) //extends FilesOperation with OperationResult.OutResult[Path]
-  case Delete(path:Path) // extends FilesOperation with OperationResult.OutResult[Unit]
-  case DeleteIfExists(path:Path) // extends FilesOperation with OperationResult.OutResult[Boolean]
-  case Move(path:Path,target:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Unit]
-  case ReadSymbolicLink​(path:Path) // extends FilesOperation with OperationResult.OutResult[Path]
-  case Channel(path:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[SeekableByteChannel]
-  case InputStreamOp(path:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[InputStream]
-  case OutputStreamOp(path:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[OutputStream]
-  case ReadString(path:Path,charset:Charset) // extends FilesOperation with OperationResult.OutResult[String]
-  case WriteString(path:Path,charset:Charset,string:String,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[Unit]
-  case ReadBytes(path:Path) // extends FilesOperation with OperationResult.OutResult[Array[Byte]]
-  // case PosixPerm(path:Path,opts:FilesOption.Opts) // extends FilesOperation with OperationResult.OutResult[PosixPerm]
-  // case SetPosixPerm(path:Path,perm:PosixPerm) // extends FilesOperation with OperationResult.OutResult[Unit]
-  
+  case CreateDirectories(path:Path,opts:FilesOption.Opts) 
+  case CreateFile(path:Path,opts:FilesOption.Opts) 
+  case CreateLink(path:Path,target:Path) 
+  case CreateSymbolicLink(path:Path,opts:FilesOption.Opts) 
+  case CreateTempDirectory(path:Path,opts:FilesOption.Opts) 
+  case CreateTempFile(path:Path,opts:FilesOption.Opts)
+  case Delete(path:Path)
+  case DeleteIfExists(path:Path)
+  case Move(path:Path,target:Path,opts:FilesOption.Opts)
+  case ReadSymbolicLink​(path:Path) 
+  case Channel(path:Path,opts:FilesOption.Opts) 
+  case InputStreamOp(path:Path,opts:FilesOption.Opts) 
+  case OutputStreamOp(path:Path,opts:FilesOption.Opts) 
+  case ReadString(path:Path,charset:Charset) 
+  case WriteString(path:Path,charset:Charset,string:String,opts:FilesOption.Opts) 
+  case ReadBytes(path:Path)
+  case ReadPosixAttib(path:Path,opts:FilesOption.Opts)
 
 object FilesOperation:
   import xyz.cofe.jtfm.json.charsetToJson
   import xyz.cofe.jtfm.json.charsetFromJson
   import xyz.cofe.files.given
+
   given ToJson[WriteString] with
     override def toJson(ws: WriteString): Option[AST] = 
       val path1 = summon[ToJson[Path]].toJson(ws.path)

@@ -11,6 +11,7 @@ object FilesTable:
     List(
       cols.fileTypeLetterColumn,
       cols.nameColumn,
+      cols.rwxColumn,
       cols.sizeHumanReadableColumn,
     )
 
@@ -46,6 +47,16 @@ object FilesTable:
       .leftAlign
       .leftDelimNone
       .rightDelimNone
+      .build
+
+    val rwxColumn = Column
+      .id("file.rwx")
+      .reader { (path:Path) => 
+        path.posixAttributes.map(_.perm.rwxString).getOrElse("?")
+      }
+      .text( text => text )
+      .title("perm")
+      .width(9)
       .build
 
   object sort:
