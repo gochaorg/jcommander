@@ -5,6 +5,7 @@ import java.time._
 import java.util.Locale
 import java.util.regex.Pattern
 import scala.collection.mutable
+import xyz.cofe.files.AppHome
 
 /**
  * Шаблон имени генерируемого файла
@@ -416,18 +417,6 @@ object PathPattern {
     }
   }
 
-  trait AppHomeProvider {
-    def appHome:Path
-  }
-  object AppHomeProvider {
-    implicit val defaultInstance: AppHomeProvider = new AppHomeProvider {
-      override def appHome: Path = Path.of(".")
-    }
-    def provide(home:Path):AppHomeProvider = new AppHomeProvider {
-      override def appHome: Path = home
-    }
-  }
-
   object Evaluate {
     case class Time(time:Instant = Instant.now()) {
       lazy val localTime: LocalDateTime = time.atZone(ZoneId.systemDefault()).toLocalDateTime
@@ -440,12 +429,12 @@ object PathPattern {
       lazy val second: Int = localTime.getSecond
     }
 
-    implicit def defaultEvaluate(implicit appHomeProvider: AppHomeProvider): Evaluate = new Evaluate {
+    implicit def defaultEvaluate(implicit appHome1: AppHome): Evaluate = new Evaluate {
       lazy val time: Time = Time()
       lazy val pid: Long = {
         ProcessHandle.current().pid()
       }
-      lazy val appHome: Path = appHomeProvider.appHome
+      lazy val appHome: Path = appHome1.directory
 
       override def eval(code: String): Either[String, String] = {
         code match {

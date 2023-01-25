@@ -1,9 +1,16 @@
 package xyz.cofe.files.log
 
 import java.nio.file.Path
-import xyz.cofe.files.log.PathPattern.AppHomeProvider
+import xyz.cofe.files.log.PathPattern
+import xyz.cofe.files.log.PathPattern.Evaluate
+import xyz.cofe.files.AppHome
 
 class PathPatternTest extends munit.FunSuite {
+  implicit object appHome extends AppHome("testApp")
+  appHome.systemParameter = Path.of("/Users/username/code/project/.dockerui")
+
+  implicit val ev : Evaluate = Evaluate.defaultEvaluate
+
   test("generate") {
     println(
       PathPattern.parse(Path.of("/log/app/{yyyy}-{MM}-{dd}-{hh}-{mm}-{ss}")).generate
@@ -34,7 +41,7 @@ class PathPatternTest extends munit.FunSuite {
   }
 
   test("app home 1") {
-    implicit val home = AppHomeProvider.provide(Path.of("/Users/username/code/project/.dockerui"))
+    //implicit val home = AppHomeProvider.provide(Path.of("/Users/username/code/project/.dockerui"))
     val pathPattern = PathPattern.parse(Path.of("{appHome}/log/app"))
     println(pathPattern)
     println(pathPattern.generate)
@@ -57,7 +64,7 @@ class PathPatternTest extends munit.FunSuite {
   }
 
   test("app home 2") {
-    implicit val home = AppHomeProvider.provide(Path.of("/Users/username/code/project/.dockerui"))
+    //implicit val home = AppHomeProvider.provide(Path.of("/Users/username/code/project/.dockerui"))
     val pathPattern = PathPattern.parse(Path.of("{appHome}/log/app/{yyyy}/{MM}/{dd}"))
     println(pathPattern)
     println(pathPattern.generate)
@@ -81,7 +88,7 @@ class PathPatternTest extends munit.FunSuite {
   }
 
   test("root path test") {
-    implicit val home = AppHomeProvider.provide(Path.of("/Users/username/code/project/.dockerui"))
+    //implicit val home = AppHomeProvider.provide(Path.of("/Users/username/code/project/.dockerui"))
     val pathPattern = PathPattern.parse(Path.of("/log/app/{yyyy}/{MM}/{dd}"))
     println(pathPattern)
     println(pathPattern.generate)
@@ -116,7 +123,7 @@ class PathPatternTest extends munit.FunSuite {
   }
 
   test("head path 2") {
-    implicit val home = AppHomeProvider.provide(Path.of("/Users/username/code/project/.dockerui"))
+    //implicit val home = AppHomeProvider.provide(Path.of("/Users/username/code/project/.dockerui"))
     val pathPattern = PathPattern.parse(Path.of("{appHome}/log/app/{yyyy}/{MM}/{dd}"))
 
     println(pathPattern.headPath)

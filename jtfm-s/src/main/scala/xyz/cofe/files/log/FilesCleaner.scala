@@ -3,6 +3,7 @@ package log
 
 import java.nio.file.Path
 import PathPattern.PathPattern
+import xyz.cofe.files.log.PathPattern.Evaluate
 
 object FilesCleaner {
   def clean(path:Path, limitSize:Long)
@@ -60,7 +61,8 @@ object FilesCleaner {
   def subFilesByModifyDate(pathPattern:PathPattern)
   (implicit
     options: FilesOption,
-    trace: FilesLogger
+    trace: FilesLogger,
+    eval:Evaluate
   ): Either[String, List[SubFile]] = {
     pathPattern.pathFilter.flatMap { pathFilter =>
       pathPattern.headPath.map { root =>
@@ -74,7 +76,8 @@ object FilesCleaner {
   def clean(path:PathPattern, limitSize:Long)
   (implicit
     options: FilesOption,
-    trace: FilesLogger
+    trace: FilesLogger,
+    eval:Evaluate
   ): Either[String, List[Path]] = {
     require(limitSize>=0)
 

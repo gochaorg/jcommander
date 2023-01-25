@@ -15,7 +15,6 @@ import xyz.cofe.term.ui
 import xyz.cofe.term.ui._
 import xyz.cofe.term.buff.ScreenChar
 import xyz.cofe.files.AppHome
-import xyz.cofe.files.log.PathPattern.AppHomeProvider
 import xyz.cofe.files.log.PathPattern
 import java.nio.file.Path
 import xyz.cofe.files.log.AppendableFile.apply
@@ -37,8 +36,7 @@ import xyz.cofe.jtfm.ui.table.FilesTable
 import xyz.cofe.files.readDir
 
 object TableMain:
-  object appHome extends AppHome("jtfm")
-  implicit val appHomeProvider : AppHomeProvider = AppHomeProvider.provide(appHome.directory)
+  implicit object appHome extends AppHome("jtfm")
   implicit val pathPatternEval : Evaluate = Evaluate.defaultEvaluate
 
   lazy val logPathCommon = "{appHome}/log/{yyyy}/{MM}/{dd}/{HH}-{mi}-pid{pid}-"
