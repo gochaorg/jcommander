@@ -16,7 +16,7 @@ case class BatchScript(
   mainClass: String,
   javaExe: JavaExe = JavaExe.console,
   relativeScriptDepth: Int = 1,
-  sysProps: List[JvmSysProp] = List.empty,
+  jvmOpts: List[JvmOpt] = List.empty,
   jarsDirectory: String = "\\lib\\jar",
   dll32Directory: String = "\\lib\\dll\\win32",
   dll64Directory: String = "\\lib\\dll\\win64",
@@ -145,7 +145,7 @@ case class BatchScript(
         |  )
         |)
         |""".stripMargin + {
-          sysProps.map { value => 
+          jvmOpts.map { value => 
             s"""|if defined JAVA_OPTS (
                 |  set "JAVA_OPTS=!JAVA_OPTS! ${value.cmdLine}"
                 |  if "%BATCH_START_VERBOSE%"=="1" echo append ${value.cmdLine} to JAVA_OPTS

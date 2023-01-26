@@ -34,6 +34,7 @@ import xyz.cofe.term.ui.table.TableInputConf
 import xyz.cofe.jtfm.conf.TableConf
 import xyz.cofe.jtfm.ui.table.FilesTable
 import xyz.cofe.files.readDir
+import xyz.cofe.jtfm.conf.ConfError
 
 object TableMain:
   implicit object appHome extends AppHome("jtfm")
@@ -44,18 +45,17 @@ object TableMain:
   lazy val sesInputOut = AppendableFile(sesInputLogPath,Some(1024*1024*16))
   given sesInputLog : SesInputLog = SesInputLog.writeTo(new JsonLogOutput[SesInputLog.SesInputEvent](sesInputOut))
 
-  lazy val colorsConfFile = ColorsConf.confFile(appHome)
   lazy val tableInputConfFile = TableConf.confFile(appHome)
 
   def main(args:Array[String]):Unit =
     //System.setProperty("xyz.cofe.term.default","telnet")
     //System.setProperty("xyz.cofe.term.telnet.port","12346")
 
-    val colorsConf = colorsConfFile.read
+    val colorsConf:Either[ConfError,ColorsConf] = ColorsConf.read
     implicit val menuBarColors = colorsConf.map(_.menu.bar).getOrElse(new MenuBarColorConfig.Conf)
     implicit val menuColors = colorsConf.map(_.menu.container).getOrElse(new MenuColorConfig.Conf)
 
-    val tableConf = tableInputConfFile.read
+    val tableConf:Either[ConfError,TableInputConf] = TableConf.read
     implicit val tableInputConf = tableConf.map(x => x:TableInputConf).getOrElse(TableInputConf.defaultConfig)
 
     val console = ConsoleBuilder.defaultConsole()

@@ -2,7 +2,7 @@ package dist
 
 case class BashScript(
   mainClass: String,
-  sysProps: List[JvmSysProp] = List.empty,
+  jvmOpts: List[JvmOpt] = List.empty,
   jarsDirectory: String = "/lib/jar",
   relativeScriptDepth: Int = 1,
 ) {
@@ -128,7 +128,7 @@ case class BashScript(
        |""".stripMargin
 
   lazy val systemPropertiesScript =
-    sysProps.map { prop => 
+    jvmOpts.map { prop => 
       s"""|if [ -z "$${JAVA_OPTS+x}" ] ; then
           |  JAVA_OPTS="${prop.cmdLine}"
           |else

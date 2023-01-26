@@ -6,4 +6,5 @@ object Main:
   implicit object appHome extends AppHome("jtfm")
 
   def main(args:Array[String]):Unit =
+    //println(s"home ${appHome.directory}")
     ()

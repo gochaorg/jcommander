@@ -23,3 +23,6 @@ object ColorsConf:
       ConfFile.Resource("/default-config/colors.jsonc")
     )
 
+  def read(using appHome:AppHome):Either[ConfError,ColorsConf] =
+    confFile(appHome).read
+
