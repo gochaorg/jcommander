@@ -30,6 +30,15 @@ object WidgetInput:
       }.getOrElse(false)
     else false
 
+  def delegateToNested(childs:Iterable[? <: WidgetInput], inputEvent:InputEvent):Boolean =
+    childs.toList.foldLeft( Option[Boolean](false) ){
+      case (consumed,child) =>
+        consumed match
+          case None => Some(child.input(inputEvent))
+          case Some(true) =>  Some(true)
+          case Some(false) => Some(child.input(inputEvent))
+    }.getOrElse(false)
+
 class FocusClient( widget:WidgetInput ):
   def rootWidget:Option[RootWidget] = widget.toTreePath.listToLeaf.headOption.flatMap { w => 
     if w.isInstanceOf[RootWidget] 

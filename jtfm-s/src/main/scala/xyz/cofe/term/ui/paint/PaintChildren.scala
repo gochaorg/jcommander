@@ -6,7 +6,14 @@ import xyz.cofe.term.ui.prop._
 
 trait PaintChildrenMethod extends WidgetChildren[_]:
   def paintChildren(paint:PaintCtx):Unit =
-    children.get.foreach { widget => 
+    PaintChildren.paint(children.get, paint)
+
+trait PaintChildren extends PaintStack with PaintChildrenMethod:
+  paintStack.add(paintChildren)
+
+object PaintChildren:
+  def paint(childs:Iterable[? <: Widget], paint:PaintCtx):Unit =
+    childs.foreach { widget => 
       def paintChild():Unit = {
         val loc  = widget.location.get
         val size = widget.size.get
@@ -19,8 +26,4 @@ trait PaintChildrenMethod extends WidgetChildren[_]:
         case visProp:VisibleProp if visProp.visible.value.get => paintChild()
         case _ => ()
     }
-
-trait PaintChildren extends PaintStack with PaintChildrenMethod:
-  paintStack.add(paintChildren)
-
 

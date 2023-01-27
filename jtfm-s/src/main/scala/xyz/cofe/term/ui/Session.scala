@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import ses._
 
 class Session
-( val console: Console, initialize: => Unit )
+( val console: Console, initialize: Session => Unit )
 ( using 
     sesInputLog:SesInputLog, 
     sesInputBehavior:SesInputBehavior
@@ -39,7 +39,7 @@ extends SesBase
     screenBuffer.resize( conSize )
     rootWidget.size.set( conSize )
 
-    initialize
+    initialize(this)
 
     while( !stop ){
       processInput()
@@ -69,7 +69,7 @@ object Session:
         currentSessionTL.set(ses)
     }
 
-  def start(console: Console)(initialize: => Unit)
+  def start(console: Console)(initialize: Session => Unit)
   ( using 
     sesInputLog:SesInputLog, 
     sesInputBehavior:SesInputBehavior

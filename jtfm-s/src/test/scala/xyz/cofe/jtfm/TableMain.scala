@@ -59,123 +59,121 @@ object TableMain:
     implicit val tableInputConf = tableConf.map(x => x:TableInputConf).getOrElse(TableInputConf.defaultConfig)
 
     val console = ConsoleBuilder.defaultConsole()
-    Session.start(console) {
-      Session.currentSession.foreach { ses => 
-        // ses.rootWidget.backgroundColor.set(Color.Green)
+    Session.start(console) { ses =>
+      // ses.rootWidget.backgroundColor.set(Color.Green)
 
-        // val pnl1 = new FocPanel("pnl1")
-        // pnl1.location.set(Position(1,3))
-        // pnl1.size.set(Size(30,1))
-        // ses.rootWidget.children.append(pnl1)
+      // val pnl1 = new FocPanel("pnl1")
+      // pnl1.location.set(Position(1,3))
+      // pnl1.size.set(Size(30,1))
+      // ses.rootWidget.children.append(pnl1)
 
-        // val but1 = Button("exit").action { ses.stop = true }
-        // but1.location.set(Position(35,2))
-        // ses.rootWidget.children.append(but1)
+      // val but1 = Button("exit").action { ses.stop = true }
+      // but1.location.set(Position(35,2))
+      // ses.rootWidget.children.append(but1)
 
-        // val but2 = Button("foc on pnl1").action { pnl1.focus.request }
-        // but2.location.set(Position(35,4))
-        // ses.rootWidget.children.append(but2)
+      // val but2 = Button("foc on pnl1").action { pnl1.focus.request }
+      // but2.location.set(Position(35,4))
+      // ses.rootWidget.children.append(but2)
 
-        // val but3 = Button("clear buff").action {
-        //   (0 until ses.screenBuffer.height).flatMap { y => 
-        //     (0 until ses.screenBuffer.width).map { x => (x,y) }
-        //   }.foreach { case (x,y) => 
-        //     ses.screenBuffer.set(x,y,ScreenChar(' ',Color.White,Color.Black))
-        //   }
-        // }
-        // but3.location.set(Position(35,6))
-        // ses.rootWidget.children.append(but3)
+      // val but3 = Button("clear buff").action {
+      //   (0 until ses.screenBuffer.height).flatMap { y => 
+      //     (0 until ses.screenBuffer.width).map { x => (x,y) }
+      //   }.foreach { case (x,y) => 
+      //     ses.screenBuffer.set(x,y,ScreenChar(' ',Color.White,Color.Black))
+      //   }
+      // }
+      // but3.location.set(Position(35,6))
+      // ses.rootWidget.children.append(but3)
 
-        // val but4 = Button("clear console").action {
-        //   console.setBackground(Color.Black)
-        //   console.setForeground(Color.White)
-        //   (0 until ses.screenBuffer.height).flatMap { y => 
-        //     (0 until ses.screenBuffer.width).map { x => (x,y) }
-        //   }.foreach { case (x,y) => 
-        //     console.setCursorPosition(x,y)
-        //     console.write(" ")
-        //   }
-        // }
-        // but4.location.set(Position(35,8))
-        // ses.rootWidget.children.append(but4)
+      // val but4 = Button("clear console").action {
+      //   console.setBackground(Color.Black)
+      //   console.setForeground(Color.White)
+      //   (0 until ses.screenBuffer.height).flatMap { y => 
+      //     (0 until ses.screenBuffer.width).map { x => (x,y) }
+      //   }.foreach { case (x,y) => 
+      //     console.setCursorPosition(x,y)
+      //     console.write(" ")
+      //   }
+      // }
+      // but4.location.set(Position(35,8))
+      // ses.rootWidget.children.append(but4)
 
-        // val but5 = Button("dump").action {
-        //   ses.rootWidget.walk.path.foreach { path =>
-        //     print("  "*path.rpath.size)
-        //     val v = path.node match
-        //       case vp:VisibleProp => s"${vp.visible.value.get}"
-        //       case _ => "?"
-            
-        //     println(s"${path.node} v=${v} ${path.node.location.get} ${path.node.size.get}")
-        //   }
-        // }
-        // but5.location.set(Position(35,10))
-        // ses.rootWidget.children.append(but5)
+      // val but5 = Button("dump").action {
+      //   ses.rootWidget.walk.path.foreach { path =>
+      //     print("  "*path.rpath.size)
+      //     val v = path.node match
+      //       case vp:VisibleProp => s"${vp.visible.value.get}"
+      //       case _ => "?"
+          
+      //     println(s"${path.node} v=${v} ${path.node.location.get} ${path.node.size.get}")
+      //   }
+      // }
+      // but5.location.set(Position(35,10))
+      // ses.rootWidget.children.append(but5)
 
-        // val textField = new TextField()
-        // textField.location = Position(1,5)
-        // textField.size = Size(25,1)
-        // textField.text = "sample"
-        // ses.rootWidget.children.append(textField)
+      // val textField = new TextField()
+      // textField.location = Position(1,5)
+      // textField.size = Size(25,1)
+      // textField.text = "sample"
+      // ses.rootWidget.children.append(textField)
 
-        ///////////////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////////////
 
-        val table = Table[Path]
-        table.size = Size(60,25)
-        table.location = Position(1,1)
+      val table = Table[Path]
+      table.size = Size(60,25)
+      table.location = Position(1,1)
 
-        table.columns.append(FilesTable.columns)
+      table.columns.append(FilesTable.columns)
 
-        Path.of(".").readDir.foreach { files => 
-          table.rows.append(
-            FilesTable.sort( 
-              Path.of("..") :: files, 
-              FilesTable.sort.defaultSort )
-          )
-        }
-
-        ses.rootWidget.children.append(table)
-
-        val menuBar = new MenuBar
-        val menuFile = MenuContainer("File")
-        
-        val menuFileOpen = 
-          MenuAction("Open")
-            .action { println("open") }
-            .keyStroke( KeyStroke.KeyEvent(KeyName.F2,false,false,false) )
-
-        val menuFileExit = MenuAction("Exit").action { println("exit"); ses.stop = true }        
-        val menuView = MenuContainer("View")        
-        val menuViewSome = MenuAction("Some")
-
-        menuBar.children.append(menuFile)        
-        menuBar.children.append(menuView)
-        menuFile.children.append(menuFileOpen)
-        menuFile.children.append(menuFileExit)
-
-        menuView.children.append(
-          MenuAction("Dialog 1").action {
-            println("dialog 1")
-            Dialog
-              .title("title").size(Size(25,10))
-              .onHide { println("closed") }
-              .content { dlg => 
-                val lbl = Label("label 12345")
-                lbl.location = Position(0,0)
-                dlg.children.append(lbl)
-              }
-              .show()
-          }
+      Path.of(".").readDir.foreach { files => 
+        table.rows.append(
+          FilesTable.sort( 
+            Path.of("..") :: files, 
+            FilesTable.sort.defaultSort )
         )
-
-        menuView.children.append((
-          MenuAction("columns size").action {
-            table.columns.foreach( col => println(s"column ${col.id} ${col.width.get}") )
-          }
-        ))
-
-        menuBar.install(ses.rootWidget)
       }
+
+      ses.rootWidget.children.append(table)
+
+      val menuBar = new MenuBar
+      val menuFile = MenuContainer("File")
+      
+      val menuFileOpen = 
+        MenuAction("Open")
+          .action { println("open") }
+          .keyStroke( KeyStroke.KeyEvent(KeyName.F2,false,false,false) )
+
+      val menuFileExit = MenuAction("Exit").action { println("exit"); ses.stop = true }        
+      val menuView = MenuContainer("View")        
+      val menuViewSome = MenuAction("Some")
+
+      menuBar.children.append(menuFile)        
+      menuBar.children.append(menuView)
+      menuFile.children.append(menuFileOpen)
+      menuFile.children.append(menuFileExit)
+
+      menuView.children.append(
+        MenuAction("Dialog 1").action {
+          println("dialog 1")
+          Dialog
+            .title("title").size(Size(25,10))
+            .onHide { println("closed") }
+            .content { dlg => 
+              val lbl = Label("label 12345")
+              lbl.location = Position(0,0)
+              dlg.children.append(lbl)
+            }
+            .show()
+        }
+      )
+
+      menuView.children.append((
+        MenuAction("columns size").action {
+          table.columns.foreach( col => println(s"column ${col.id} ${col.width.get}") )
+        }
+      ))
+
+      menuBar.install(ses.rootWidget)
     }
 
     console.close()
