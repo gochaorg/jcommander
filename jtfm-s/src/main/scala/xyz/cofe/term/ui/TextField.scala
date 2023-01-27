@@ -17,7 +17,6 @@ import xyz.cofe.term.ui.paint._
 import xyz.cofe.term.ui.prop.color.colorProp2Color
 class TextField 
 extends Widget 
-with VisibleProp
 with LocationRWProp
 with SizeRWProp
 with WidgetInput

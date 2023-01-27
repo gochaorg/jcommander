@@ -11,7 +11,6 @@ import xyz.cofe.term.ui.paint._
 
 class Dialog
 extends Widget 
-with VisibleProp
 with LocationRWProp
 with SizeRWProp
 with FillBackground

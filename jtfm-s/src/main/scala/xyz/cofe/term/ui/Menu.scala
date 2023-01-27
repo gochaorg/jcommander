@@ -22,7 +22,6 @@ import xyz.cofe.term.ui.paint._
 
 sealed trait Menu 
   extends Widget
-  with VisibleProp
   with LocationRWProp
   with SizeRWProp
   with FillBackground
@@ -175,9 +174,7 @@ class MenuContainer(using config: MenuColorConfig)
             val wCtx = paint.context.offset(loc).size(size).clipping(false).build
             widget.paint(wCtx)
         }
-        widget match
-          case visProp:VisibleProp if visProp.visible.value.get => paintChild()
-          case _ => ()
+        if widget.visible.value.get then paintChild()
       }
 
     /* #endregion */ 
@@ -439,7 +436,6 @@ class MenuAction(using config: MenuColorConfig)
 class MenuBar(using config:MenuBarColorConfig) 
   extends Widget
   with WidgetChildren[Menu]
-  with VisibleProp
   with LocationRWProp
   with SizeRWProp
   with FillBackground
@@ -463,9 +459,7 @@ class MenuBar(using config:MenuBarColorConfig)
           val wCtx = paint.context.offset(loc).size(size).clipping(false).build
           widget.paint(wCtx)
       }
-      widget match
-        case visProp:VisibleProp if visProp.visible.value.get => paintChild()
-        case _ => ()
+      if widget.visible.value.get then paintChild()
     }
 
   protected var rootListeners : List[ReleaseListener] = List.empty

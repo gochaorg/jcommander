@@ -6,7 +6,6 @@ import xyz.cofe.term.ui.prop.LocationRWProp
 import xyz.cofe.term.ui.prop.SizeRWProp
 import xyz.cofe.lazyp.Prop
 import xyz.cofe.term.paint.PaintCtx
-import xyz.cofe.term.ui.prop.VisibleProp
 import xyz.cofe.lazyp.ReleaseListener
 
 //todo require ReadOnly children

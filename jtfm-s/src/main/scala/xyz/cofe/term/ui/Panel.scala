@@ -9,7 +9,6 @@ import xyz.cofe.term.ui.paint._
 
 class Panel extends Widget 
   with WidgetChildren[Widget] 
-  with VisibleProp
   with LocationRWProp
   with SizeRWProp
   with FillBackground

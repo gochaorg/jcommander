@@ -22,8 +22,6 @@ object PaintChildren:
           val wCtx = paint.context.offset(loc).size(size).build
           widget.paint(wCtx)
       }
-      widget match
-        case visProp:VisibleProp if visProp.visible.value.get => paintChild()
-        case _ => ()
+      if widget.visible.value.get then paintChild()
     }
 

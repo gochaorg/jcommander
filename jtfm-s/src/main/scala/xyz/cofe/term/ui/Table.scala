@@ -14,7 +14,7 @@ class Table[A]( using tableInputConf:TableInputConf )
   extends Widget
   with WidgetInput
   with WidgetChildren[Widget] 
-  with VisibleProp
+  //with VisibleProp
   with LocationRWProp
   with SizeRWProp
   with FillBackground

@@ -6,7 +6,6 @@ import xyz.cofe.term.ui.prop.color._
 import xyz.cofe.term.ui.paint._
 
 class Label extends Widget 
-  with VisibleProp
   with LocationRWProp
   with SizeRWProp
   with FillBackground
