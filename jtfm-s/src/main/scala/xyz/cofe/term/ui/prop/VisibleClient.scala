@@ -3,7 +3,6 @@ package prop
 
 import xyz.cofe.lazyp.ReadWriteProp
 
-
 class VisibleClient( widget:Widget ):
   val value:ReadWriteProp[Boolean] = ReadWriteProp(true)
   def inTree:Boolean = 
