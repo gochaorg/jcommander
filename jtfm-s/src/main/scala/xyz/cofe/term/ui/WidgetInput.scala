@@ -14,9 +14,9 @@ trait WidgetInput extends Widget:
 
 object WidgetInput:
   def delegateToNested(widget:WidgetInput, inputEvent:InputEvent):Boolean =
-    if widget.isInstanceOf[WidgetChildren[_]] 
+    if widget.isInstanceOf[WidgetChildrenRead] 
     then 
-      val childs = widget.asInstanceOf[WidgetChildren[Widget]].children.toList
+      val childs = widget.asInstanceOf[WidgetChildrenRead].children.toList
       childs.foldLeft( Option[Boolean](false) ){
         case (consumed,child) =>
           consumed match

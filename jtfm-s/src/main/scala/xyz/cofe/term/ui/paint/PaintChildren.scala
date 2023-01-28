@@ -4,9 +4,9 @@ package paint
 import xyz.cofe.term.paint.PaintCtx
 import xyz.cofe.term.ui.prop._
 
-trait PaintChildrenMethod extends WidgetChildren[_]:
+trait PaintChildrenMethod extends WidgetChildrenRead:
   def paintChildren(paint:PaintCtx):Unit =
-    PaintChildren.paint(children.get, paint)
+    PaintChildren.paint(children, paint)
 
 trait PaintChildren extends PaintStack with PaintChildrenMethod:
   paintStack.add(paintChildren)
