@@ -5,6 +5,9 @@ import scala.runtime.Tuples.apply
 trait PropLogger
 object PropLogger
 
+extension [V]( prop:Prop[V] )
+  def map[Z]( f:V => Z ):Z = f(prop.get)
+
 trait Prop[V]:
   def get:V
   def onChange( listener: => Unit ):ReleaseListener

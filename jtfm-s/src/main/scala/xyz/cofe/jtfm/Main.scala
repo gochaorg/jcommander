@@ -8,6 +8,7 @@ import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.geom._
 import xyz.cofe.jtfm.ui.table.DirectoryTable
 import xyz.cofe.term.common.Position
+import xyz.cofe.term.ui.VSplitPane
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -22,12 +23,19 @@ object Main:
       import xyz.cofe.term.ui.menuBuilder._
 
       val leftPanel  = DirectoryTable()
-      ses.rootWidget.children.append(leftPanel)
+      //ses.rootWidget.children.append(leftPanel)
 
       val rightPanel = DirectoryTable()
       //ses.rootWidget.children.append(rightPanel)
 
-      leftPanel.bind(ses.rootWidget) { case (root) => (root.leftTop + (0,1), Position(root.center.x, root.rightBottom.y)).rect }
+      val vsplitPanel = VSplitPane()
+      ses.rootWidget.children.append(vsplitPanel)
+      vsplitPanel.bind( ses.rootWidget ){ case (root) => (root.leftTop + (0,1), root.rightBottom).rect }
+      
+      vsplitPanel.leftWidget.set(Some(leftPanel))
+      vsplitPanel.rightWidget.set(Some(rightPanel))
+
+      //leftPanel.bind(ses.rootWidget) { case (root) => (root.leftTop + (0,1), Position(root.center.x, root.rightBottom.y)).rect }
       //rightPanel.bind(ses.rootWidget, leftPanel) { case (root,lft) => (lft.leftTop,root.rightBottom).rect }
 
       menuBar {
