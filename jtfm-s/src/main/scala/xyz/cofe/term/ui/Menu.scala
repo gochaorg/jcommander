@@ -544,48 +544,35 @@ class MenuBar(using config:MenuBarColorConfig)
       Some(mi)
     }
 
-  private var shortcuts = Map[KeyStroke,List[MenuAction]]()
-  private var shortcutsByLen = Map[Int,Set[KeyStroke]]()
+  private var keyStrokeMapOpt : Option[KeyStrokeMap[MenuAction]] = None
+  private def buildKeyStrokeMap: KeyStrokeMap[MenuAction] =
+    KeyStrokeMap( this.walk.path
+      .filter(_.node.isInstanceOf[MenuAction])
+      .map(_.node.asInstanceOf[MenuAction])
+      .toList
+      .filter(_.keyStroke.get.isDefined)
+      .map(ma => (ma.keyStroke.get.get, Set(ma)))
+      .toMap)
 
-  def bindKeyStroke( action:MenuAction, keyStroke:KeyStroke ):Unit =
-    shortcuts = shortcuts + (keyStroke -> (action :: shortcuts.get(keyStroke).getOrElse(List())))
-    shortcutsByLen = shortcutsByLen + 
-      (keyStroke.sequenceSize -> 
-        (shortcutsByLen.get(keyStroke.sequenceSize).getOrElse(Set()) ++ Set(keyStroke))
-      )
+  private def keyStrokeMap: KeyStrokeMap[MenuAction] =
+    keyStrokeMapOpt.getOrElse {
+      keyStrokeMapOpt = Some(buildKeyStrokeMap)
+      keyStrokeMapOpt.get
+    }
 
-  def unbindKeyStroke( action:MenuAction ):Unit = 
-    shortcuts = shortcuts.map { case (ks, actions) => 
-      (ks, actions.filterNot(a => a==action))
-    }.filter { case (ks,actions) => actions.nonEmpty }
-
-    val ksAll = shortcuts.keySet
-
-    shortcutsByLen = shortcutsByLen.map { case (len, kss) => 
-      (len,kss.filter { ks => ksAll.contains(ks)} )
-    }.filter { case (len,kss) => kss.nonEmpty }
-
-  var inputHistory = List[InputEvent]()
-  def inputHistoryMax = shortcutsByLen.keySet.maxOption.getOrElse(1)
+  private var keyStrokeParserOpt: Option[KeyStrokeMap.KeyStrokeInputParser[MenuAction]] = None
+  private def keyStrokeParser: KeyStrokeMap.KeyStrokeInputParser[MenuAction] =
+    keyStrokeParserOpt.getOrElse {
+      keyStrokeParserOpt = Some( KeyStrokeMap.KeyStrokeInputParser(keyStrokeMap) )
+      keyStrokeParserOpt.get
+    }
 
   def processInput(inputEvent:InputEvent):Boolean = 
-    println(s"MENU inputEvent $inputEvent")
-    inputHistory = (inputEvent :: inputHistory).take(inputHistoryMax)
-
-    val acton = shortcutsByLen.values.toList.flatten.reverse.map{ ks => 
-      (ks.matchLeft(inputHistory), ks)
-    }.find { case (m, ks) => m }
-     .flatMap { case (_,ks) => shortcuts.get(ks) }
-
-    val actions = acton match
-      case None => List()
-      case Some(value) => value
-    
-    if actions.nonEmpty
-    then
-      actions.foreach( _.selectMenu )
-      true
-    else
-      false
+    var processed = false
+    keyStrokeParser.input(inputEvent) { ma => 
+      ma.selectMenu
+      processed = true
+    }
+    processed
 
 /* #endregion */

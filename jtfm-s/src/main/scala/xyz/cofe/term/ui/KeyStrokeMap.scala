@@ -70,6 +70,7 @@ object KeyStrokeMap:
       event match
         case ke:InputKeyEvent  => input(ke, consumer)
         case ke:InputCharEvent => input(ke, consumer)
+        case _ => ()
     }
 
     private def input(ke:InputKeyEvent, consumer:A=>Unit):Unit =

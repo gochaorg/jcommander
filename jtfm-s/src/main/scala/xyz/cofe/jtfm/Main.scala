@@ -42,7 +42,6 @@ object Main:
       vsplitPanel.leftWidget.set(Some(leftPanel))
       vsplitPanel.rightWidget.set(Some(rightPanel))
 
-      leftPanel.focus.onAccept(_ => println("accept focus"))
       ses.requestFocus(leftPanel)
       leftPanel.selection.focusedIndex.set(Some(1))
 
