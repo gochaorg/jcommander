@@ -9,6 +9,7 @@ import xyz.cofe.term.geom._
 import xyz.cofe.jtfm.ui.table.DirectoryTable
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.ui.VSplitPane
+import java.nio.file.Path
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -22,11 +23,11 @@ object Main:
     Session.start(console) { implicit ses =>
       import xyz.cofe.term.ui.menuBuilder._
 
-      val leftPanel  = DirectoryTable()
-      //ses.rootWidget.children.append(leftPanel)
+      val leftPanel  = new DirectoryTable
+      val rightPanel = new DirectoryTable
 
-      val rightPanel = DirectoryTable()
-      //ses.rootWidget.children.append(rightPanel)
+      leftPanel.directory.set(Some(Path.of(".")))
+      rightPanel.directory.set(Some(Path.of(".")))
 
       val vsplitPanel = VSplitPane()
       ses.rootWidget.children.append(vsplitPanel)
@@ -34,9 +35,6 @@ object Main:
       
       vsplitPanel.leftWidget.set(Some(leftPanel))
       vsplitPanel.rightWidget.set(Some(rightPanel))
-
-      //leftPanel.bind(ses.rootWidget) { case (root) => (root.leftTop + (0,1), Position(root.center.x, root.rightBottom.y)).rect }
-      //rightPanel.bind(ses.rootWidget, leftPanel) { case (root,lft) => (lft.leftTop,root.rightBottom).rect }
 
       menuBar {
         menu("File") {
