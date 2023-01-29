@@ -64,7 +64,6 @@ with TableGridPaint[A]
   protected def processCellMouseInput(me:InputMouseButtonEvent, dataRow:A, column:Column[A,_], rowIndex:Int):Boolean =
     if me.button()==MouseButton.Left && me.pressed()
     then 
-      selection.set(rowIndex)
       selection.focusedIndex.set(Some(rowIndex))
       true
     else false

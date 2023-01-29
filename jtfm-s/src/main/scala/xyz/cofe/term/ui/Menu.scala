@@ -337,24 +337,6 @@ class MenuAction(using config: MenuColorConfig)
         set(Some(ks))
         MenuAction.this
 
-    private var binded:Option[MenuBar] = None
-    private def menuBarOpt:Option[MenuBar] = {
-      this.toTreePath.listToLeaf.reverse.filter(_.isInstanceOf[MenuBar]).map(_.asInstanceOf[MenuBar]).headOption
-    }
-
-    keyStroke.onChange { rebind }
-    parent.onChange { rebind }
-
-    private def rebind:Unit =
-      binded.foreach( _.unbindKeyStroke(this) )
-      binded =
-      keyStroke.get.flatMap { ks => 
-        menuBarOpt.map { mbar => 
-          mbar.bindKeyStroke(this, ks)
-          mbar
-        }
-      }
-
     /* #region paint text */
 
     def renderText: String = text.get + {
@@ -587,6 +569,7 @@ class MenuBar(using config:MenuBarColorConfig)
   def inputHistoryMax = shortcutsByLen.keySet.maxOption.getOrElse(1)
 
   def processInput(inputEvent:InputEvent):Boolean = 
+    println(s"MENU inputEvent $inputEvent")
     inputHistory = (inputEvent :: inputHistory).take(inputHistoryMax)
 
     val acton = shortcutsByLen.values.toList.flatten.reverse.map{ ks => 

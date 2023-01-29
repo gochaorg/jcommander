@@ -164,8 +164,10 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     }
 
   def walk:TreeWalk = new TreeWalk(List(path))
-    
 
+  def isRoot:Boolean =
+    path.isAbsolute() && path.getParent()==null
+    
 case class PosixAttib(
   owner: String,
   group: String,

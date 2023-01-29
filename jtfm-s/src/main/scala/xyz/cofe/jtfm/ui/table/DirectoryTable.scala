@@ -27,7 +27,12 @@ extends Table[Path]:
     rows.clear()
     rows.append(
       path.readDir
-        .map { files => Path.of("..") :: files }
+        .map { files => 
+          if ! path.isRoot then
+            Path.of("..") :: files 
+          else
+            files
+        }
         .map { files =>
           order.get.map( ord => 
             files.sorted(ord)
@@ -53,6 +58,8 @@ extends Table[Path]:
   
   private def moveIn(path:Path):Unit = 
     directory.set( Some(path) )
+    if conf.clearSelectionOnCD then
+      selection.indexes.clear()
     if conf.forceFirstRowFocused then
       selection.focusedIndex.set(Some(0))
   
