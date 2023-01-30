@@ -143,6 +143,7 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(ReadPosixAttib(path,opts.copy)){
       val cls:Class[PosixFileAttributeView] = classOf[PosixFileAttributeView]
       val attr = Files.getFileAttributeView(path,cls,opts.linkOptions:_*)
+      //if attr == null then 
       val posixAttr = attr.readAttributes()
       PosixAttib(
         posixAttr.owner().getName(),

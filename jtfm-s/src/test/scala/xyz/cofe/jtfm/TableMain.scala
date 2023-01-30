@@ -46,6 +46,7 @@ object TableMain:
   given sesInputLog : SesInputLog = SesInputLog.writeTo(new JsonLogOutput[SesInputLog.SesInputEvent](sesInputOut))
 
   lazy val tableInputConfFile = TableConf.confFile(appHome)
+  //given screenBufferSyncLog : ScreenBufferSyncLog = ScreenBufferSyncLog.
 
   def main(args:Array[String]):Unit =
     //System.setProperty("xyz.cofe.term.default","telnet")

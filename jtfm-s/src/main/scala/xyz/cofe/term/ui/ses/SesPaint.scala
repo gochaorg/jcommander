@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicInteger
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.buff.ScreenBufSync
+import xyz.cofe.term.buff.ScreenBufferSyncLog
 
-
-trait SesPaint extends SesBase:
+trait SesPaint(log:SessionLog, syncLog: ScreenBufferSyncLog) extends SesBase:
   val screenBuffer = ChangeMetricBuffer(Buffer())
   val repaintRequests = new AtomicInteger(1)
 
@@ -20,13 +20,20 @@ trait SesPaint extends SesBase:
 
   protected def repaint():Unit = 
     if repaintRequests.get()>0 
-    then
+    then      
+      log("repaint by request")
       repaintRequests.set(0)
 
-      // val ctx = ConsoleCtx(console,Position(0,0),console.getSize())
-      // rootWidget.paint(ctx)
+      log("paint root")
+      try
+        rootWidget.paint(BasicPaintCtx(
+          screenBuffer, Position(0,0), Size(screenBuffer.width, screenBuffer.height), true
+        ))
 
-      rootWidget.paint(BasicPaintCtx(
-        screenBuffer, Position(0,0), Size(screenBuffer.width, screenBuffer.height), true
-      ))
-      ScreenBufSync.sync(console, screenBuffer)
+        log("sync ? sync ?")
+        syncLog("sync ?")
+        given syncLog1:ScreenBufferSyncLog = syncLog
+        ScreenBufSync.sync(console, screenBuffer)
+      catch
+        case err: Throwable => 
+          log(s"got error $err")

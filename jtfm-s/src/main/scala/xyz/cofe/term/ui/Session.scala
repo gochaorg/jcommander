@@ -15,18 +15,21 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.buff.ScreenBufSync
 import java.util.concurrent.atomic.AtomicInteger
+import xyz.cofe.term.buff.ScreenBufferSyncLog
 
 import ses._
 
 class Session
 ( val console: Console, initialize: Session => Unit )
 ( using 
+    log:SessionLog,
     sesInputLog:SesInputLog, 
-    sesInputBehavior:SesInputBehavior
+    sesInputBehavior:SesInputBehavior,
+    syncLog: ScreenBufferSyncLog,
 )
 extends SesBase 
   with SesJobs 
-  with SesPaint
+  with SesPaint(log, syncLog)
   with SesInput(sesInputLog, sesInputBehavior):
     
   object rootWidget extends Panel with RootWidget:
@@ -35,12 +38,20 @@ extends SesBase
   @volatile var stop = false
 
   protected def startSession():Unit = {
+    log("startSession")
+
     val conSize = console.getSize()
+
+    log(s"screenBuffer resize to ${conSize}")
     screenBuffer.resize( conSize )
+
+    log(s"rootWidget resize to ${conSize}")
     rootWidget.size.set( conSize )
 
+    log(s"initialize")
     initialize(this)
 
+    log(s"start cycle")
     while( !stop ){
       processInput()
       processJobs()
@@ -71,8 +82,10 @@ object Session:
 
   def start(console: Console)(initialize: Session => Unit)
   ( using 
+    sesLog:SessionLog,
     sesInputLog:SesInputLog, 
-    sesInputBehavior:SesInputBehavior
+    sesInputBehavior:SesInputBehavior,
+    syncLog: ScreenBufferSyncLog,
   ):Session =
     require(console!=null)
     val ses = new Session(console, initialize)

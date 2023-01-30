@@ -7,12 +7,16 @@ import xyz.cofe.term.common.Size
 import xyz.cofe.term.geom._
 
 object ScreenBufSync:
-  def sync(console:Console, buff:ScreenBuffer, fullSync:Boolean=true) =
-    batching(buff, console.getSize()).foreach( cmd => batch.apply(console, cmd) )
+  def sync(console:Console, buff:ScreenBuffer, fullSync:Boolean=true)(using log:ScreenBufferSyncLog) =
+    log(s"sync console.type=${console.getClass()} buff.size=${buff.width}x${buff.height} fullSync=$fullSync")
+    val b = batching(buff, console.getSize())
+
+    log(s"batch size ${b.size}")
+    b.foreach( cmd => batch.apply(console, cmd) )
 
   @volatile var lastTitleOpt : Option[String] = None
 
-  def batching(buff:ScreenBuffer, consoleSize:Size, fullSync:Boolean=true):Seq[BatchCmd] =
+  def batching(buff:ScreenBuffer, consoleSize:Size, fullSync:Boolean=true):Seq[BatchCmd] =    
     val rect = consoleSize.leftUpRect(0,0)
     val chars0 = writeChars(buff).filter { pchr => rect.contains(pchr.pos) }
     val chars = 

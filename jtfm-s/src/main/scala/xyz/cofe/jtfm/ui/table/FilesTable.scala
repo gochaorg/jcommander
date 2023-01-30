@@ -11,7 +11,7 @@ object FilesTable:
     List(
       cols.fileTypeLetterColumn,
       cols.nameColumn,
-      cols.rwxColumn,
+      //cols.rwxColumn,
       cols.sizeHumanReadableColumn,
     )
 
