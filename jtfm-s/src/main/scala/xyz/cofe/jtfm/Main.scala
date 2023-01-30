@@ -26,6 +26,7 @@ import xyz.cofe.term.buff.ScreenBufferSyncLog
 import xyz.cofe.cli.CmdLine
 import xyz.cofe.term.ui.log.CommonLog
 import xyz.cofe.cli.CmdLineDefault
+import xyz.cofe.term.common.Size
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -51,14 +52,52 @@ object Main:
     rectSet:Int,
   )
 
+
+
   object WinConsole:
     given defaults : CmdLineDefault[WinConsole] = 
       CmdLineDefault
         ("buffSet","1")
         ("rectSet","2")
 
+  def resize( winCon:xyz.cofe.term.win.WinConsole, target:Size ):Unit =
+    def resizeWidth:Unit =
+      val sbuff0 = winCon.getScreenBufferInfo()
+      simpleLog.append(s"resizeWidth to ${target.width()} x ${target.height()} from ${sbuff0.getWidthMax()}(max) x ${sbuff0.getHeightMax()}(max)\n")
+      if sbuff0.getWidth() < target.width() then
+        simpleLog.append(s"bufferSize ${target.width()} ${sbuff0.getHeight()}\n")
+        winCon.getOutput().bufferSize( target.width(), sbuff0.getHeight() )
+
+        simpleLog.append(s"windowRect ${target.width()-1} ${sbuff0.getHeight()-1}\n")
+        winCon.getOutput().windowRect( 0, 0, target.width()-1, sbuff0.getHeight()-1 )
+      else if sbuff0.getWidth() > target.width() then
+        simpleLog.append(s"windowRect ${target.width()-1} ${sbuff0.getHeight()-1}\n")
+        winCon.getOutput().windowRect( 0, 0, target.width()-1, sbuff0.getHeight()-1 )
+
+        simpleLog.append(s"bufferSize ${target.width()} ${sbuff0.getHeight()}\n")
+        winCon.getOutput().bufferSize( target.width(), sbuff0.getHeight() )
+    def resizeHeight:Unit =
+      val sbuff0 = winCon.getScreenBufferInfo()
+      simpleLog.append(s"resizeHeight to ${target.width()} x ${target.height()} from ${sbuff0.getWidthMax()}(max) x ${sbuff0.getHeightMax()}(max)\n")
+      if sbuff0.getHeight() < target.height() then
+        simpleLog.append(s"bufferSize ${sbuff0.getWidth()} ${target.height()}\n")
+        winCon.getOutput().bufferSize( sbuff0.getWidth(), target.height() )
+
+        simpleLog.append(s"windowRect ${sbuff0.getWidth()-1} ${target.height()-1}\n")
+        winCon.getOutput().windowRect( 0, 0, sbuff0.getWidth()-1, target.height()-1 )
+      else if sbuff0.getHeight() > target.height() then
+        simpleLog.append(s"windowRect ${sbuff0.getWidth()-1} ${target.height()-1}\n")
+        winCon.getOutput().windowRect( 0, 0, sbuff0.getWidth()-1, target.height()-1 )
+
+        simpleLog.append(s"bufferSize ${sbuff0.getWidth()} ${target.height()}\n")
+        winCon.getOutput().bufferSize( sbuff0.getWidth(), target.height() )
+    resizeWidth
+    resizeHeight
+
   def main(args0:Array[String]):Unit =
     simpleLog.append(s"starting\n")
+    simpleLog.append(s"args:\n")
+    args0.foreach { arg => simpleLog.append(s"  arg $arg\n") }
     try      
       simpleLog.append(s"create win console\n")
       val winConsole = 
@@ -86,39 +125,31 @@ object Main:
       )
 
       // resize order
-      // small -> big: order: buffSize, rect
-      // big -> small: order: rect, buffSize
+      // w=150 h=20 >>w=150 h=40  rectSet, buffSet - fail
+      // w=150 h=20 >>w=150 h=40  buffSet, rectSet - ok
+      // w=150 h=40 >>w=150 h=20  buffSet, rectSet - fail
+      // w=150 h=40 >>w=150 h=20  
+      
+      val sbuff = winConsole.getScreenBufferInfo()
+      simpleLog.append(s"width=${sbuff.getWidth()} width.max=${sbuff.getWidthMax()} height=${sbuff.getHeight()} height.max=${sbuff.getHeightMax()}\n")
 
       val args = args0.toList
       if args.nonEmpty then
         args.headOption match
           case Some("win.size") =>
-            CmdLine.apply[WinConsole](args.tail).foreach( argz => {
-              simpleLog.append(s"resize terminal\n")
-              val buffSize : ()=>Unit = ()=>{ 
-                simpleLog.append(s"set bufferSize ( ${argz.width} ${argz.height} ) \n")
-                winConsole.getOutput().bufferSize(argz.width, argz.height)
-              }
-              val rectSize : ()=>Unit = ()=>{ 
-                val left = 0
-                val top = 0
-                val right = argz.width-1
-                val bottom = argz.height-1
-                simpleLog.append(s"set windowRect left=${left} top=${top} right=${right} bottom=${bottom} \n")
-                winConsole.getOutput().windowRect(left,top,right,bottom) 
-              }
-
-              List( (argz.buffSet, buffSize), (argz.rectSet, rectSize) )
-                .sortBy( _._1 )
-                .filter( _._1 > 0 )
-                .map( _._2 )
-                .foreach( act => act() )
-            })
+            CmdLine.parse[WinConsole](args.tail) match
+              case Left(err) => simpleLog.append(s"fail parse win.size $err\n")
+              case Right((argz,rest)) => 
+                simpleLog.append(s"resize terminal\n")
+                resize(winConsole, Size(argz.width, argz.height))
           case _ => ()
 
-      //winConsole.getOutput().bufferSize()
+      val sbuff1 = winConsole.getScreenBufferInfo()
+      simpleLog.append(s"win.console size ${sbuff1.getWidth()} x ${sbuff1.getHeight()}\n")
 
       val console = new xyz.cofe.term.common.win.WinConsole(winConsole)
+      val size2 = console.getSize()
+      simpleLog.append(s"console size ${size2.width()} x ${size2.height()}\n")
 
       simpleLog.append(s"start session\n")
       startSession(console)
@@ -151,7 +182,11 @@ object Main:
 
       val vsplitPanel = VSplitPane()
       ses.rootWidget.children.append(vsplitPanel)
-      vsplitPanel.bind( ses.rootWidget ){ case (root) => (root.leftTop + (0,1), root.rightBottom).rect }
+      vsplitPanel.bind( ses.rootWidget ){ case (root) => 
+        val rect = (root.leftTop + (0,1), root.rightBottom).rect 
+        simpleLog.append(s"recompute vsplit root: ${root.size}, vsplit $rect\n")
+        rect
+      }
       
       vsplitPanel.leftWidget.set(Some(leftPanel))
       vsplitPanel.rightWidget.set(Some(rightPanel))

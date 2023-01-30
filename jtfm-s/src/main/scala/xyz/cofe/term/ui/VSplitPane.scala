@@ -35,6 +35,8 @@ with PaintChildren
   rightWidget.onChange(repaint)
   rightWidget.onChange(reomputeDeferred)
 
+  size.onChange(reomputeDeferred)
+
   override def children: Iterable[? <: Widget] = 
     leftWidget.get.toList ++ rightWidget.get.toList
 

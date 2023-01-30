@@ -90,3 +90,9 @@ dist := {
   bashScript.value
   copyAllLibsAndArtifact.value
 }
+
+val distClean = taskKey[Unit]("clean dist")
+distClean := {
+  val distDir0 = distDir.value
+  IO.delete(distDir0)
+}
