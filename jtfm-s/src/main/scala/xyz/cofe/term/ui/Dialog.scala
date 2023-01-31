@@ -81,7 +81,10 @@ with WidgetInput:
   def hide() =
     visible = false
     parent.get.foreach { prnt =>
-      prnt.children.delete(this)
+      prnt match
+        case wc:WidgetChildren[?] =>
+          wc.children.delete(this)
+        case _ =>
     }
 
   private var onShowEmitted = false

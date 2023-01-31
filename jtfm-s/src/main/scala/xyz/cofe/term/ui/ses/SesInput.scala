@@ -83,7 +83,9 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
                     switchFocusTo(wid)
 
                   val eventForLocal = me.toLocal(local)
-                  log.sendInput(wid,eventForLocal)( wid.input( eventForLocal ))
+                  log.sendInput(wid,eventForLocal)( {
+                    wid.input( eventForLocal )
+                  })
               }
             case _ => 
               send2focused(inputEv)
@@ -124,7 +126,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
       }
 
   private def findWidgetAt( absolutePos:Position ):List[(WidgetInput,Position)] =
-    NavigateFrom(rootWidget).forward.typed[WidgetInput].visibleOnly.toList.map { wid => 
+    NavigateFrom(rootWidget).forward.typed[WidgetInput].visibleOnly.toList.map { wid =>       
       val localPos = wid.toTreePath.listToLeaf.map(_.location.get).foldLeft( absolutePos ) { case (res,pos) => res.move( -pos.x, -pos.y ) }
       (wid, localPos)
     } .filter { case (wid,localPos) => wid.size.get.leftUpRect(0,0).contains(localPos) }

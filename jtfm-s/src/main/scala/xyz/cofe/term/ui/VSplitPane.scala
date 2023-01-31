@@ -30,10 +30,26 @@ with PaintChildren
   val leftWidget  = Prop.rw(None:Option[? <: RelocableWidget])
   leftWidget.onChange(repaint)
   leftWidget.onChange(reomputeDeferred)
+  leftWidget.onChange( (old,cur) => {
+    old match
+      case None => 
+      case Some(value) => value.parent.compareAndSet(Some(VSplitPane.this),None)
+    cur match
+      case None => 
+      case Some(value) => value.parent.set(Some(VSplitPane.this))    
+  })
 
   val rightWidget = Prop.rw(None:Option[? <: RelocableWidget])
   rightWidget.onChange(repaint)
   rightWidget.onChange(reomputeDeferred)
+  rightWidget.onChange( (old,cur) => {
+    old match
+      case None => 
+      case Some(value) => value.parent.compareAndSet(Some(VSplitPane.this),None)
+    cur match
+      case None => 
+      case Some(value) => value.parent.set(Some(VSplitPane.this))    
+  })
 
   override def children: Iterable[? <: Widget] = 
     leftWidget.get.toList ++ rightWidget.get.toList

@@ -61,9 +61,7 @@ object Main:
   def executorOf(action:Action)(using ses:Session): ()=>Unit =
     action match
       case Action.Exit => ()=>{ ses.stop = true }
-      case Action.ActivateMainMenu => ()=>{
-
-      }
+      case Action.ActivateMainMenu => ()=>{}
 
   enum Action:
     case Exit

@@ -1,6 +1,7 @@
 package xyz.cofe.lazyp
 
 import scala.runtime.Tuples.apply
+import scala.ref.WeakReference
 
 trait PropLogger
 object PropLogger
@@ -53,12 +54,23 @@ object ReleaseListener:
     }
 
 class ReadWriteProp[V]( initial:V ) extends Prop[V] with ListenerSuppor:
+  private var oldNewListeners : List[ (V,V)=>Any ] = List.empty
+  
+  def onChange( listener:(V,V)=>Any ):ReleaseListener =
+    oldNewListeners = listener :: oldNewListeners
+    val wref = WeakReference(listener)
+    ReleaseListener {
+      wref.get.foreach { ls => oldNewListeners = oldNewListeners.filterNot( l => l==ls ) }
+      wref.clear()
+    }
+
   private var value:V = initial
   def get: V = value
 
   def set(newValue:V):V = 
     val old = value
     value = newValue
+    oldNewListeners.foreach( _(old,newValue) )
     fire()
     old
 
@@ -66,6 +78,7 @@ class ReadWriteProp[V]( initial:V ) extends Prop[V] with ListenerSuppor:
     val old = value
     if expectValue==old then
       value = newValue
+      oldNewListeners.foreach( _(old,newValue) )
       fire()
       true
     else

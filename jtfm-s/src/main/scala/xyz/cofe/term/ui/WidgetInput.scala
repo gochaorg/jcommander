@@ -25,7 +25,7 @@ object WidgetInput:
               case _ => None
             case Some(true) => Some(true)
             case Some(false) => child match
-              case wi:WidgetInput => Some(wi.input(inputEvent))
+              case wi:WidgetInput => Some(wi.input(inputEvent) )
               case _ => None
       }.getOrElse(false)
     else false

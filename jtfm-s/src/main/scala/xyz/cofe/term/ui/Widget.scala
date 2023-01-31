@@ -14,7 +14,7 @@ import xyz.cofe.term.geom._
 import xyz.cofe.term.ui.prop._
 
 trait Widget:
-  val parent:ReadWriteProp[Option[WidgetChildren[?]]] = ReadWriteProp(None)
+  val parent:ReadWriteProp[Option[WidgetChildrenRead & Widget]] = ReadWriteProp(None)
   def location:Prop[Position]
   def size:Prop[Size]  
   lazy val locationRect = Prop.eval( location, size ){ case (loc,size) => size.leftUpRect(loc) }
@@ -41,6 +41,7 @@ given LikeTree[Widget] with
   def nodes(w:Widget):List[Widget] = 
     w match
       case cw: WidgetChildren[?] => cw.children.toList
+      case cw: WidgetChildrenRead => cw.children.toList
       case _ => List()
 trait RootWidget extends Widget with WidgetChildren[Widget] with SizeRWProp with LocationRWProp:
   def session: Session
