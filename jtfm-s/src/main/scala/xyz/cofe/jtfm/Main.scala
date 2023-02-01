@@ -20,7 +20,10 @@ object Main:
   implicit object appHome extends AppHome("jtfm")
 
   def main(args:Array[String]):Unit =
-    val console = ConsoleBuilder.defaultConsole()
+    LogPrepare.prepare
+    HelloMessage.writeLog
+
+    val console = PrepareConsole.createConsole
     startSession(console)
     console.close()
 

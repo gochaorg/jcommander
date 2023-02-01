@@ -19,6 +19,8 @@ import java.nio.charset.StandardCharsets
 import xyz.cofe.json4s3.derv._
 import xyz.cofe.json4s3.derv.given
 import xyz.cofe.files.given
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 trait FilesLogger:
   def apply[R](op:FilesOperation)(code: => R):Either[Throwable,R] =
@@ -30,6 +32,39 @@ trait FilesLogger:
 
 object FilesLogger:
   given defaultLogger:FilesLogger = new FilesLogger {}
+  def slf(logger:Logger, succ:Level, fail:Level):FilesLogger =
+    new FilesLogger {
+      override def apply[R](op: FilesOperation)(code: => R): Either[Throwable, R] = 
+        try
+          val res = code
+          succ.write(logger,op.toJson)
+          Right(res)
+        catch
+          case err:IOError => 
+            fail.write(logger,op.toJson,err)
+            Left(err)
+          case err:IOException => 
+            fail.write(logger,op.toJson,err)
+            Left(err)
+    }
+
+  enum Level:
+    case Warn,Info,Debug,Trace,Error
+    def write(lgr:Logger, message:String):Unit =
+      this match
+        case Warn =>  lgr.warn (message)
+        case Info =>  lgr.info (message)
+        case Debug => lgr.debug(message)
+        case Trace => lgr.trace(message)
+        case Error => lgr.error(message)
+    def write(lgr:Logger, message:String, err:Throwable):Unit =
+      this match
+        case Warn =>  lgr.warn (message,err)
+        case Info =>  lgr.info (message,err)
+        case Debug => lgr.debug(message,err)
+        case Trace => lgr.trace(message,err)
+        case Error => lgr.error(message,err)
+      
 
 enum FilesOperation:
   case WriterOp(path:Path, charset:Charset, opts:FilesOption.Opts)
@@ -62,8 +97,7 @@ enum FilesOperation:
   case ReadBytes(path:Path)
   case ReadPosixAttib(path:Path,optsz:FilesOption.Opts)
 
-  def json:String =
-    this.json
+  def toJson:String = FilesOperation.toJson(this)
 
 object FilesOperation:
   import xyz.cofe.jtfm.json.charsetToJson
@@ -76,12 +110,14 @@ object FilesOperation:
   import xyz.cofe.files.pathFromJson
   import xyz.cofe.files.pathToJson
   import xyz.cofe.json4s3.derv.FromJson.given
-  //import xyz.cofe.json4s3.derv.FromJson.given
 
-  //given fr:FromJson[xyz.cofe.files.FilesOption.Opts] = ???
+  val x = summon[ToJson[FilesOperation.WriterOp]]
 
   def fromJson(jsonString:String) = 
     jsonString.jsonAs[FilesOperation]
+
+  def toJson(op:FilesOperation):String =
+    summon[ToJson[FilesOperation]].toJson(op).map(_.json).get
 
   given ToJson[WriteString] with
     override def toJson(ws: WriteString): Option[AST] = 

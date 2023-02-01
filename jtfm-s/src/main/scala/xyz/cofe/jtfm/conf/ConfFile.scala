@@ -15,6 +15,7 @@ import xyz.cofe.json4s3.derv.errors.TypeCastFail
 import java.nio.file.Path
 import xyz.cofe.files.readString
 import xyz.cofe.files.writeString
+import xyz.cofe.files.FilesLogger
 
 enum ConfError(val message:String):
   case Except(val error:Throwable) extends ConfError(error.getMessage())
@@ -36,7 +37,7 @@ object ConfFile:
 
     override def write(inst: A): Either[ConfError, Unit] = Left(ConfError.NotSupported)
 
-  case class File[A:FromJson:ToJson](path:Path) extends ConfFile[A]:
+  case class File[A:FromJson:ToJson](path:Path)(using fs:FilesLogger) extends ConfFile[A]:
     override def read: Either[ConfError, A] = 
       path.readString(StandardCharsets.UTF_8)
         .left.map(ConfError.Except.apply)

@@ -5,69 +5,27 @@ keyboard - описывает сочетание клавш и действие 
   "keyboard":[
     {
       "keyStroke":"Down",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"down",
-            "selection":"no-change"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"down", "selection":"no-change" } } ]
     },
     {
       "keyStroke":"Up",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"up",
-            "selection":"no-change"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"up", "selection":"no-change" } } ]
     },
     {
       "keyStroke":"PgDn",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"page-down",
-            "selection":"no-change"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"page-down", "selection":"no-change" } } ]
     },
     {
       "keyStroke":"PgUp",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"page-up",
-            "selection":"no-change"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"page-up", "selection":"no-change" } } ]
     },
     {
       "keyStroke":"Home",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"home",
-            "selection":"no-change"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"home", "selection":"no-change" } } ]
     },
     {
       "keyStroke":"End",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"end",
-            "selection":"no-change"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"end", "selection":"no-change" } } ]
     },
     {
       "keyStroke":"Down+S",

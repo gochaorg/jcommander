@@ -167,6 +167,7 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
 
   def isRoot:Boolean =
     path.isAbsolute() && path.getParent()==null
+
     
 case class PosixAttib(
   owner: String,
