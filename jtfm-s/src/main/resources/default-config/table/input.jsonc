@@ -1,6 +1,59 @@
 {
 /* 
 keyboard - описывает сочетание клавш и действие в компоненте Table
+keyStroke - сочитание клавиш
+
+actions - список действий:
+
+scala:
+
+  enum Action:
+    case Selection(what:SelectWhat)
+    case FocusSelection(what:FocusSelAction)
+    case FocusMove(direction:FocusMoveDirection, selection:MoveSelection)
+
+  json:
+    "Selection": { "what": .... }
+    "FocusSelection": { "what": ... }
+    ...
+
+  enum SelectWhat:
+    case All, Invert, Clear
+
+    case All => "all"
+    case Clear => "clear"
+    case Invert => "invert"
+
+  enum FocusSelAction:
+    case Include, Exclude, Invert
+
+    case Include => "include"
+    case Exclude => "exclude"
+    case Invert => "invert"
+
+  enum FocusMoveDirection:
+    case Up, Down, PageUp, PageDown, Home, End
+
+    case Up => "up"
+    case Down => "down"
+    case PageUp => "page-up"
+    case PageDown => "page-down"
+    case Home => "home"
+    case End => "end"
+
+  enum MoveSelection:
+    case NoChange
+    case Include
+    case Exclude
+    case Invert
+    case Target
+
+    case NoChange => "no-change"
+    case Include => "include"
+    case Exclude => "exclude"
+    case Invert => "invert"
+    case Target => "target"
+
 */
   "keyboard":[
     {
@@ -29,109 +82,43 @@ keyboard - описывает сочетание клавш и действие 
     },
     {
       "keyStroke":"Down+S",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"down",
-            "selection":"include"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"down", "selection":"include" } } ]
     },
     {
       "keyStroke":"Up+S",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"up",
-            "selection":"include"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"up", "selection":"include" } } ]
     },
     {
       "keyStroke":"PgDn+S",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"page-down",
-            "selection":"include"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"page-down", "selection":"include" } } ]
     },
     {
       "keyStroke":"PgUp+S",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"page-up",
-            "selection":"include"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"page-up", "selection":"include" } } ]
     },
     {
       "keyStroke":"Home+S",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"home",
-            "selection":"include"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"home", "selection":"include" } } ]
     },
     {
       "keyStroke":"End+S",
-      "actions":[
-        {
-          "FocusMove":{
-            "direction":"end",
-            "selection":"include"
-          }
-        }
-      ]
+      "actions":[ { "FocusMove":{ "direction":"end", "selection":"include" } } ]
     },
     {
       "keyStroke":"<spc>",
-      "actions":[
-        {
-          "FocusSelection":{
-            "what":"invert"
-          }
-        }
-      ]
+      "actions":[ { "FocusSelection":{ "what":"invert" } } ]
     },
     {
       "keyStroke":"a+C",
-      "actions":[
-        {
-          "Selection":{
-            "what":"all"
-          }
-        }
-      ]
+      "actions":[ { "Selection":{ "what":"all" } } ]
     },
     {
       "keyStroke":"d+C",
-      "actions":[
-        {
-          "Selection":{
-            "what":"clear"
-          }
-        }
-      ]
+      "actions":[ { "Selection":{ "what":"clear" } } ]
     },
     {
       "keyStroke":"i+C",
-      "actions":[
-        {
-          "Selection":{
-            "what":"invert"
-          }
-        }
-      ]
+      "actions":[ { "Selection":{ "what":"invert" } } ]
     }
   ]
 }
