@@ -20,18 +20,30 @@
   WhiteBright
 */
 {
-  "menu" : {
-    "bar" : {
-      "backgroundColor" : "CyanBright"
+  "menu": {
+    "bar": {
+      "backgroundColor": "CyanBright"
     },
-    "container" : {
-      "focusContainerFgColor" : "WhiteBright",
-      "focusOwnerFgColor" : "YellowBright",
-      "focusContainerBgColor" : "BlackBright",
-      "focusOwnerBgColor" : "BlackBright",
-      "backgroundColor" : "Black",
-      "foregroundColor" : "White",
-      "keyStrokeFgColor" : "BlueBright"
+    "container": {
+      "focusContainerFgColor": "WhiteBright",
+      "focusOwnerFgColor":     "YellowBright",
+      "focusContainerBgColor": "BlackBright",
+      "focusOwnerBgColor":     "BlackBright",
+      "backgroundColor":       "Black",
+      "foregroundColor":       "White",
+      "keyStrokeFgColor":      "BlueBright"
+    }
+  },
+  "table": {
+    "Conf": {
+      "foreground":       "White",
+      "background":       "Black",
+      "selectionBg":      "BlackBright",
+      "selectionFg":      "RedBright",
+      "focusContainerBg": "BlackBright",
+      "focusContainerFg": "WhiteBright",
+      "focusOwnerBg":     "BlackBright",
+      "focusOwnerFg":     "YellowBright"
     }
   }
 }

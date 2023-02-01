@@ -1,6 +1,7 @@
 package xyz.cofe.term.ui.table
 
 import TableInput._
+import conf.TableInputConf
 import xyz.cofe.term.ui.KeyStroke
 import xyz.cofe.term.common.KeyName
 import xyz.cofe.json4s3.stream.ast.FormattingJson

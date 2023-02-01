@@ -1,4 +1,5 @@
 package xyz.cofe.jtfm.ui.table
+package conf
 
 trait DirectoryTableConf:
   def moveParentNormalizePath:Boolean

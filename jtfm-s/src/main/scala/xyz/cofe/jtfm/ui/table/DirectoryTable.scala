@@ -10,7 +10,14 @@ import xyz.cofe.term.common.KeyName
 import xyz.cofe.files.parent
 import xyz.cofe.term.ui.table.conf.TableInputConf
 
-class DirectoryTable(using conf:DirectoryTableConf, taleInputConf:TableInputConf)
+import conf._
+import xyz.cofe.term.ui.table.conf.TableColorsConf
+
+class DirectoryTable( using 
+  conf:DirectoryTableConf, 
+  tableInputConf:TableInputConf,
+  tableColorsConf:TableColorsConf
+)
 extends Table[Path]:
   val directory = Prop.rw(None:Option[Path])
   directory.onChange(refresh)

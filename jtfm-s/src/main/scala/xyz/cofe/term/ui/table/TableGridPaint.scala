@@ -16,7 +16,10 @@ import xyz.cofe.term.ui.prop.color.colorProp2Color
 import xyz.cofe.term.common.Color
 import xyz.cofe.lazyp.ReleaseListener
 import xyz.cofe.term.geom.Rect
-trait TableGridPaint[A] 
+
+import table.conf.TableColorsConf
+
+trait TableGridPaint[A]( colors: TableColorsConf )
 extends TableGridProp[A]
 with FillBackgroundColor
 with ForegroundColor
@@ -31,6 +34,15 @@ with WidgetInput
   paintStack.add(paintCrossColumnsFocus)
   paintStack.add(paintTableHeader)
   paintStack.add(paintTableData)
+
+  foregroundColor = colors.foreground
+  backgroundColor = colors.background
+  selection.selectionBgColor = colors.selectionBg
+  selection.selectionFgColor = colors.selectionFg
+  selection.focusContainerBgColor = colors.focusContainerBg
+  selection.focusContainerFgColor = colors.focusContainerFg
+  selection.focusOwnerBgColor = colors.focusOwnerBg
+  selection.focusOwnerFgColor = colors.focusOwnerFg
 
   def paintTableGrid(paint:PaintCtx):Unit =
     val (lines, rects) = renderDelims.get

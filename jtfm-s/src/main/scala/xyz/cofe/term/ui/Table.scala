@@ -11,7 +11,7 @@ import xyz.cofe.term.ui.prop.color._
 import xyz.cofe.term.ui.paint._
 
 import xyz.cofe.term.ui.table.TableGridProp
-class Table[A]( using tableInputConf:TableInputConf )
+class Table[A]( using tableInputConf:TableInputConf, tableColors:TableColorsConf )
   extends Widget
   with WidgetInput
   with WidgetChildren[Widget] 
@@ -25,7 +25,7 @@ class Table[A]( using tableInputConf:TableInputConf )
   with TableRowsProp[A]
   with TableSelectionProp[A]
   with TableGridProp[A]
-  with TableGridPaint[A]
+  with TableGridPaint[A]( tableColors )
   with TableInput[A]
   with TableAutoResize
   with TableScrollPaint[A]

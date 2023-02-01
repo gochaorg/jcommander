@@ -30,7 +30,8 @@ import xyz.cofe.jtfm.log.JsonLogOutput
 import xyz.cofe.json4s3.derv.ToJson
 import xyz.cofe.term.ui.table.Column
 import xyz.cofe.term.ui.table.HorizontalAlign
-import xyz.cofe.term.ui.table.TableInputConf
+import xyz.cofe.term.ui.table.conf.TableInputConf
+import xyz.cofe.term.ui.table.conf.TableColorsConf
 import xyz.cofe.jtfm.conf.TableConf
 import xyz.cofe.jtfm.ui.table.FilesTable
 import xyz.cofe.files.readDir
@@ -57,6 +58,7 @@ object TableMain:
 
     val tableConf:Either[ConfError,TableInputConf] = TableConf.read
     implicit val tableInputConf = tableConf.map(x => x:TableInputConf).getOrElse(TableInputConf.defaultConfig)
+    implicit val tableColorsConf = TableColorsConf.defaultColors
 
     val console = ConsoleBuilder.defaultConsole()
     Session.start(console) { ses =>

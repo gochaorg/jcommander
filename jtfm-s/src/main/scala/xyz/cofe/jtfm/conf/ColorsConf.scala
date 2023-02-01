@@ -6,9 +6,11 @@ import xyz.cofe.term.ui.conf.MenuBarColorConfig
 import xyz.cofe.term.ui.conf.MenuColorConfig
 import xyz.cofe.files.AppHome
 import xyz.cofe.term.ui.conf.given
+import xyz.cofe.term.ui.table.conf.TableColorsConf
 
 case class ColorsConf(
-  menu: MenuColors
+  menu:  MenuColors,
+  table: TableColorsConf
 )
 
 object ColorsConf:
