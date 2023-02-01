@@ -2,11 +2,11 @@ package xyz.cofe.jtfm
 
 import org.slf4j.LoggerFactory
 import xyz.cofe.term.common.{Console => Term}
-import xyz.cofe.term.common.ConsoleBuilder
+import xyz.cofe.term.common.{ConsoleBuilder => TermBuilder}
 import xyz.cofe.jtfm.json._
 import xyz.cofe.files.AppHome
 import xyz.cofe.jtfm.Main.appHome
-import _root_.xyz.cofe.term.win.{ WinConsole => WCon }
+import _root_.xyz.cofe.term.win.{ WinConsole => WCon, ScreenBufferMode, ScreenBufferInfo, InputMode }
 import _root_.xyz.cofe.term.common.win.{ WinConsole => WtCon }
 import xyz.cofe.jtfm.conf.ConfFile
 import xyz.cofe.files.FilesLogger
@@ -15,30 +15,61 @@ import scala.util.Try
 import scala.util.Failure
 import scala.util.Success
 
-object PrepareConsole:
+object ConsoleBuilder:
   val logger = LoggerFactory.getLogger("xyz.cofe.jtfm.PrepareConsole")
   implicit val fsLogger:FilesLogger = FilesLogger.slf(logger, FilesLogger.Level.Info, FilesLogger.Level.Warn)
   def log(message:String):Unit = logger.info(message)
+
+  def createConsole(using appHome:AppHome):Term =
+    log("create console")
+    val ccon = CreateConsole.confFile.read
+
+    val telnet = ccon.flatMap(c => Right(c.telnet)).map(_.getOrElse(defaultTelnet)).getOrElse(defaultTelnet)
+    val nix = ccon.flatMap(c => Right(c.unix)).map(_.getOrElse(defaultUnix)).getOrElse(defaultUnix)
+    val win = ccon.flatMap(c => Right(c.windows)).map(_.getOrElse(defaultWindows)).getOrElse(defaultWindows)
+
+    Option(System.getProperty("jtfm.console")) match
+      case Some("telnet") => 
+        log("create telnet console by sys properties")
+        telnetConsole(telnet)
+      case Some("win") => 
+        log("create windows console by sys properties")
+        winConsole(win)
+      case Some("nix") => 
+        log("create unix console by sys properties")
+        unixConsole(nix)
+      case _ => 
+        log("create telnet console by default")
+        telnetConsole(defaultTelnet)
+
+  def useConsole( session: Term => Any )(using appHome:AppHome):Unit =
+    val console = createConsole
+    session(console)
+    resotoreWinConsole
+    console.close()
 
   private def telnetConsole(port:Int, async:Boolean):Term =
     log(s"build telnet console port=$port, async=$async")
     System.setProperty("xyz.cofe.term.telnet.port", port.toString())
     System.setProperty("xyz.cofe.term.telnet.async", async.toString())
-    ConsoleBuilder.telnetConsole()
+    TermBuilder.telnetConsole()
 
   private def telnetConsole(con:Telnet):Term = telnetConsole(con.port, con.async)
 
   private def unixConsole(async:Boolean):Term =
     log(s"build unix async=$async")
     System.setProperty("xyz.cofe.term.nix.async", async.toString())
-    ConsoleBuilder.nixConsole()
+    TermBuilder.nixConsole()
 
   private def unixConsole(con:Unix):Term = unixConsole(con.async)
 
-  @volatile private var winConsoleHolder:Option[WCon] = None
+  private var winConsoleHolder:Option[WCon] = None
 
-  def winConsole( f:WCon => Any ):Unit =
+  private def winConsole( f:WCon => Any ):Unit =
     winConsoleHolder.foreach(f)
+
+  private var winScrennBuffSaved:Option[ScreenBufferMode] = None
+  private var winInputModeSaved:Option[InputMode] = None
 
   def resize( con:WCon, target:Size ):Unit =
     def resizeWidth:Unit =
@@ -78,7 +109,6 @@ object PrepareConsole:
       case Failure(exception) => logger.error("can't resize",exception)
       case Success(value) =>
     
-
   private def winConsole_(connect:WinConnect)(using appHome:AppHome):Term =
     log(s"build win console connect=$connect")
     val conn = connect match
@@ -94,34 +124,33 @@ object PrepareConsole:
 
   private def prepare(winCon: xyz.cofe.term.win.WinConsole)(using appHome:AppHome):xyz.cofe.term.win.WinConsole =
     log("prepare WinConsole")
+    saveWinConsole(winCon)
     ConsoleSize.confFile.read.foreach { conSize => 
       resize(winCon, conSize.size)
     }
+    winCon.getOutput().setScreenBufferMode(
+      winCon.getOutput().getScreenBufferMode().newLineAutoReturn(false).processing(false).wrapAtEol(false)
+    )
+    winCon.getInput().setInputMode(
+      winCon.getInput().getInputMode().echo(false).insert(false).line(false).mouse(true).quickEdit(false).window(true)
+    )
     winCon
 
+  private def saveWinConsole(winCon: xyz.cofe.term.win.WinConsole) =
+    winScrennBuffSaved = Some(winCon.getOutput().getScreenBufferMode())
+    winInputModeSaved = Some(winCon.getInputMode())
+
+  private def resotoreWinConsole:Unit =
+    winConsole { con =>
+      winScrennBuffSaved.foreach { mode => 
+        con.getOutput().setScreenBufferMode(mode)
+      }
+      winInputModeSaved.foreach { mode => 
+        con.getInput().setInputMode(mode)
+      }
+    }
+
   private def winConsole(con:Windows)(using appHome:AppHome):Term = winConsole_(con.connect)
-
-  def createConsole(using appHome:AppHome):Term =
-    log("create console")
-    val ccon = CreateConsole.confFile.read
-
-    val telnet = ccon.flatMap(c => Right(c.telnet)).map(_.getOrElse(defaultTelnet)).getOrElse(defaultTelnet)
-    val nix = ccon.flatMap(c => Right(c.unix)).map(_.getOrElse(defaultUnix)).getOrElse(defaultUnix)
-    val win = ccon.flatMap(c => Right(c.windows)).map(_.getOrElse(defaultWindows)).getOrElse(defaultWindows)
-
-    Option(System.getProperty("jtfm.console")) match
-      case Some("telnet") => 
-        log("create telnet console by sys properties")
-        telnetConsole(telnet)
-      case Some("win") => 
-        log("create windows console by sys properties")
-        winConsole(win)
-      case Some("nix") => 
-        log("create unix console by sys properties")
-        unixConsole(nix)
-      case _ => 
-        log("create telnet console by default")
-        telnetConsole(defaultTelnet)
 
   case class Telnet(port:Int, async:Boolean)
   val defaultTelnet = Telnet(12348,true)

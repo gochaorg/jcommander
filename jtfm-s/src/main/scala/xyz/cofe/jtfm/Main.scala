@@ -1,7 +1,6 @@
 package xyz.cofe.jtfm
 
 import xyz.cofe.files.AppHome
-import xyz.cofe.term.common.ConsoleBuilder
 import xyz.cofe.term.common.Console
 import xyz.cofe.term.ui.Session
 import xyz.cofe.term.ui.prop._
@@ -22,10 +21,7 @@ object Main:
   def main(args:Array[String]):Unit =
     LogPrepare.prepare
     HelloMessage.writeLog
-
-    val console = PrepareConsole.createConsole
-    startSession(console)
-    console.close()
+    ConsoleBuilder.useConsole(startSession)
 
   private var mbarOpt : Option[WidgetInput] = None
   def startSession( console: Console ):Unit =
