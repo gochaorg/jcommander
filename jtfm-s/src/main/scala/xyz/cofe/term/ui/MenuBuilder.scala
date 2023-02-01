@@ -26,7 +26,10 @@ object menuBuilder {
     mc
 
   def action( text:String )
-            (using menuParent:WidgetChildren[Menu])
+            ( using 
+              menuParent:WidgetChildren[Menu], 
+              config: MenuColorConfig
+            )
   :ActionConf =
     val ma = MenuAction(text)
     val ac = ActionConf(ma)

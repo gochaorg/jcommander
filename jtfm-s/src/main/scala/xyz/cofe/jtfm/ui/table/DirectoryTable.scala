@@ -10,8 +10,9 @@ import xyz.cofe.term.common.KeyName
 import xyz.cofe.files.parent
 import xyz.cofe.files.parent
 import xyz.cofe.files.parent
+import xyz.cofe.term.ui.table.TableInputConf
 
-class DirectoryTable(using conf:DirectoryTableConf)
+class DirectoryTable(using conf:DirectoryTableConf, taleInputConf:TableInputConf)
 extends Table[Path]:
   val directory = Prop.rw(None:Option[Path])
   directory.onChange(refresh)

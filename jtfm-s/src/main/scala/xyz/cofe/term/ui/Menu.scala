@@ -60,7 +60,7 @@ sealed trait Menu
 class MenuContainer(using config: MenuColorConfig)
   extends Menu
   with WidgetChildren[Menu]:
-    def this(text:String) = {
+    def this(text:String)(using config: MenuColorConfig) = {
       this()
       this.text = text
       this.size = Size(text.length(),1)
@@ -318,7 +318,7 @@ class MenuContainer(using config: MenuColorConfig)
 
 class MenuAction(using config: MenuColorConfig)
   extends Menu:
-    def this(text:String) = {
+    def this(text:String)(using config: MenuColorConfig) = {
       this()
       this.text = text
       this.size = Size(text.length(),1)
