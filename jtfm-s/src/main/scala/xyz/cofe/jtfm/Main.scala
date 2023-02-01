@@ -14,12 +14,6 @@ import xyz.cofe.term.ui.KeyStroke
 import xyz.cofe.term.common.KeyName
 import xyz.cofe.term.ui.Widget
 import xyz.cofe.term.ui.WidgetInput
-import xyz.cofe.jtfm.conf.ColorsConf
-import xyz.cofe.jtfm.conf.ConfError
-import xyz.cofe.term.ui.conf.MenuBarColorConfig
-import xyz.cofe.term.ui.conf.MenuColorConfig
-import xyz.cofe.term.ui.table.TableInputConf
-import xyz.cofe.jtfm.conf.TableConf
 import xyz.cofe.jtfm.conf.UiConf
 
 object Main:

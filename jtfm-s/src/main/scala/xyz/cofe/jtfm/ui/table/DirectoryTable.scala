@@ -8,9 +8,7 @@ import xyz.cofe.files._
 import xyz.cofe.term.ui.KeyStroke
 import xyz.cofe.term.common.KeyName
 import xyz.cofe.files.parent
-import xyz.cofe.files.parent
-import xyz.cofe.files.parent
-import xyz.cofe.term.ui.table.TableInputConf
+import xyz.cofe.term.ui.table.conf.TableInputConf
 
 class DirectoryTable(using conf:DirectoryTableConf, taleInputConf:TableInputConf)
 extends Table[Path]:

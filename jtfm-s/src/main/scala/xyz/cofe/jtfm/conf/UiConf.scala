@@ -3,7 +3,7 @@ package xyz.cofe.jtfm.conf
 import xyz.cofe.files.AppHome
 import xyz.cofe.term.ui.conf.MenuBarColorConfig
 import xyz.cofe.term.ui.conf.MenuColorConfig
-import xyz.cofe.term.ui.table.TableInputConf
+import xyz.cofe.term.ui.table.conf.TableInputConf
 
 class UiConf(using appHome:AppHome):
   val colorsConf:Either[ConfError,ColorsConf] = ColorsConf.read

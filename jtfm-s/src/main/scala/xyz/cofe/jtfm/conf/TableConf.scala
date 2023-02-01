@@ -1,7 +1,7 @@
 package xyz.cofe.jtfm.conf
 
 import xyz.cofe.files.AppHome
-import xyz.cofe.term.ui.table.TableInputConf
+import xyz.cofe.term.ui.table.conf.TableInputConf
 
 object TableConf:
   def confFile(appHome:AppHome):ConfFile[TableInputConf.Conf] =

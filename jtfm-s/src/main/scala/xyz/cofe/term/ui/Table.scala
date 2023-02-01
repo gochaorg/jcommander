@@ -1,6 +1,7 @@
 package xyz.cofe.term.ui
 
 import table._
+import table.conf._
 
 import xyz.cofe.term.cs.ObserverList
 import xyz.cofe.lazyp.Prop

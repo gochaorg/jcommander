@@ -1,4 +1,5 @@
 package xyz.cofe.term.ui.table
+package conf
 
 import xyz.cofe.term.ui.KeyStroke
 import xyz.cofe.term.ui.Table

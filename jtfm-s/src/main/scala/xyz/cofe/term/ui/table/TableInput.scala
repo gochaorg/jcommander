@@ -17,6 +17,7 @@ import xyz.cofe.term.common.InputKeyboardEvent
 import xyz.cofe.term.ui.isModifiers
 
 import TableInput._
+import conf._
 import xyz.cofe.json4s3.derv._
 import xyz.cofe.json4s3.stream.ast.AST
 import xyz.cofe.json4s3.derv.errors.DervError
