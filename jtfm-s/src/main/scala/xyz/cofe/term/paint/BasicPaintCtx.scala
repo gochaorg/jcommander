@@ -191,11 +191,15 @@ extends PaintCtx {
       copy( boundsSize1 = Size(width,height) )
     def clipping(clip:Boolean):ContextBuilder = 
       copy(clipping1 = clip)
-    def build:PaintCtx = BasicPaintCtx.this.copy(
-      absoluteOffset = absoluteOffset1,
-      boundsSize = boundsSize1,
-      clipping = clipping1
-    )
+    def build:PaintCtx = 
+      val ctx = BasicPaintCtx.this.copy(
+        absoluteOffset = absoluteOffset1,
+        boundsSize = boundsSize1,
+        clipping = clipping1
+      )
+      ctx.foreground = foreground
+      ctx.background = background
+      ctx
 }
 
 object BasicPaintCtx:

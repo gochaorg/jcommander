@@ -37,12 +37,12 @@
   "table": {
     "Conf": {
       "foreground":       "White",
-      "background":       "Black",
+      "background":       "Blue",
       "selectionBg":      "BlackBright",
       "selectionFg":      "RedBright",
       "focusContainerBg": "BlackBright",
       "focusContainerFg": "WhiteBright",
-      "focusOwnerBg":     "BlackBright",
+      "focusOwnerBg":     "Black",
       "focusOwnerFg":     "YellowBright"
     }
   }
