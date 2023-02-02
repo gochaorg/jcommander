@@ -15,6 +15,8 @@ import xyz.cofe.term.common.KeyName
 import xyz.cofe.term.ui.Widget
 import xyz.cofe.term.ui.WidgetInput
 import xyz.cofe.jtfm.conf.UiConf
+import xyz.cofe.files.FilesLogger
+import org.slf4j.LoggerFactory
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -38,6 +40,9 @@ object Main:
 
       leftPanel.directory.set(Some(Path.of(".")))
       rightPanel.directory.set(Some(Path.of(".")))
+
+      leftPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ rightPanel.focus.request })
+      rightPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ leftPanel.focus.request })
 
       val vsplitPanel = VSplitPane()
       ses.rootWidget.children.append(vsplitPanel)

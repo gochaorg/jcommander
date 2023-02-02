@@ -12,13 +12,18 @@ import xyz.cofe.term.ui.table.conf.TableInputConf
 
 import conf._
 import xyz.cofe.term.ui.table.conf.TableColorsConf
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DirectoryTable( using 
   conf:DirectoryTableConf, 
   tableInputConf:TableInputConf,
-  tableColorsConf:TableColorsConf
+  tableColorsConf:TableColorsConf,
 )
 extends Table[Path]:
+  private val logger : Logger = LoggerFactory.getLogger("xyz.cofe.jtfm.ui.table.DirectoryTable")
+  implicit val filesLogger : FilesLogger = FilesLogger.slf(logger, FilesLogger.Level.Info, FilesLogger.Level.Warn)
+
   val directory = Prop.rw(None:Option[Path])
   directory.onChange(refresh)
   columns.append(FilesTable.columns)
