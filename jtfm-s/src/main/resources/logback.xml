@@ -1,5 +1,11 @@
 <configuration>
   
+  <root level="debug">
+    <appender-ref ref="FILE_APPEND" />
+  </root>
+
+  <logger name="xyz.cofe.term.ui.table" level="info" />
+  
   <appender name="FILE_APPEND" class="ch.qos.logback.core.FileAppender">
     <file>${LOG_DIR}/jtfm.log</file>
     <append>true</append>
@@ -40,8 +46,4 @@
     </encoder>
   </appender>  
   -->
-  
-  <root level="info">
-    <appender-ref ref="FILE_APPEND" />
-  </root>
 </configuration>

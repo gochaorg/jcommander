@@ -5,6 +5,7 @@ import xyz.cofe.lazyp.ReleaseListener
 import xyz.cofe.term.ui.prop._
 
 import ses._
+import xyz.cofe.lazyp.Prop
 
 trait WidgetInput extends Widget:
   def input(inputEvent:InputEvent):Boolean = 
@@ -47,6 +48,8 @@ class FocusClient( widget:WidgetInput ):
   }
   def session:Option[Session] = rootWidget.map(_.session)
 
+  val own = Prop.rw(false)
+
   def isOwner:Boolean = 
     session
       .flatMap { _.focusOwner }
@@ -68,6 +71,7 @@ class FocusClient( widget:WidgetInput ):
   
   var onAcceptListeners : List[Option[WidgetInput]=>Unit] = List.empty
   def accept(from:Option[WidgetInput]):Unit =
+    own.set(true)
     history = (FocusAction.Give(from) :: history).take(historyLen)
     onAcceptListeners.foreach(_(from))
     onChangeListeners.foreach(_())
@@ -81,6 +85,7 @@ class FocusClient( widget:WidgetInput ):
 
   var onLostListeners : List[Option[WidgetInput]=>Unit] = List.empty
   def lost(to:Option[WidgetInput]):Unit =
+    own.set(false)    
     history = (FocusAction.Lost(to) :: history).take(historyLen)
     onLostListeners.foreach(_(to))
     onChangeListeners.foreach(_())

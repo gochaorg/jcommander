@@ -113,7 +113,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
   private def switchFocusTo(widInput:WidgetInput):Unit =
     val topDlg = topDialog
     if topDlg.map { dlg => widInput.toTreePath.listToLeaf.contains(dlg) }.getOrElse( true )
-    then
+    then      
       val oldOwner = focusOwner
       focusOwner = Some(widInput)
       oldOwner.foreach( w => w.focus.lost(Some(widInput)) )

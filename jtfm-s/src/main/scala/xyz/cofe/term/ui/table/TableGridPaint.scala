@@ -18,6 +18,7 @@ import xyz.cofe.lazyp.ReleaseListener
 import xyz.cofe.term.geom.Rect
 
 import table.conf.TableColorsConf
+import org.slf4j.LoggerFactory
 
 trait TableGridPaint[A]( colors: TableColorsConf )
 extends TableGridProp[A]
@@ -29,6 +30,8 @@ with TableSelectionProp[A]
 with TableScrollProp
 with WidgetInput
   :
+  private val logger = LoggerFactory.getLogger("xyz.cofe.term.ui.table.TableGridPaint")
+
   paintStack.add(paintTableGrid)
   paintStack.add(paintCrossColumnsSelect)
   paintStack.add(paintCrossColumnsFocus)
@@ -74,13 +77,15 @@ with WidgetInput
       )
     }
 
-  val allDataRowsSum = Prop.eval(dataYPos, scroll.value, rows, selection.indexes, selection.focusedIndex)
-                         { case (dataYPos, scroll      , rows, selection        , focusedIndex)=>
+  val allDataRowsSum = Prop.eval(dataYPos, scroll.value, rows, selection.indexes, selection.focusedIndex, focus.own)
+                         { case (dataYPos, scroll      , rows, selection        , focusedIndex          , focusOwn)=>
     val (dataYMin, dataYMax) = dataYPos
     
     val dataVisibleHeight = dataYMax - dataYMin
     val ridxVisibleFrom = scroll
     val ridxVisibleTo = scroll + dataVisibleHeight
+
+    logger.info(s"allDataRowsSum: focusedIndex=$focusedIndex focusOwn=$focusOwn")
 
     val (head, 
          tailRaw
@@ -88,7 +93,9 @@ with WidgetInput
       
       val y = dataYMin + (ridx - ridxVisibleFrom)
       val selected = selection.contains(ridx)
-      val focused = focusedIndex.map(idx => idx == ridx).getOrElse(false)
+      val focused = focusedIndex.map(idx => idx == ridx).getOrElse(false) && focusOwn
+
+      logger.debug(s"allDataRowsSum.row y=$y selected=$selected focused=$focused")
 
       if ridx < ridxVisibleFrom 
       then 
