@@ -4,16 +4,18 @@ package conf
 import MainMenu._
 import xyz.cofe.term.ui.KeyStroke
 import xyz.cofe.files.AppHome
-
+import _root_.xyz.cofe.term.ui.menuBuilder.ActionConf
+import xyz.cofe.json4s3.derv.FromJson
 case class MainMenu(
-  keyboard: List[KeyStrokeBinding]
-)
+  keyboard: List[KeyBinding]
+):
+  lazy val actionKeystrokeMap = 
+    keyboard.map { kb =>
+      (kb.action.name, kb.keyStroke)
+    }.toMap
 
 object MainMenu:
-  case class KeyStrokeBinding(
-    keyStroke: KeyStroke,
-    actions: List[Main.Action]
-  )
+  case class KeyBinding( action:Main.Action, keyStroke:KeyStroke )
 
   def confFile(appHome:AppHome):ConfFile[MainMenu] =
     ConfFile.Fallback(
@@ -23,5 +25,3 @@ object MainMenu:
 
   def read(using appHome:AppHome):Either[ConfError,MainMenu] =
     confFile(appHome).read
-
-      

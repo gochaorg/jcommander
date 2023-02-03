@@ -10,9 +10,10 @@ class UiConf(using appHome:AppHome):
   val colorsConf:Either[ConfError,ColorsConf] = ColorsConf.read
   implicit val menuBarColors : MenuBarColorConfig.Conf = colorsConf.map(_.menu.bar).getOrElse(new MenuBarColorConfig.Conf)
   implicit val menuColors    : MenuColorConfig.Conf = colorsConf.map(_.menu.container).getOrElse(new MenuColorConfig.Conf)
+  
+  val mainMenuConf:Either[ConfError,MainMenu] = MainMenu.read
+  implicit val mainMenu: MainMenu = mainMenuConf.getOrElse(new MainMenu(List()))
 
   val tableConf:Either[ConfError,TableInputConf] = TableConf.read
   implicit val tableInputConf:TableInputConf   = tableConf.map(x => x:TableInputConf).getOrElse(TableInputConf.defaultConfig)
-
-  println(s"table color "+colorsConf.map(_.table))
   implicit val tableColorsConf:TableColorsConf = colorsConf.map(_.table).getOrElse(TableColorsConf.defaultColors)

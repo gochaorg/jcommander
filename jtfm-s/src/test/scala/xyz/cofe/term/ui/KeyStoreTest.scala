@@ -100,6 +100,7 @@ class KeyStoreTest extends munit.FunSuite:
   test("parse/toString") {
     assert( List(
       KeyStroke.KeyEvent(KeyName.F1,false,false,false),
+      KeyStroke.KeyEvent(KeyName.F12,false,false,false),
       KeyStroke.CharEvent('a', false,false,false),
       KeyStroke.CharEvent('a', true,false,false),
       KeyStroke.CharEvent('a', false,true,false),

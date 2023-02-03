@@ -22,6 +22,8 @@ import xyz.cofe.term.ui.table.Column
 import xyz.cofe.jtfm.ui.table.FilesTable
 import xyz.cofe.term.ui.Menu
 import xyz.cofe.term.ui.conf.MenuColorConfig
+import xyz.cofe.term.ui.MenuAction
+import xyz.cofe.jtfm.conf.MainMenu
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -89,19 +91,21 @@ object Main:
           }
         }
 
+        implicit val executorBuilder: Action=>()=>Unit = { act => 
+          executorOf(act) 
+        }
+
         menu("Left") {
           menu("Columns") {
             tableColumns(leftPanel, FilesTable.columns)
           }
         }
         menu("File") {
-          action("Exit").exec( executorOf(Action.Exit) )
+          Action.Exit.menuAction
         }
         
         mbarOpt = Some(menu("View") {
-          action("Show menu").keyStroke(KeyStroke.KeyEvent(KeyName.F12,false,false,false)) {
-            mbarOpt.foreach { mbar => mbar.focus.request }
-          }
+          Action.ActivateMainMenu.menuAction
         })
 
         menu("Right") {
@@ -115,8 +119,24 @@ object Main:
   def executorOf(action:Action)(using ses:Session): ()=>Unit =
     action match
       case Action.Exit => ()=>{ ses.stop = true }
-      case Action.ActivateMainMenu => ()=>{}
+      case Action.ActivateMainMenu => ()=>{ mbarOpt.foreach { mbar => mbar.focus.request } }
 
-  enum Action:
-    case Exit
-    case ActivateMainMenu
+  enum Action(val name:String):
+    case Exit extends Action("Exit")
+    case ActivateMainMenu extends Action("Show menu")
+
+    def menuAction
+        ( using 
+          menuParent:WidgetChildren[Menu], 
+          config: MenuColorConfig,
+          executor: Action=>()=>Unit,
+          mainMenu: MainMenu
+        ):MenuAction = 
+      import xyz.cofe.term.ui.menuBuilder._
+
+      val actConf = action(this.name)
+      val exec = executor(this)
+
+      mainMenu.actionKeystrokeMap.get(this.name)
+        .map { ks => actConf.keyStroke(ks).apply(exec()) }
+        .getOrElse( actConf.apply(exec()) )

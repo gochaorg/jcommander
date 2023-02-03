@@ -357,7 +357,10 @@ object KeyStroke:
   private def str2keyName( string:String, off:Int ):Option[(KeyName,Int)] =
     val str = string.substring(off).toLowerCase()
     val mapping = List(
-      "F1"->KeyName.F1
+      "F10"->KeyName.F10
+    , "F11"->KeyName.F11
+    , "F12"->KeyName.F12
+    , "F1"->KeyName.F1
     , "F2"->KeyName.F2
     , "F3"->KeyName.F3
     , "F4"->KeyName.F4
@@ -366,9 +369,6 @@ object KeyStroke:
     , "F7"->KeyName.F7
     , "F8"->KeyName.F8
     , "F9"->KeyName.F9
-    , "F10"->KeyName.F10
-    , "F11"->KeyName.F11
-    , "F12"->KeyName.F12
     , "Escape"->KeyName.Escape, "Esc"->KeyName.Escape
     , "Enter"->KeyName.Enter, "Entr"->KeyName.Enter, "Etr"->KeyName.Enter, "Er"->KeyName.Enter
     , "Left"->KeyName.Left, "Lft"->KeyName.Left, "Lt"->KeyName.Left

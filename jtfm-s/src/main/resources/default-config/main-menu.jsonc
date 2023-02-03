@@ -1,0 +1,7 @@
+{
+  "keyboard": [
+    { "action": { "ActivateMainMenu":{} }
+    , "keyStroke": "F12"
+    }
+  ]
+}
