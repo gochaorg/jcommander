@@ -22,6 +22,8 @@ object Column:
   def id(id:String) = ColumnId(id)
   case class ColumnId(id:String):
     def reader[A,Z]( reader:A=>Z ) = ColumnMap(id, reader)
+    def extract[A,Z:CellText]( reader:A=>Z ):ColumnBuilder[A,Z] =
+      new ColumnBuilder(id, reader)
 
   case class ColumnMap[A,Z]( id:String, reader:A=>Z ):
     def text( textReader:Z=>String ) =

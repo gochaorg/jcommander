@@ -26,7 +26,7 @@ extends Table[Path]:
 
   val directory = Prop.rw(None:Option[Path])
   directory.onChange(refresh)
-  columns.append(FilesTable.columns)
+  columns.append(FilesTable.defaultColumns)
 
   val order = Prop.rw(Some(FilesTable.sort.defaultSort):Option[Ordering[Path]])
   order.onChange(refresh)

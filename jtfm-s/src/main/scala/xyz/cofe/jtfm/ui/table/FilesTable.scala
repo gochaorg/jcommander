@@ -4,9 +4,21 @@ import xyz.cofe.term.ui.table._
 import xyz.cofe.files._
 import java.nio.file.Path
 import xyz.cofe.term.ui.Table
+import java.time.Instant
+import timeRender.shortCellEitherValue
 
 object FilesTable:
   def columns:List[Column[Path,_]] =
+    val cols = new FilesColumns()
+    List(
+      cols.fileTypeLetterColumn,
+      cols.nameColumn,
+      cols.rwxColumn,
+      cols.lastModify,
+      cols.sizeHumanReadableColumn,
+    )
+
+  def defaultColumns:List[Column[Path,_]] =
     val cols = new FilesColumns()
     List(
       cols.fileTypeLetterColumn,
@@ -59,11 +71,14 @@ object FilesTable:
       .width(9)
       .build
 
-    // val lastModify = Column
-    //   .id("file.lastModify")
-    //   .reader { (path:Path) => 
-    //     path.lastModified
-    //   }
+    val lastModify = Column
+      .id("file.lastModify")
+      .extract { (path:Path) => 
+        path.lastModified
+      }
+      .title("last mod")
+      .width(10)
+      .build
 
   object sort:
     val directoryFirst:Ordering[Path] = new Ordering[Path] {
