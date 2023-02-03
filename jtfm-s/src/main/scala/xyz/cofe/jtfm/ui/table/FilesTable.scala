@@ -59,6 +59,12 @@ object FilesTable:
       .width(9)
       .build
 
+    // val lastModify = Column
+    //   .id("file.lastModify")
+    //   .reader { (path:Path) => 
+    //     path.lastModified
+    //   }
+
   object sort:
     val directoryFirst:Ordering[Path] = new Ordering[Path] {
       override def compare(x: Path, y: Path): Int = 

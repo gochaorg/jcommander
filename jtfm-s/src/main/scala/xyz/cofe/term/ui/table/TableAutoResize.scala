@@ -14,6 +14,9 @@ trait TableAutoResize extends PaintStack with ColumnsProp[_] with BorderProp:
     if ! columnsSizeRecomputed.get then
       autoResizeColumns()
 
+  def autoResizeColumnsDeferred():Unit =
+    columnsSizeRecomputed.set(false)
+
   def autoResizeColumns():Unit =
     columnsSizeRecomputed.set(true)
     

@@ -17,6 +17,11 @@ import xyz.cofe.term.ui.WidgetInput
 import xyz.cofe.jtfm.conf.UiConf
 import xyz.cofe.files.FilesLogger
 import org.slf4j.LoggerFactory
+import xyz.cofe.term.ui.Table
+import xyz.cofe.term.ui.table.Column
+import xyz.cofe.jtfm.ui.table.FilesTable
+import xyz.cofe.term.ui.Menu
+import xyz.cofe.term.ui.conf.MenuColorConfig
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -55,15 +60,55 @@ object Main:
       leftPanel.selection.focusedIndex.set(Some(1))
 
       menuBar {
+        def tableColumns( table:Table[Path], available:List[Column[Path,?]] )
+            ( using 
+              menuParent:WidgetChildren[Menu], 
+              config: MenuColorConfig
+            )
+        :Unit = {
+          available.zipWithIndex.foreach { case (column,colIdx) =>
+            def hasColumn:Boolean = table.columns.toList.map(_.id).contains(column.id)
+
+            var updateText:Option[()=>Any] = None
+
+            val actCol = action(column.id) {  
+              if hasColumn 
+              then
+                table.columns.items.find(_.id == column.id).foreach { col => table.columns.delete(col) }
+                updateText.foreach(_())
+              else                
+                table.columns.insert( colIdx, column )
+                table.autoResizeColumnsDeferred()
+                updateText.foreach(_())
+            }
+
+            updateText = Some { ()=>{
+              actCol.text.set( (if hasColumn then "+" else "-") + " " + column.id )
+            }}
+            updateText.foreach(_())
+          }
+        }
+
+        menu("Left") {
+          menu("Columns") {
+            tableColumns(leftPanel, FilesTable.columns)
+          }
+        }
         menu("File") {
           action("Exit").exec( executorOf(Action.Exit) )
         }
+        
         mbarOpt = Some(menu("View") {
-          action("Show menu").keyStroke(KeyStroke.KeyEvent(KeyName.F5,false,false,false)) {
-            println("aa")
+          action("Show menu").keyStroke(KeyStroke.KeyEvent(KeyName.F12,false,false,false)) {
             mbarOpt.foreach { mbar => mbar.focus.request }
           }
         })
+
+        menu("Right") {
+          menu("Columns") {
+            tableColumns(rightPanel, FilesTable.columns)
+          }
+        }
       }
     }
 
@@ -75,4 +120,3 @@ object Main:
   enum Action:
     case Exit
     case ActivateMainMenu
-
