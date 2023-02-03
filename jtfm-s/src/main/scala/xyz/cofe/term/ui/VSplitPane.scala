@@ -23,8 +23,10 @@ with PaintChildren
 :
   type RelocableWidget = Widget & LocationRWProp & SizeRWProp
 
+  size.onChange(reomputeDeferred)
+
   val delimeter = Prop.rw(0.5)
-  delimeter.onChange(recompute)
+  delimeter.onChange(reomputeDeferred)
   delimeter.onChange(repaint)
 
   val leftWidget  = Prop.rw(None:Option[? <: RelocableWidget])
