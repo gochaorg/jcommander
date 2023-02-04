@@ -49,7 +49,7 @@ with WidgetInput:
   val closeButton = Button(""+Symbols.Action.Close)
   children.append(closeButton)
   closeButton.onAction {
-    hide()
+    close()
   }
 
   val content = Panel()
@@ -62,7 +62,7 @@ with WidgetInput:
 
   size = Size(20,5)
 
-  def show(pos:Position)=
+  def open(pos:Position)=
     visible = true
     add2root { root =>
       move2frontOf(root)
@@ -70,7 +70,7 @@ with WidgetInput:
       focusableWidget.orElse(findeFocusableChild).foreach { _.focus.request }
     }
 
-  def show() = 
+  def open() = 
     visible = true
     add2root { root =>
       move2frontOf(root)
@@ -78,7 +78,7 @@ with WidgetInput:
       focusableWidget.orElse(findeFocusableChild).foreach { _.focus.request }
     }
 
-  def hide() =
+  def close() =
     visible = false
     parent.get.foreach { prnt =>
       prnt match
@@ -87,25 +87,25 @@ with WidgetInput:
         case _ =>
     }
 
-  private var onShowEmitted = false
-  val onShowed = Listener()
+  private var onOpenEmitted = false
+  val onOpenned = Listener()
 
-  private var onHideEmitted = false
-  val onHided = Listener()
+  private var onCloseEmitted = false
+  val onClosed = Listener()
 
   paintStack.add { _ => 
-    if ! onShowEmitted then
-      onShowed.emit()
-      onShowEmitted = true
-      onHideEmitted = false
+    if ! onOpenEmitted then
+      onOpenned.emit()
+      onOpenEmitted = true
+      onCloseEmitted = false
   }
 
   parent.onChange {
     Session.addJob {
       if parent.get.isEmpty then
-        if ! onHideEmitted then
-          onShowEmitted = false
-          onHideEmitted = true
+        if ! onCloseEmitted then
+          onOpenEmitted = false
+          onCloseEmitted = true
     }
   }
 
@@ -143,10 +143,10 @@ object Dialog:
     location:Option[Position]=None
   ):
     def onHide( code: =>Unit ):Builder =
-      copy( configure = configure :+ (_.onHided(code)) )
+      copy( configure = configure :+ (_.onClosed(code)) )
 
     def onShow( code: =>Unit ):Builder =
-      copy( configure = configure :+ (_.onShowed(code)) )
+      copy( configure = configure :+ (_.onOpenned(code)) )
 
     def content( init: Panel=>Unit ):Builder =
       copy( configure = configure :+ (dlg => init(dlg.content)) )
@@ -161,7 +161,7 @@ object Dialog:
       val dlg = Dialog()
       configure.foreach(_(dlg))
       if location.isDefined then
-        dlg.show(location.get)
+        dlg.open(location.get)
       else
-        dlg.show()
+        dlg.open()
       dlg
