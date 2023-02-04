@@ -142,10 +142,10 @@ object Dialog:
     configure:List[Dialog=>Unit]=List.empty,
     location:Option[Position]=None
   ):
-    def onHide( code: =>Unit ):Builder =
+    def onClose( code: =>Unit ):Builder =
       copy( configure = configure :+ (_.onClosed(code)) )
 
-    def onShow( code: =>Unit ):Builder =
+    def onOpen( code: =>Unit ):Builder =
       copy( configure = configure :+ (_.onOpenned(code)) )
 
     def content( init: Panel=>Unit ):Builder =
@@ -157,7 +157,7 @@ object Dialog:
     def location( pos:Position ):Builder =
       copy( location = Some(pos) )
 
-    def show():Dialog =
+    def open():Dialog =
       val dlg = Dialog()
       configure.foreach(_(dlg))
       if location.isDefined then

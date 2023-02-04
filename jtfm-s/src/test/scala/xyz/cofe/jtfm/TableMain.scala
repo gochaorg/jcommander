@@ -159,13 +159,13 @@ object TableMain:
           println("dialog 1")
           Dialog
             .title("title").size(Size(25,10))
-            .onHide { println("closed") }
+            .onClose { println("closed") }
             .content { dlg => 
               val lbl = Label("label 12345")
               lbl.location = Position(0,0)
               dlg.children.append(lbl)
             }
-            .show()
+            .open()
         }
       )
 
