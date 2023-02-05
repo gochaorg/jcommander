@@ -20,6 +20,10 @@ import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.ui.prop.color._
 import xyz.cofe.term.ui.paint._
 
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
+import xyz.cofe.log._
+
 sealed trait Menu 
   extends Widget
   with LocationRWProp
@@ -423,6 +427,8 @@ class MenuBar(using config:MenuBarColorConfig)
   with FillBackground
   with WidgetInput:
 
+  private implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.MenuBar")
+
   backgroundColor = config.backgroundColor
 
   paintStack.set(
@@ -448,6 +454,8 @@ class MenuBar(using config:MenuBarColorConfig)
   protected var rootWidget : Option[RootWidget] = None
 
   def install( rootWidget:RootWidget ):Unit =
+    log"install to root"
+
     if rootWidget.children.exists(_.isInstanceOf[MenuBar])
     then throw Error("MenuBar already installed")
 
@@ -473,39 +481,60 @@ class MenuBar(using config:MenuBarColorConfig)
     rootListeners = releaseInputSes :: rootListeners
 
   def uninstall():Unit =
+    log"uninstall"
     rootListeners.foreach(_.release())
     rootListeners = List()
     rootWidget = None
 
+  private var movingToFront : Boolean = false
+
   protected def reinstallOnInsert( wid:Widget ):Unit =
-    if wid!=this
+    if movingToFront 
     then
-      this.toTreePath.selfSibIndex match
-        case Some(selfIdx) =>
-          wid.toTreePath.selfSibIndex match
-            case None => 
-            case Some(widIdx) =>
-              if selfIdx < widIdx then moveToFrontDelayed()
-        case None => 
+      debug"skip reinstallOnInsert $wid"
+    else
+      log"reinstallOnInsert ${wid}"
+      if wid!=this
+      then
+        this.toTreePath.selfSibIndex match
+          case Some(selfIdx) =>
+            wid.toTreePath.selfSibIndex match
+              case None => 
+              case Some(widIdx) =>
+                if selfIdx < widIdx then moveToFrontDelayed()
+          case None => 
 
   protected def reinstallOnDelete( wid:Widget ):Unit =
-    if wid==this 
-    then uninstall()
-    else moveToFrontDelayed()
+    if movingToFront
+    then
+      debug"skip reinstallOnDelete $wid"
+    else
+      log"reinstallOnDelete ${wid}"
+      if wid==this 
+      then uninstall()
+      else moveToFrontDelayed()
 
-  protected def moveToFrontDelayed():Unit = 
+  protected def moveToFrontDelayed():Unit =
+    log"moveToFrontDelayed" 
     rootWidget.map(_.session).foreach { ses => ses.addJob( moveToFront ) }
 
   protected def moveToFront():Unit =
-    rootWidget.foreach { rootWid => 
-      rootWid.children.delete( MenuBar.this )
-      rootWid.children.append( MenuBar.this )
-    }
+    log"moveToFront" 
+    try 
+      movingToFront = true
+      rootWidget.foreach { rootWid => 
+        rootWid.children.delete( MenuBar.this )
+        rootWid.children.append( MenuBar.this )
+      }
+    finally
+      movingToFront = false
 
   protected def resizeDelayed():Unit =
+    log"resizeDelayed" 
     rootWidget.map(_.session).foreach(_.addJob(resize))
 
   protected def resize():Unit =
+    log"resize" 
     rootWidget.foreach { rwid => 
       size = Size(rwid.size.get.width(),1)
     }
@@ -546,6 +575,7 @@ class MenuBar(using config:MenuBarColorConfig)
 
   private var keyStrokeMapOpt : Option[KeyStrokeMap[MenuAction]] = None
   private def buildKeyStrokeMap: KeyStrokeMap[MenuAction] =
+    log"buildKeyStrokeMap"
     KeyStrokeMap( this.walk.path
       .filter(_.node.isInstanceOf[MenuAction])
       .map(_.node.asInstanceOf[MenuAction])
@@ -563,16 +593,20 @@ class MenuBar(using config:MenuBarColorConfig)
   private var keyStrokeParserOpt: Option[KeyStrokeMap.KeyStrokeInputParser[MenuAction]] = None
   private def keyStrokeParser: KeyStrokeMap.KeyStrokeInputParser[MenuAction] =
     keyStrokeParserOpt.getOrElse {
+      log"build KeyStrokeInputParser"
       keyStrokeParserOpt = Some( KeyStrokeMap.KeyStrokeInputParser(keyStrokeMap) )
       keyStrokeParserOpt.get
     }
 
   def processInput(inputEvent:InputEvent):Boolean = 
+    log"processInput $inputEvent"
     var processed = false
     keyStrokeParser.input(inputEvent) { ma => 
+      log"matched $ma"
       ma.selectMenu
       processed = true
     }
+    debug"processed $processed"
     processed
 
 /* #endregion */

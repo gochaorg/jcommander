@@ -21,13 +21,12 @@ import ses._
 class Session
 ( val console: Console, initialize: Session => Unit )
 ( using 
-    sesInputLog:SesInputLog, 
     sesInputBehavior:SesInputBehavior
 )
 extends SesBase 
   with SesJobs 
   with SesPaint
-  with SesInput(sesInputLog, sesInputBehavior):
+  with SesInput(sesInputBehavior):
     
   object rootWidget extends Panel with RootWidget:
     def session:Session = Session.this
@@ -71,7 +70,6 @@ object Session:
 
   def start(console: Console)(initialize: Session => Unit)
   ( using 
-    sesInputLog:SesInputLog, 
     sesInputBehavior:SesInputBehavior
   ):Session =
     require(console!=null)

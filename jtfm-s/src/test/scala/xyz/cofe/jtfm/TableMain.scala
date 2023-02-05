@@ -19,7 +19,6 @@ import xyz.cofe.files.log.PathPattern
 import java.nio.file.Path
 import xyz.cofe.files.log.AppendableFile.apply
 import xyz.cofe.files.log.AppendableFile
-import xyz.cofe.term.ui.ses.SesInputLog
 import xyz.cofe.files.log.PathPattern.Evaluate
 import scala.collection.immutable.LazyList.cons
 import xyz.cofe.term.cs._
@@ -44,7 +43,6 @@ object TableMain:
   lazy val logPathCommon = "{appHome}/log/{yyyy}/{MM}/{dd}/{HH}-{mi}-pid{pid}-"
   lazy val sesInputLogPath = PathPattern.parse(Path.of(s"${logPathCommon}sesInput.json"))
   lazy val sesInputOut = AppendableFile(sesInputLogPath,Some(1024*1024*16))
-  given sesInputLog : SesInputLog = SesInputLog.writeTo(new JsonLogOutput[SesInputLog.SesInputEvent](sesInputOut))
 
   lazy val tableInputConfFile = TableConf.confFile(appHome)
 

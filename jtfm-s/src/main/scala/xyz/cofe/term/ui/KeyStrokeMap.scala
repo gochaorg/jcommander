@@ -66,12 +66,18 @@ object KeyStrokeMap:
 
   case class KeyStrokeInputParser[A]( map:KeyStrokeMap[A] ):
     private var history:List[InputEvent] = List.empty
+
     def input( event:InputEvent )( consumer:A=>Unit ):Unit = {
       event match
         case ke:InputKeyEvent  => input(ke, consumer)
         case ke:InputCharEvent => input(ke, consumer)
         case _ => ()
     }
+
+    def input( event:InputEvent ):List[A] =
+      var lst = List.empty[A]
+      input(event){ e => lst = lst :+ e }
+      lst
 
     private def input(ke:InputKeyEvent, consumer:A=>Unit):Unit =
       history = 
