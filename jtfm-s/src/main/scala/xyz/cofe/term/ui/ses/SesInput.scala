@@ -75,6 +75,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
               ke.getKey() match
                 case KeyName.Tab => focusNext(ke)
                 case KeyName.ReverseTab => focusPrev(ke)
+                case KeyName.Escape if topDialog.isDefined => closeTopDialog()
                 case _ => send2focused(ke)
             case me:InputMouseButtonEvent =>
               findWidgetAt(me.position()).headOption.foreach { case (wid,local) => 
@@ -142,6 +143,13 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
       switchFocusTo(widInput)
     })
 
+  def closeTopDialog():Option[Dialog] =
+    topDialog.map { dlg => 
+      dlg.close()
+      dlg
+    }
+
+
 object SesInput:
   opaque type NavigateFrom = Widget
   object NavigateFrom:
@@ -156,4 +164,3 @@ object SesInput:
       def position(): Position = localPos
       def pressed(): Boolean = me.pressed()
     }
-

@@ -9,8 +9,11 @@ import xyz.cofe.lazyp.ReleaseListener
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.ui.paint._
 import xyz.cofe.term.common.Color
+import conf._
+import xyz.cofe.term.ui.ses.conf.DialogConf
+import xyz.cofe.term.cs._
 
-class Dialog
+class Dialog( using conf:DialogConf )
 extends Widget 
 with LocationRWProp
 with SizeRWProp
@@ -71,7 +74,7 @@ with WidgetInput:
 
   size = Size(20,5)
 
-  def open(pos:Position)=
+  def open(pos:Position):Unit=
     visible = true
     add2root { root =>
       move2frontOf(root)
@@ -79,7 +82,7 @@ with WidgetInput:
       focusableWidget.orElse(findeFocusableChild).foreach { _.focus.request }
     }
 
-  def open() = 
+  def open():Unit = 
     visible = true
     add2root { root =>
       move2frontOf(root)
@@ -87,7 +90,7 @@ with WidgetInput:
       focusableWidget.orElse(findeFocusableChild).foreach { _.focus.request }
     }
 
-  def close() =
+  def close():Unit =
     visible = false
     parent.get.foreach { prnt =>
       prnt match
@@ -96,6 +99,21 @@ with WidgetInput:
         case _ =>
     }
     onClosed.emit()
+    if conf.restoreFocusAtClose then restoreFocus()
+
+  private var lastFocused : Option[WidgetInput] = None
+  focus.onAccept { fromOpt => 
+    if fromOpt.map { from => 
+        this.walk.path.exists( _.node == from )
+      }.getOrElse(false)
+    then
+      fromOpt.foreach { from => 
+        lastFocused = Some(from)
+      }
+  }
+  private def restoreFocus():Unit =
+    lastFocused.foreach { _.focus.request }
+    lastFocused = None
 
   private var onOpenEmitted = false
   val onOpenned = Listener()
