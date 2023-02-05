@@ -33,6 +33,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
     focusOwnerValue = newOwner
     log.switchFocus(oldOwner, newOwner)
 
+  /** Верхний диалог */
   def topDialog =
     rootWidget.children
       .filter(_.isInstanceOf[Dialog])
@@ -50,6 +51,7 @@ trait SesInput(log:SesInputLog, behavior:SesInputBehavior) extends SesPaint with
    */
   var inputListeners: List[InputEvent => Boolean] = List.empty
 
+  /** обработка входящий событий (клавиатуры, мыши, окна, ...) */
   protected def processInput():Unit =
     val inputEvOpt = console.read()
     if( inputEvOpt.isPresent() ){
