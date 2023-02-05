@@ -4,8 +4,8 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Size
 
 case class Rect( left:Int, top:Int, width:Int, height:Int ):
-  require(width>=0)
-  require(height>=0)
+  require(width>=0,  s"width to small = $width")
+  require(height>=0, s"height to small = $height")
   lazy val right:Int = left + width
   lazy val bottom:Int = top + height
   

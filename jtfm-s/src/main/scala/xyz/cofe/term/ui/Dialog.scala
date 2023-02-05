@@ -8,6 +8,7 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.lazyp.ReleaseListener
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.ui.paint._
+import xyz.cofe.term.common.Color
 
 class Dialog
 extends Widget 
@@ -22,6 +23,9 @@ with WidgetInput:
   paintStack.add(paintBorder)
   paintStack.add(paintTitle)
   paintStack.add(paintChildren)
+
+  backgroundColor = Color.White
+  foregroundColor = Color.Black
 
   def paintBorder(paint:PaintCtx):Unit = 
     val rect = size.get.leftUpRect(0,0)
@@ -38,6 +42,8 @@ with WidgetInput:
       Line(rt,rb,Symbols.Style.Single),
       Line(hlLeft,hlRight,Symbols.Style.Single),
     )
+    paint.foreground = Color.Black
+    paint.background = Color.White
     lines.draw(paint)
 
   def paintTitle(paint:PaintCtx):Unit =
@@ -53,8 +59,11 @@ with WidgetInput:
   }
 
   val content = Panel()
+  content.backgroundColor = Color.Green
   children.append(content)
-  content.bind(this){ w => (Position(1,3), Position(w.width-2,w.height-4) ).rect }
+  content.bind(this){ w =>     
+    Rect(1,3, (w.width-1) max 0, (w.height-3) max 0)
+  }
 
   var focusableWidget:Option[WidgetInput] = None
   private def findeFocusableChild:Option[WidgetInput] =
@@ -153,6 +162,9 @@ object Dialog:
 
     def size( size:Size ):Builder =
       copy( configure = configure :+ (dlg => dlg.size = size) )
+
+    def size(width:Int, height:Int):Builder =
+      size(Size(width,height))
 
     def location( pos:Position ):Builder =
       copy( location = Some(pos) )

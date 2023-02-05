@@ -1,7 +1,6 @@
 {
   "keyboard": [
-    { "action": { "ActivateMainMenu":{} }
-    , "keyStroke": "F12"
-    }
+    { "action": {"ActivateMainMenu":{}}, "keyStroke": "F12" },
+    { "action": { "MkDir":{} }, "keyStroke": "F7" }
   ]
 }

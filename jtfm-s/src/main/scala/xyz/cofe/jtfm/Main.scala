@@ -24,6 +24,9 @@ import xyz.cofe.term.ui.Menu
 import xyz.cofe.term.ui.conf.MenuColorConfig
 import xyz.cofe.term.ui.MenuAction
 import xyz.cofe.jtfm.conf.MainMenu
+import xyz.cofe.term.ui.Dialog
+import xyz.cofe.term.ui.TextField
+import xyz.cofe.term.common.Size
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -34,7 +37,7 @@ object Main:
     ConsoleBuilder.useConsole(startSession)
 
   private var mbarOpt : Option[WidgetInput] = None
-
+  private var lasftFocusedDirectoryTable:Option[DirectoryTable] = None
   def startSession( console: Console ):Unit =
     val conf : UiConf = new UiConf
     import conf.given
@@ -50,6 +53,9 @@ object Main:
 
       leftPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ rightPanel.focus.request })
       rightPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ leftPanel.focus.request })
+
+      leftPanel.focus.onAccept { _ => lasftFocusedDirectoryTable = Some(leftPanel) }
+      rightPanel.focus.onAccept { _ => lasftFocusedDirectoryTable = Some(rightPanel) }
 
       val vsplitPanel = VSplitPane()
       ses.rootWidget.children.append(vsplitPanel)
@@ -101,6 +107,7 @@ object Main:
           }
         }
         menu("File") {
+          Action.MkDir.menuAction
           Action.Exit.menuAction
         }
         
@@ -120,10 +127,30 @@ object Main:
     action match
       case Action.Exit => ()=>{ ses.stop = true }
       case Action.ActivateMainMenu => ()=>{ mbarOpt.foreach { mbar => mbar.focus.request } }
+      case Action.MkDir => ()=>{
+        lasftFocusedDirectoryTable.foreach { dirTable =>
+          println(s"dir ${dirTable.directory.get}")
+          Dialog
+            .title("mk dir")
+            .size(36,15)
+            .content { panel =>              
+              val input = TextField()
+              panel.children.append(input)
+              input.location = Position(0,0)
+              input.size = Size(20,1)
+              // input.bind(panel) { b => 
+              //   println(s"lt=${b.leftTop} rb=${b.rightBottom} w=${b.width} h=${b.height}")
+              //   Rect(0,0,10,1)
+              // }
+            }
+            .open()
+        }
+      }
 
   enum Action(val name:String):
     case Exit extends Action("Exit")
     case ActivateMainMenu extends Action("Show menu")
+    case MkDir extends Action("MkDir")
 
     def menuAction
         ( using 
