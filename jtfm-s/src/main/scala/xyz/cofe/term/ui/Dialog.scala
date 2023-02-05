@@ -95,6 +95,7 @@ with WidgetInput:
           wc.children.delete(this)
         case _ =>
     }
+    onClosed.emit()
 
   private var onOpenEmitted = false
   val onOpenned = Listener()
