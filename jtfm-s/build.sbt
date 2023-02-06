@@ -14,11 +14,13 @@ resolvers += "maven central" at "https://repo1.maven.org/maven2"
 
 //libraryDependencies += "xyz.cofe" % "term-common" % "0.2" withSources()
 //libraryDependencies += "xyz.cofe" % "term-common" % "0.3" withSources()
-libraryDependencies += "xyz.cofe" % "term-common" % "0.3" from "file:/home/user/code/term-common-parent/term-common/target/term-common-0.3.1-SNAPSHOT.jar"
+libraryDependencies += "xyz.cofe" % "term-common" % "0.3.1" // from "file:/home/user/code/term-common-parent/term-common/target/term-common-0.3.1-SNAPSHOT.jar"
 libraryDependencies += "xyz.cofe" %% "json4s3" % "0.1.2" 
 //libraryDependencies += "org.slf4j" % "slf4j-api" % "2.0.6"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.5"
+
 libraryDependencies += "io.undertow" % "undertow-core" % "2.1.0.Final"
+//libraryDependencies += "com.sparkjava" % "spark-core" % "2.9.4"
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -67,11 +69,15 @@ distBinDir := {
 }
 
 val mainClass = "xyz.cofe.jtfm.Main"
+
 val jvmOpts = List[JvmOpt](
   JvmOpt.Custom("-Dxyz.cofe.term.default=auto")
 )
-val binBashScriptSrc  = BashScript (mainClass,jvmOpts=jvmOpts).fullScript
-val binBatchScriptSrc = BatchScript(mainClass,jvmOpts=jvmOpts).fullScript
+val winJvmOpts = JvmOpt.Custom("-Djtfm.console=win") :: jvmOpts
+val nixJvmOpts = JvmOpt.Custom("-Djtfm.console=nix") :: jvmOpts
+
+val binBashScriptSrc  = BashScript (mainClass,jvmOpts=nixJvmOpts).fullScript
+val binBatchScriptSrc = BatchScript(mainClass,jvmOpts=winJvmOpts, javaExe=JavaExe.window).fullScript
 
 val bashScript = taskKey[Unit]("Generate bash launch script")
 bashScript := {
@@ -92,4 +98,11 @@ dist := {
   batScript.value
   bashScript.value
   copyAllLibsAndArtifact.value
+}
+
+
+val distClean = taskKey[Unit]("clean dist")
+distClean := {
+  val distDir0 = distDir.value
+  IO.delete(distDir0)
 }

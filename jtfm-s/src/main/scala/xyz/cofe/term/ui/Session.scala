@@ -50,7 +50,7 @@ extends SesBase
       tInput(processInput())
       tJobs(processJobs())
       tRepaint(repaint())
-      tSleep(Thread.sleep(1))
+      tSleep(Thread.sleep(10))
     }
   }
 

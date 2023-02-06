@@ -4,6 +4,7 @@ import xyz.cofe.files.AppHome
 import xyz.cofe.jtfm.conf.ConfFile
 import xyz.cofe.jtfm.conf.ConfError
 
+import xyz.cofe.jtfm.metric.MetricHttpExport
 case class MetricConf(
   enabled:Boolean,
   host:String,
@@ -11,7 +12,7 @@ case class MetricConf(
 ):
   def run[R]( code: =>R ):R =
     implicit val conf:MetricConf = this
-    val metricExport = new MetricExport
+    val metricExport = new MetricHttpExport
     if enabled 
     then
       try

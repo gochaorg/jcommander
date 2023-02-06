@@ -27,7 +27,6 @@ import xyz.cofe.jtfm.conf.MainMenu
 import xyz.cofe.term.ui.Dialog
 import xyz.cofe.term.ui.TextField
 import xyz.cofe.term.common.Size
-import xyz.cofe.jtfm.metric.MetricExport
 import xyz.cofe.jtfm.metric.MetricConf
 
 object Main:
@@ -140,8 +139,6 @@ object Main:
             .content { panel =>              
               val input = TextField()
               panel.children.append(input)
-              // input.location = Position(0,0)
-              // input.size = Size(20,1)
               input.bind(panel) { b => 
                 println(s"lt=${b.leftTop} rb=${b.rightBottom} w=${b.width} h=${b.height}")
                 Rect(0,1,b.width,1)
