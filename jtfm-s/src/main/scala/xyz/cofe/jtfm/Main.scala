@@ -27,14 +27,19 @@ import xyz.cofe.jtfm.conf.MainMenu
 import xyz.cofe.term.ui.Dialog
 import xyz.cofe.term.ui.TextField
 import xyz.cofe.term.common.Size
+import xyz.cofe.jtfm.metric.MetricExport
+import xyz.cofe.jtfm.metric.MetricConf
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
+  implicit val metricConf:MetricConf = MetricConf.read.getOrElse(MetricConf.defaultConf)
 
   def main(args:Array[String]):Unit =
     LogPrepare.prepare
     HelloMessage.writeLog
-    ConsoleBuilder.useConsole(startSession)
+    metricConf.run {
+      ConsoleBuilder.useConsole(startSession)
+    }
 
   private var mbarOpt : Option[WidgetInput] = None
   private var lasftFocusedDirectoryTable:Option[DirectoryTable] = None
@@ -129,19 +134,21 @@ object Main:
       case Action.ActivateMainMenu => ()=>{ mbarOpt.foreach { mbar => mbar.focus.request } }
       case Action.MkDir => ()=>{
         lasftFocusedDirectoryTable.foreach { dirTable =>
-          println(s"dir ${dirTable.directory.get}")
           Dialog
             .title("mk dir")
             .size(36,15)
             .content { panel =>              
               val input = TextField()
               panel.children.append(input)
-              input.location = Position(0,0)
-              input.size = Size(20,1)
-              // input.bind(panel) { b => 
-              //   println(s"lt=${b.leftTop} rb=${b.rightBottom} w=${b.width} h=${b.height}")
-              //   Rect(0,0,10,1)
-              // }
+              // input.location = Position(0,0)
+              // input.size = Size(20,1)
+              input.bind(panel) { b => 
+                println(s"lt=${b.leftTop} rb=${b.rightBottom} w=${b.width} h=${b.height}")
+                Rect(0,1,b.width,1)
+              }
+            }
+            .onClose {
+              println("closed")
             }
             .open()
         }

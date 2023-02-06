@@ -17,6 +17,7 @@ import xyz.cofe.term.buff.ScreenBufSync
 import java.util.concurrent.atomic.AtomicInteger
 
 import ses._
+import xyz.cofe.metric._
 
 class Session
 ( val console: Console, initialize: Session => Unit )
@@ -38,13 +39,18 @@ extends SesBase
     screenBuffer.resize( conSize )
     rootWidget.size.set( conSize )
 
-    initialize(this)
+    Metrics.tracker("session.initialize")(initialize(this))
+
+    val tInput = Metrics.tracker("session.processInput")
+    val tJobs = Metrics.tracker("session.processJobs")
+    val tRepaint = Metrics.tracker("session.repaint")
+    val tSleep = Metrics.tracker("session.sleep")
 
     while( !stop ){
-      processInput()
-      processJobs()
-      repaint()      
-      Thread.sleep(1)
+      tInput(processInput())
+      tJobs(processJobs())
+      tRepaint(repaint())
+      tSleep(Thread.sleep(1))
     }
   }
 

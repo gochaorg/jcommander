@@ -18,6 +18,7 @@ libraryDependencies += "xyz.cofe" % "term-common" % "0.3" from "file:/home/user/
 libraryDependencies += "xyz.cofe" %% "json4s3" % "0.1.2" 
 //libraryDependencies += "org.slf4j" % "slf4j-api" % "2.0.6"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.5"
+libraryDependencies += "io.undertow" % "undertow-core" % "2.1.0.Final"
 
 ////////////////////////////////////////////////////////////////////////
 

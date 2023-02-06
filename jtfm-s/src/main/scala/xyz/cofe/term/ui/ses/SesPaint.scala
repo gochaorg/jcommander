@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.buff.ScreenBufSync
-
+import xyz.cofe.metric._
 
 trait SesPaint extends SesBase:
   val screenBuffer = ChangeMetricBuffer(Buffer())
@@ -18,15 +18,18 @@ trait SesPaint extends SesBase:
     repaintRequests.incrementAndGet()
   }
 
+  private val tRepaintRoot = Metrics.tracker("SesPaint.repaint.root")
+  private val tRepaintSync = Metrics.tracker("SesPaint.repaint.sync")
+
   protected def repaint():Unit = 
     if repaintRequests.get()>0 
     then
       repaintRequests.set(0)
 
-      // val ctx = ConsoleCtx(console,Position(0,0),console.getSize())
-      // rootWidget.paint(ctx)
+      tRepaintRoot{
+        rootWidget.paint(BasicPaintCtx(
+          screenBuffer, Position(0,0), Size(screenBuffer.width, screenBuffer.height), true
+        ))
+      }
 
-      rootWidget.paint(BasicPaintCtx(
-        screenBuffer, Position(0,0), Size(screenBuffer.width, screenBuffer.height), true
-      ))
-      ScreenBufSync.sync(console, screenBuffer)
+      tRepaintSync(ScreenBufSync.sync(console, screenBuffer))
