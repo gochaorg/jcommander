@@ -14,3 +14,12 @@ class Listener[A] {
     listeners.foreach( l => l(a) )
   }
 }
+
+object Listener:
+  def unit:Listener[Unit] = new Listener[Unit]
+
+extension (listener:Listener[Unit])
+  def listen( handler: =>Any ):ReleaseListener =
+    listener.listen( _ => handler )
+  def emit():Unit =
+    listener.emit(())

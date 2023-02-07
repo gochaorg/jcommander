@@ -1,4 +1,5 @@
-package xyz.cofe.term.ui
+package xyz.cofe.term
+package ui
 
 import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.paint.PaintCtx
@@ -104,7 +105,7 @@ with WidgetInput:
           wc.children.delete(this)
         case _ =>
     }
-    onClosed.emit(())
+    onClosed.emit()
     if conf.restoreFocusAtClose then restoreFocus()
 
   private var lastFocused : Option[WidgetInput] = None
@@ -129,15 +130,15 @@ with WidgetInput:
     lastFocused = None
 
   private var onOpenEmitted = false
-  val onOpenned = Listener[Unit]()
+  val onOpenned = Listener.unit
 
   private var onCloseEmitted = false
-  val onClosed = Listener[Unit]()
+  val onClosed = Listener.unit
 
   paintStack.add { _ => 
     if ! onOpenEmitted then
       debug"open emitting"
-      onOpenned.emit(())
+      onOpenned.emit()
       onOpenEmitted = true
       onCloseEmitted = false
   }

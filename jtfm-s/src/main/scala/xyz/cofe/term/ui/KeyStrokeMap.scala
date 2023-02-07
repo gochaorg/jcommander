@@ -18,7 +18,7 @@ class KeyStrokeMap[A] extends Prop[KeyStrokeMap[A]]:
       (keyStroke.sequenceSize -> 
         (shortcutsByLen.get(keyStroke.sequenceSize).getOrElse(Set()) ++ Set(keyStroke))
       )
-    changeListeners.emit(())
+    changeListeners.emit()
 
   def unbind( value:A ):Unit =
     shortcuts = shortcuts.map { case (ks, actions) => 
@@ -28,7 +28,7 @@ class KeyStrokeMap[A] extends Prop[KeyStrokeMap[A]]:
     shortcutsByLen = shortcutsByLen.map { case (len, kss) => 
       (len,kss.filter { ks => ksAll.contains(ks)} )
     }.filter { case (len,kss) => kss.nonEmpty }
-    changeListeners.emit(())
+    changeListeners.emit()
 
   def unbind( keyStroke:KeyStroke ):Unit =
     shortcuts = shortcuts.filterNot(a => a==keyStroke)
@@ -36,7 +36,7 @@ class KeyStrokeMap[A] extends Prop[KeyStrokeMap[A]]:
     shortcutsByLen = shortcutsByLen.map { case (len, kss) => 
       (len,kss.filter { ks => ksAll.contains(ks)} )
     }.filter { case (len,kss) => kss.nonEmpty }
-    changeListeners.emit(())
+    changeListeners.emit()
 
   def toMap:Map[KeyStroke,Set[A]] =
     shortcuts
@@ -53,7 +53,7 @@ class KeyStrokeMap[A] extends Prop[KeyStrokeMap[A]]:
 
   override def get: KeyStrokeMap[A] = this
   
-  private val changeListeners = Listener[Unit]()
+  private val changeListeners = Listener.unit
   override def onChange(listener: => Unit): ReleaseListener = changeListeners.listen( _ => listener)
 
 object KeyStrokeMap:
