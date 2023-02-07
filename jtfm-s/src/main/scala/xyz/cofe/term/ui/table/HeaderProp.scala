@@ -12,13 +12,14 @@ object HeaderProp:
   class Header(repaint: =>Unit) extends Prop[Header]:
     val visible = Prop.rw(true)
     visible.onChange(repaint)
-    visible.onChange(listeners.emit())
+    visible.onChange(listeners.emit(()))
 
     val delimiter = Prop.rw(Delimeter.DoubleLine)
     delimiter.onChange(repaint)
-    delimiter.onChange(listeners.emit())
+    delimiter.onChange(listeners.emit(()))
 
     override def get: Header = this
-    private val listeners = Listener()
+    private val listeners : Listener[Unit] = Listener[Unit]()
+
     override def onChange(ls: => Unit): ReleaseListener = 
-      listeners(ls)
+      listeners.listen( _ => ls )

@@ -57,17 +57,17 @@ object SetOp:
 class ObserverSetBase[A,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) extends ObserverSet[A]:
   var values:S[A] = initial
 
-  val deleteListeners = Listener.paramter[A]
+  val deleteListeners = Listener[A]
   override def onDelete(ls: A => Unit): ReleaseListener = 
     deleteListeners.listen(ls)
 
-  val insertListeners = Listener.paramter[A]
+  val insertListeners = Listener[A]
   override def onInsert(ls: A => Unit): ReleaseListener = 
     insertListeners.listen(ls)
 
-  val changeListeners = Listener()
+  val changeListeners = Listener[Unit]()
   override def onChange(listener: => Unit): ReleaseListener = 
-    changeListeners(listener)
+    changeListeners.listen(_ => listener)
 
 
   override def contains(a: A): Boolean = 
@@ -80,7 +80,7 @@ class ObserverSetBase[A,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) 
       val delItems = values.filter(_ == a)
       values = setOp.filter(values, e => e!=a )
       delItems.foreach(deleteListeners.emit)
-      if delItems.nonEmpty then changeListeners.emit()
+      if delItems.nonEmpty then changeListeners.emit(())
       true
 
   override def exclude(items: Iterable[A]): Int = 
@@ -95,7 +95,7 @@ class ObserverSetBase[A,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) 
     else 
       values = setOp.join(values, a)
       insertListeners.emit(a)
-      changeListeners.emit()
+      changeListeners.emit(())
       true
 
   override def include(items: Iterable[A]): Int = 
@@ -110,7 +110,7 @@ class ObserverSetBase[A,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) 
   override def clear(): Unit = 
     val items = values
     items.foreach(deleteListeners.emit)
-    changeListeners.emit()
+    changeListeners.emit(())
     values = setOp.clear
 
 class ObserverSetImplSortted[A:Ordering,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) extends ObserverSetBase(initial) with ObserverSortedSet[A]

@@ -104,7 +104,7 @@ with WidgetInput:
           wc.children.delete(this)
         case _ =>
     }
-    onClosed.emit()
+    onClosed.emit(())
     if conf.restoreFocusAtClose then restoreFocus()
 
   private var lastFocused : Option[WidgetInput] = None
@@ -129,15 +129,15 @@ with WidgetInput:
     lastFocused = None
 
   private var onOpenEmitted = false
-  val onOpenned = Listener()
+  val onOpenned = Listener[Unit]()
 
   private var onCloseEmitted = false
-  val onClosed = Listener()
+  val onClosed = Listener[Unit]()
 
   paintStack.add { _ => 
     if ! onOpenEmitted then
       debug"open emitting"
-      onOpenned.emit()
+      onOpenned.emit(())
       onOpenEmitted = true
       onCloseEmitted = false
   }
@@ -212,10 +212,10 @@ object Dialog:
     private implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.Dialog.Builder")
 
     def onClose( code: =>Unit ):Builder =
-      copy( configure = configure :+ (_.onClosed(code)) )
+      copy( configure = configure :+ (_.onClosed.listen(_ => code)) )
 
     def onOpen( code: =>Unit ):Builder =
-      copy( configure = configure :+ (_.onOpenned(code)) )
+      copy( configure = configure :+ (_.onOpenned.listen(_ => code)) )
 
     def content( init: Panel=>Unit ):Builder =
       copy( configure = configure :+ (dlg => init(dlg.content)) )
@@ -241,7 +241,7 @@ object Dialog:
 
       handler.onOpenListeners.foreach( ls => 
         debug"add close listener"
-        dlg.onOpenned {
+        dlg.onOpenned.listen { _ =>
           debug"call close listeners"
           ls()
         }
