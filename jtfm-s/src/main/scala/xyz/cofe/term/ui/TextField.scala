@@ -50,6 +50,7 @@ with FillBackground:
       .colors(foregroundColor, backgroundColor)
       .select(selection.get).colors(selectionFgColor.get, selectionBgColor.get)
 
+    paint.write(0,0, (" "*size.width()).colors(Color.White, Color.Black) )
     paint.write(0,0,colorStr)
 
     if focus.isOwner 
