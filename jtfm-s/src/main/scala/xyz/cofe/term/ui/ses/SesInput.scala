@@ -137,11 +137,17 @@ trait SesInput(behavior:SesInputBehavior) extends SesPaint with SesJobs:
     val topDlg = topDialog
     if topDlg.map { dlg => widInput.toTreePath.listToLeaf.contains(dlg) }.getOrElse( true )
     then      
-      debug"switchFocusTo $widInput"
       val oldOwner = focusOwner
+      debug"switchFocusTo $widInput from $oldOwner"
       focusOwner = Some(widInput)
       oldOwner.foreach( w => w.focus.lost(Some(widInput)) )
       widInput.focus.accept(oldOwner)
+      widInput.toTreePath.listToLeaf.dropRight(1).foreach { 
+        case widParent:WidgetInput =>
+          debug"widParent acceptChild $oldOwner $widInput"
+          widParent.focus.acceptChild.emit(oldOwner,widInput)
+        case _ =>
+      }
       widInput.repaint
     else
       topDlg.foreach { dlg =>

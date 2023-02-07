@@ -83,6 +83,8 @@ class FocusClient( widget:WidgetInput ):
         onAcceptListeners = onAcceptListeners.filterNot( l => l==listener )
     }
 
+  val acceptChild = Listener.ListenersWithParam[(Option[WidgetInput],WidgetInput)]()
+
   var onLostListeners : List[Option[WidgetInput]=>Unit] = List.empty
   def lost(to:Option[WidgetInput]):Unit =
     own.set(false)    

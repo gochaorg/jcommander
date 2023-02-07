@@ -109,15 +109,22 @@ with WidgetInput:
 
   private var lastFocused : Option[WidgetInput] = None
   focus.onAccept { fromOpt => 
-    if fromOpt.map { from => 
-        this.walk.path.exists( _.node == from )
-      }.getOrElse(false)
-    then
-      fromOpt.foreach { from => 
-        lastFocused = Some(from)
-      }
+    debug"accepted focus from $fromOpt"
+    acceptFocusFrom( fromOpt )
   }
+
+  focus.acceptChild.listen { case (fromOpt,childFocus) => 
+    debug"accepted 1 focus from $fromOpt"
+    acceptFocusFrom( fromOpt )
+  }
+
+  private def acceptFocusFrom( fromOpt:Option[WidgetInput] ):Unit =
+    if fromOpt.map { from => ! from.toTreePath.listToLeaf.contains(this) }.getOrElse(false) then
+      debug"acceptFocusFrom not subchild"
+      lastFocused = fromOpt
+
   private def restoreFocus():Unit =
+    log"restore focus to $lastFocused"
     lastFocused.foreach { _.focus.request }
     lastFocused = None
 

@@ -59,11 +59,11 @@ class ObserverSetBase[A,S[A] <: Set[A]]( initial:S[A] )(using setOp:SetOp[A,S]) 
 
   val deleteListeners = Listener.paramter[A]
   override def onDelete(ls: A => Unit): ReleaseListener = 
-    deleteListeners(ls)
+    deleteListeners.listen(ls)
 
   val insertListeners = Listener.paramter[A]
   override def onInsert(ls: A => Unit): ReleaseListener = 
-    insertListeners(ls)
+    insertListeners.listen(ls)
 
   val changeListeners = Listener()
   override def onChange(listener: => Unit): ReleaseListener = 
