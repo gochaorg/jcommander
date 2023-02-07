@@ -69,7 +69,7 @@ class FocusClient( widget:WidgetInput ):
   var history:List[FocusAction] = List.empty
   var historyLen = 25
   
-  var onAccept = Listener[Option[WidgetInput]]
+  val onAccept = Listener[Option[WidgetInput]]
   def accept(from:Option[WidgetInput]):Unit =
     own.set(true)
     history = (FocusAction.Give(from) :: history).take(historyLen)
