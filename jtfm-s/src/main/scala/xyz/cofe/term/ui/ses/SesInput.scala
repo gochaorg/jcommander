@@ -56,9 +56,9 @@ trait SesInput(behavior:SesInputBehavior) extends SesPaint with SesJobs:
   var inputListeners: List[InputEvent => Boolean] = List.empty
 
   val keyStrokeMap : KeyStrokeMap[Action] = KeyStrokeMap( Map(
-    KeyStroke.KeyEvent(KeyName.Tab,false,false,false)         -> Set(Action.FocusNext),
-    KeyStroke.KeyEvent(KeyName.ReverseTab,false,false,false)  -> Set(Action.FocusBack),
-    KeyStroke.KeyEvent(KeyName.Escape,false,false,false)      -> Set(Action.CloseDialog),
+    KeyStroke.KeyEvent(KeyName.Tab,false,false,false)         -> Action.FocusNext,
+    KeyStroke.KeyEvent(KeyName.ReverseTab,false,false,false)  -> Action.FocusBack,
+    KeyStroke.KeyEvent(KeyName.Escape,false,false,false)      -> Action.CloseDialog,
   ))
   val keyStrokeInputParser : KeyStrokeMap.InputParser[Action] = KeyStrokeMap.InputParser(keyStrokeMap)
 

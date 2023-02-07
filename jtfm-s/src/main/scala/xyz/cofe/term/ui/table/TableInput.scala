@@ -86,8 +86,8 @@ with TableGridPaint[A]
     }
     matched
 
-  private def predefKeyStrokes : Map[KeyStroke,Set[()=>Unit]] = 
-    tableInputConf.keyStrokeActionMap(this).mapValues(v=>Set(v)).toMap
+  private def predefKeyStrokes : Map[KeyStroke,()=>Unit] = 
+    tableInputConf.keyStrokeActionMap(this)
 
   private def scrollHeight:Int = 
     val (dataYMin, dataYMax) = dataYPos.get

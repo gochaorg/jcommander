@@ -9,11 +9,11 @@ import xyz.cofe.term.common.InputKeyEvent
 import xyz.cofe.term.common.InputCharEvent
 
 class KeyStrokeMap[A] extends Prop[KeyStrokeMap[A]]:
-  private var shortcuts:Map[KeyStroke,Set[A]] = Map.empty
+  private var shortcuts:Map[KeyStroke,A] = Map.empty
   private var shortcutsByLen:TreeMap[Int,Set[KeyStroke]] = TreeMap.empty
 
   def bind( keyStroke:KeyStroke, value:A ):Unit =
-    shortcuts = shortcuts + (keyStroke -> (shortcuts.get(keyStroke).getOrElse(Set.empty) + value))
+    shortcuts = shortcuts + (keyStroke -> value)
     shortcutsByLen = shortcutsByLen + 
       (keyStroke.sequenceSize -> 
         (shortcutsByLen.get(keyStroke.sequenceSize).getOrElse(Set()) ++ Set(keyStroke))
@@ -21,9 +21,10 @@ class KeyStrokeMap[A] extends Prop[KeyStrokeMap[A]]:
     changeListeners.emit()
 
   def unbind( value:A ):Unit =
-    shortcuts = shortcuts.map { case (ks, actions) => 
-      (ks, actions.filterNot(a => a==value))
-    }.filter { case (ks,actions) => actions.nonEmpty }
+    shortcuts = shortcuts.filterNot { case (ks, action) => 
+      value == action
+    }
+
     val ksAll = shortcuts.keySet
     shortcutsByLen = shortcutsByLen.map { case (len, kss) => 
       (len,kss.filter { ks => ksAll.contains(ks)} )
@@ -38,17 +39,17 @@ class KeyStrokeMap[A] extends Prop[KeyStrokeMap[A]]:
     }.filter { case (len,kss) => kss.nonEmpty }
     changeListeners.emit()
 
-  def toMap:Map[KeyStroke,Set[A]] =
+  def toMap:Map[KeyStroke,A] =
     shortcuts
 
   def sequenceLengths:SortedSet[Int] = SortedSet.from(shortcutsByLen.keySet)
   def sequenceMaxLength:Int = sequenceLengths.lastOption.getOrElse(0)
 
-  def find(inputHistory:List[InputEvent]):Option[(KeyStroke,Set[A])] =
+  def find(inputHistory:List[InputEvent]):Option[(KeyStroke,A)] =
     shortcutsByLen.values.toList.flatten.reverse
       .find( ks => ks.matchLeft(inputHistory) )
       .flatMap { ks =>
-        shortcuts.get(ks).map(set => (ks,set))
+        shortcuts.get(ks).map(action => (ks,action))
       }
 
   override def get: KeyStrokeMap[A] = this
@@ -59,9 +60,9 @@ class KeyStrokeMap[A] extends Prop[KeyStrokeMap[A]]:
 object KeyStrokeMap:
   def apply[A]():KeyStrokeMap[A] = new KeyStrokeMap[A]()
 
-  def apply[A]( map:Map[KeyStroke,Set[A]] ):KeyStrokeMap[A] =
+  def apply[A]( map:Map[KeyStroke,A] ):KeyStrokeMap[A] =
     val m = new KeyStrokeMap[A]()
-    map.foreach( (ks,set) => set.foreach( a => m.bind(ks,a)))
+    map.foreach( (ks,action) => m.bind(ks,action))
     m
 
   case class InputParser[A]( map:KeyStrokeMap[A] ):
@@ -97,8 +98,8 @@ object KeyStrokeMap:
       val found = map.find(history)
       if found.isDefined 
       then
-        val (ks,set) = found.get
-        set.foreach(consumer)
+        val (ks,action) = found.get
+        consumer(action)
         history.drop(ks.sequenceSize)
       else
         history

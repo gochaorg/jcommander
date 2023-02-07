@@ -574,7 +574,7 @@ class MenuBar(using config:MenuBarColorConfig)
       .map(_.node.asInstanceOf[MenuAction])
       .toList
       .filter(_.keyStroke.get.isDefined)
-      .map(ma => (ma.keyStroke.get.get, Set(ma)))
+      .map(ma => (ma.keyStroke.get.get, ma))
       .toMap)
 
   private def keyStrokeMap: KeyStrokeMap[MenuAction] =

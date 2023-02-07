@@ -221,3 +221,12 @@ with FillBackground:
     ClipboardAWT.writeString(
       selection.get.select(text.get)
     )
+
+  val keyStrokeMap : KeyStrokeMap[TextField.Action] =
+    KeyStrokeMap(Map(
+      //KeyStroke.
+    ))
+
+object TextField:
+  enum Action:
+    case MoveCursor
