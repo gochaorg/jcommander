@@ -110,15 +110,12 @@ trait SesInput(behavior:SesInputBehavior) extends SesPaint with SesJobs:
               then
                 if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) && me.pressed() 
                 then 
-                  log"switch focus to $wid"
                   switchFocusTo(wid)
 
                 val eventForLocal = me.toLocal(local)
-                log"send to widget input"
                 wid.input( eventForLocal )
             }
           case _ => 
-            log"send2focused $inputEv"
             send2focused(inputEv)
     }
 
@@ -140,6 +137,7 @@ trait SesInput(behavior:SesInputBehavior) extends SesPaint with SesJobs:
     val topDlg = topDialog
     if topDlg.map { dlg => widInput.toTreePath.listToLeaf.contains(dlg) }.getOrElse( true )
     then      
+      debug"switchFocusTo $widInput"
       val oldOwner = focusOwner
       focusOwner = Some(widInput)
       oldOwner.foreach( w => w.focus.lost(Some(widInput)) )
@@ -147,6 +145,7 @@ trait SesInput(behavior:SesInputBehavior) extends SesPaint with SesJobs:
       widInput.repaint
     else
       topDlg.foreach { dlg =>
+        debug"cancel by dialog $dlg"
       }
 
   private def findWidgetAt( absolutePos:Position ):List[(WidgetInput,Position)] =
@@ -157,7 +156,10 @@ trait SesInput(behavior:SesInputBehavior) extends SesPaint with SesJobs:
       .reverse
 
   private def send2focused(ev:InputEvent):Unit =
-    focusOwner.foreach( wid => wid.input(ev) )
+    focusOwner.foreach { wid => 
+      log"send2focused $ev $wid"
+      wid.input(ev) 
+    }
 
   def requestFocus( widInput:WidgetInput ):Unit =
     addJob( ()=>{

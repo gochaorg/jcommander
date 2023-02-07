@@ -18,6 +18,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import ses._
 import xyz.cofe.metric._
+import xyz.cofe.log._
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class Session
 ( val console: Console, initialize: Session => Unit )
@@ -28,6 +31,8 @@ extends SesBase
   with SesJobs 
   with SesPaint
   with SesInput(sesInputBehavior):
+
+  private implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.Session")
     
   object rootWidget extends Panel with RootWidget:
     def session:Session = Session.this
@@ -49,7 +54,10 @@ extends SesBase
     while( !stop ){
       tInput(processInput())
       tJobs(processJobs())
+      
+      debug"focus owner ${focusOwner}"
       tRepaint(repaint())
+
       tSleep(Thread.sleep(10))
     }
   }

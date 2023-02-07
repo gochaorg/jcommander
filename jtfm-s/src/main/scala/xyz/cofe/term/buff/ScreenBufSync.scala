@@ -5,8 +5,13 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Color
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.geom._
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import xyz.cofe.log._
 
 object ScreenBufSync:
+  implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.buff.ScreenBufSync")
+
   def sync(console:Console, buff:ScreenBuffer, fullSync:Boolean=true) =
     batching(buff, console.getSize()).foreach( cmd => batch.apply(console, cmd) )
 
@@ -42,6 +47,7 @@ object ScreenBufSync:
             List(BatchCmd.SetTitle(buff.title))
           else List()
 
+    debug"cursorCommands $cursorCommands"
     charsCommands ++ cursorCommands ++ titleCommands
 
   def writeChars(buff: ScreenBuffer):IndexedSeq[PosScreenChar] =

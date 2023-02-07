@@ -13,8 +13,11 @@ import xyz.cofe.term.buff._
 import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.ui.prop.color._
 import xyz.cofe.term.ui.paint._
+import xyz.cofe.log._
 
 import xyz.cofe.term.ui.prop.color.colorProp2Color
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 class TextField 
 extends Widget 
 with LocationRWProp
@@ -23,6 +26,7 @@ with WidgetInput
 with TextProperty
 with ForegroundColor
 with FillBackground:
+  implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.TextField")
 
   val cursor = Prop.rw(0)
   cursor.onChange( repaint )
@@ -38,6 +42,9 @@ with FillBackground:
 
   paintStack.add { renderText }
 
+  private def rootOf(widget:Widget):Option[RootWidget] =
+    widget.toTreePath.listToLeaf.find(_.isInstanceOf[RootWidget]).map(_.asInstanceOf[RootWidget])
+
   private def renderText(paint: PaintCtx):Unit = 
     val colorStr = text.get
       .colors(foregroundColor, backgroundColor)
@@ -49,6 +56,14 @@ with FillBackground:
     then
       paint.cursor.visible = true
       paint.cursor.position = Position(cursor.get, 0)
+      rootOf(this).foreach { root => 
+        val pos = Position(cursor.get + paint.bounds.absoluteOffset.x, paint.bounds.absoluteOffset.y)
+        debug"remember $pos"
+        root.session.remeberCursorInfo(
+          pos, true
+        )
+      }
+      
 
   override def input(inputEvent: InputEvent): Boolean = 
     inputEvent match

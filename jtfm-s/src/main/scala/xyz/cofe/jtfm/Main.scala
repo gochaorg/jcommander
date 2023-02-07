@@ -28,10 +28,13 @@ import xyz.cofe.term.ui.Dialog
 import xyz.cofe.term.ui.TextField
 import xyz.cofe.term.common.Size
 import xyz.cofe.jtfm.metric.MetricConf
+import org.slf4j.Logger
+import xyz.cofe.log._
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
   implicit val metricConf:MetricConf = MetricConf.read.getOrElse(MetricConf.defaultConf)
+  private implicit lazy val logger : Logger = LoggerFactory.getLogger("xyz.cofe.jtfm.Main")
 
   def main(args:Array[String]):Unit =
     LogPrepare.prepare
@@ -136,16 +139,18 @@ object Main:
           Dialog
             .title("mk dir")
             .size(36,15)
-            .content { panel =>              
+            .content { (panel,hdl) =>              
               val input = TextField()
+
               panel.children.append(input)
-              input.bind(panel) { b => 
-                println(s"lt=${b.leftTop} rb=${b.rightBottom} w=${b.width} h=${b.height}")
+              input.bind(panel) { b =>                 
                 Rect(0,1,b.width,1)
               }
-            }
-            .onClose {
-              println("closed")
+
+              hdl.onOpen { 
+                debug"input.focus.request"
+                input.focus.request 
+              }
             }
             .open()
         }

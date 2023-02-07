@@ -12,6 +12,9 @@ import xyz.cofe.term.common.Color
 import conf._
 import xyz.cofe.term.ui.ses.conf.DialogConf
 import xyz.cofe.term.cs._
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
+import xyz.cofe.log._
 
 class Dialog( using conf:DialogConf )
 extends Widget 
@@ -23,6 +26,8 @@ with TextProperty
 with WidgetChildren[Widget]
 with PaintChildrenMethod
 with WidgetInput:
+  private implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.Dialog")
+
   paintStack.add(paintBorder)
   paintStack.add(paintTitle)
   paintStack.add(paintChildren)
@@ -91,6 +96,7 @@ with WidgetInput:
     }
 
   def close():Unit =
+    log"close"
     visible = false
     parent.get.foreach { prnt =>
       prnt match
@@ -123,6 +129,7 @@ with WidgetInput:
 
   paintStack.add { _ => 
     if ! onOpenEmitted then
+      debug"open emitting"
       onOpenned.emit()
       onOpenEmitted = true
       onCloseEmitted = false
@@ -166,10 +173,37 @@ object Dialog:
       configure = List( { dlg => dlg.text = string } )
     )
 
+  trait Handler:
+    def onOpen( ls: => Any ):Unit
+    def close():Unit 
+
+  class HandlerImpl() extends Handler:
+    private implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.Dialog.HandlerImpl")
+
+    var dialog:Option[Dialog] = None
+    def setDialog( dlg:Dialog ):Unit =
+      debug"setDialog $dlg"
+      dialog = Some(dlg)
+
+    var onOpenListeners: List[()=>Any] = List.empty
+    def onOpen( ls: => Any ):Unit = {
+      debug"add onOpen"
+      onOpenListeners = ( ()=>{ 
+        ls 
+      }) :: onOpenListeners
+    }
+
+    def close():Unit = {
+      dialog.foreach(_.close())
+    }
+
   case class Builder(
     configure:List[Dialog=>Unit]=List.empty,
-    location:Option[Position]=None
+    location:Option[Position]=None,
+    handler: HandlerImpl = new HandlerImpl
   ):
+    private implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.Dialog.Builder")
+
     def onClose( code: =>Unit ):Builder =
       copy( configure = configure :+ (_.onClosed(code)) )
 
@@ -178,6 +212,11 @@ object Dialog:
 
     def content( init: Panel=>Unit ):Builder =
       copy( configure = configure :+ (dlg => init(dlg.content)) )
+
+    def content( init: (Panel,Handler)=>Unit ):Builder =
+      val r = copy( configure = configure :+ (dlg => init(dlg.content, handler)) )
+      debug"onOpenListeners size ${r.handler.onOpenListeners.size}"
+      r
 
     def size( size:Size ):Builder =
       copy( configure = configure :+ (dlg => dlg.size = size) )
@@ -190,7 +229,17 @@ object Dialog:
 
     def open():Dialog =
       val dlg = Dialog()
+      handler.setDialog(dlg)
       configure.foreach(_(dlg))
+
+      handler.onOpenListeners.foreach( ls => 
+        debug"add close listener"
+        dlg.onOpenned {
+          debug"call close listeners"
+          ls()
+        }
+      )
+      
       if location.isDefined then
         dlg.open(location.get)
       else
