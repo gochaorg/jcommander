@@ -401,19 +401,12 @@ class MenuAction(using config: MenuColorConfig)
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
     def selectMenu: Unit = 
-      onActionListener.foreach { ls => ls() }
+      onAction.emit()
 
-    var onActionListener : List[()=>Unit] = List.empty
-    def onAction( listener: => Unit ):ReleaseListener =
-      val ls:()=>Unit = ()=>listener
-      onActionListener = ls :: onActionListener
-      new ReleaseListener {
-        def release(): Unit = 
-          onActionListener = onActionListener.filterNot( l => l==ls )
-      }
+    var onAction = Listener.unit
 
     def action( ls: => Unit ):this.type =
-      onAction(ls)
+      onAction.listen(ls)
       this
 
 /* #endregion */
