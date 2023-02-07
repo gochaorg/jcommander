@@ -64,7 +64,7 @@ object KeyStrokeMap:
     map.foreach( (ks,set) => set.foreach( a => m.bind(ks,a)))
     m
 
-  case class KeyStrokeInputParser[A]( map:KeyStrokeMap[A] ):
+  case class InputParser[A]( map:KeyStrokeMap[A] ):
     private var history:List[InputEvent] = List.empty
 
     def input( event:InputEvent )( consumer:A=>Unit ):Unit = {

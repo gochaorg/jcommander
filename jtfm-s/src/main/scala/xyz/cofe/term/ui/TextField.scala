@@ -63,8 +63,7 @@ with FillBackground:
         root.session.remeberCursorInfo(
           pos, true
         )
-      }
-      
+      }      
 
   override def input(inputEvent: InputEvent): Boolean = 
     inputEvent match

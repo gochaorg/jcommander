@@ -76,7 +76,7 @@ with TableGridPaint[A]
 
   
   lazy val keyStrokeMap = KeyStrokeMap[()=>Unit](predefKeyStrokes)
-  private lazy val keyStrokeParser = KeyStrokeMap.KeyStrokeInputParser[()=>Unit](keyStrokeMap)
+  private lazy val keyStrokeParser = KeyStrokeMap.InputParser[()=>Unit](keyStrokeMap)
 
   protected def processKeyboardInput(ke:InputKeyboardEvent):Boolean =
     var matched = false

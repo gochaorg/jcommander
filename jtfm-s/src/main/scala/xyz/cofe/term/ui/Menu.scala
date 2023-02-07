@@ -583,11 +583,11 @@ class MenuBar(using config:MenuBarColorConfig)
       keyStrokeMapOpt.get
     }
 
-  private var keyStrokeParserOpt: Option[KeyStrokeMap.KeyStrokeInputParser[MenuAction]] = None
-  private def keyStrokeParser: KeyStrokeMap.KeyStrokeInputParser[MenuAction] =
+  private var keyStrokeParserOpt: Option[KeyStrokeMap.InputParser[MenuAction]] = None
+  private def keyStrokeParser: KeyStrokeMap.InputParser[MenuAction] =
     keyStrokeParserOpt.getOrElse {
       log"build KeyStrokeInputParser"
-      keyStrokeParserOpt = Some( KeyStrokeMap.KeyStrokeInputParser(keyStrokeMap) )
+      keyStrokeParserOpt = Some( KeyStrokeMap.InputParser(keyStrokeMap) )
       keyStrokeParserOpt.get
     }
 

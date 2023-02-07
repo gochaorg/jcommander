@@ -60,7 +60,7 @@ trait SesInput(behavior:SesInputBehavior) extends SesPaint with SesJobs:
     KeyStroke.KeyEvent(KeyName.ReverseTab,false,false,false)  -> Set(Action.FocusBack),
     KeyStroke.KeyEvent(KeyName.Escape,false,false,false)      -> Set(Action.CloseDialog),
   ))
-  val keyStrokeInputParser : KeyStrokeMap.KeyStrokeInputParser[Action] = KeyStrokeMap.KeyStrokeInputParser(keyStrokeMap)
+  val keyStrokeInputParser : KeyStrokeMap.InputParser[Action] = KeyStrokeMap.InputParser(keyStrokeMap)
 
   /** обработка входящий событий (клавиатуры, мыши, окна, ...) */
   protected def processInput():Unit =
