@@ -69,43 +69,22 @@ class FocusClient( widget:WidgetInput ):
   var history:List[FocusAction] = List.empty
   var historyLen = 25
   
-  var onAcceptListeners : List[Option[WidgetInput]=>Unit] = List.empty
+  var onAccept = Listener[Option[WidgetInput]]
   def accept(from:Option[WidgetInput]):Unit =
     own.set(true)
     history = (FocusAction.Give(from) :: history).take(historyLen)
-    onAcceptListeners.foreach(_(from))
-    onChangeListeners.foreach(_())
-
-  def onAccept( listener: Option[WidgetInput]=>Unit ):ReleaseListener =
-    onAcceptListeners = listener :: onAcceptListeners    
-    new ReleaseListener {
-      def release(): Unit = 
-        onAcceptListeners = onAcceptListeners.filterNot( l => l==listener )
-    }
+    onAccept.emit(from)
+    onChange.emit()
 
   val acceptChild = Listener[(Option[WidgetInput],WidgetInput)]()
 
-  var onLostListeners : List[Option[WidgetInput]=>Unit] = List.empty
+  val onLost = Listener[Option[WidgetInput]]
   def lost(to:Option[WidgetInput]):Unit =
     own.set(false)    
     history = (FocusAction.Lost(to) :: history).take(historyLen)
-    onLostListeners.foreach(_(to))
-    onChangeListeners.foreach(_())
+    onLost.emit(to)
+    onChange.emit()
 
-  def onLost( listener: Option[WidgetInput]=>Unit ):ReleaseListener =
-    onLostListeners = listener :: onLostListeners
-    new ReleaseListener {
-      def release(): Unit = 
-        onLostListeners = onLostListeners.filterNot( l => l==listener )
-    }
-
-  var onChangeListeners: List[()=>Unit] = List.empty
-  def onChange( listener: =>Unit ):ReleaseListener =
-    val ls: ()=>Unit = ()=>listener
-    onChangeListeners = ls :: onChangeListeners
-    new ReleaseListener {
-      def release(): Unit = 
-        onChangeListeners = onChangeListeners.filterNot( l => l==ls )
-    }
+  val onChange : Listener[Unit] = Listener.unit
 
   def request:Unit = session.foreach { ses => ses.requestFocus(widget) }

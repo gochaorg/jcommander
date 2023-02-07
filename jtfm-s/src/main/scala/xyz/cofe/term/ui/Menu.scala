@@ -185,8 +185,8 @@ class MenuContainer(using config: MenuColorConfig)
 
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
-    focus.onAccept { _ => showSubMenu }
-    focus.onLost { _ => checkHideSubMenu }
+    focus.onAccept >> showSubMenu
+    focus.onLost >> checkHideSubMenu
 
     def checkHideSubMenu:Unit =
       parent.get.foreach {
@@ -391,7 +391,7 @@ class MenuAction(using config: MenuColorConfig)
     
     /* #endregion */
 
-    focus.onLost { _ => checkHideSubMenu }
+    focus.onLost >> checkHideSubMenu
     def checkHideSubMenu:Unit =
       parent.get.foreach {
         case mc:MenuContainer => mc.checkHideSubMenu

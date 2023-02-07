@@ -63,9 +63,7 @@ with WidgetInput:
 
   val closeButton = Button(""+Symbols.Action.Close)
   children.append(closeButton)
-  closeButton.onAction {
-    close()
-  }
+  closeButton.onAction.listen(close())
 
   val content = Panel()
   content.backgroundColor = Color.Green
@@ -109,7 +107,7 @@ with WidgetInput:
     if conf.restoreFocusAtClose then restoreFocus()
 
   private var lastFocused : Option[WidgetInput] = None
-  focus.onAccept { fromOpt => 
+  focus.onAccept.listen { fromOpt => 
     debug"accepted focus from $fromOpt"
     acceptFocusFrom( fromOpt )
   }

@@ -1,4 +1,5 @@
-package xyz.cofe.term.ui
+package xyz.cofe.term
+package ui
 
 import xyz.cofe.lazyp.ReadWriteProp
 import xyz.cofe.term.common.Color
@@ -24,9 +25,6 @@ class Button extends Label with WidgetInput:
   val focusBgColor: ReadWriteProp[Color] = ReadWriteProp(Color.BlackBright)
   val focusFgColor: ReadWriteProp[Color] = ReadWriteProp(Color.YellowBright)
 
-  // val focusContainerBgColor: ReadWriteProp[Color] = ReadWriteProp(Color.BlackBright)
-  // val focusContainerFgColor: ReadWriteProp[Color] = ReadWriteProp(Color.YellowBright)
-
   foregroundColor.set(Color.White)
   backgroundColor.set(Color.Black)
 
@@ -46,31 +44,21 @@ class Button extends Label with WidgetInput:
         if ke.isAltDown() || ke.isControlDown() || ke.isShiftDown() 
         then false
         else if ke.getKey() == KeyName.Enter
-          then { firePressed(); true }
+          then { onAction.emit(); true }
           else false
       case ke: InputCharEvent => 
         if ke.isAltDown() || ke.isControlDown() || ke.isShiftDown() 
         then false
         else if ke.getChar() == ' '
-          then { firePressed(); true }
+          then { onAction.emit(); true }
           else false
       case me: InputMouseButtonEvent => 
         if me.button()==MouseButton.Left && me.pressed()
-        then { firePressed(); true }
+        then { onAction.emit(); true }
         else false
 
-  protected def firePressed():Unit =
-    onActionListener.foreach(_())
-
-  var onActionListener : List[()=>Unit] = List.empty
-  def onAction( listener: => Unit ):ReleaseListener =
-    val ls:()=>Unit = ()=>listener
-    onActionListener = ls :: onActionListener
-    new ReleaseListener {
-      def release(): Unit = 
-        onActionListener = onActionListener.filterNot( l => l==ls )
-    }
+  val onAction : Listener[Unit] = Listener.unit
 
   def action( ls: => Unit ):this.type =
-    onAction(ls)
+    onAction.listen(ls)
     this

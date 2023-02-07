@@ -2,30 +2,20 @@ package xyz.cofe.jtfm
 
 import xyz.cofe.files.AppHome
 import xyz.cofe.term.common.Console
-import xyz.cofe.term.ui.Session
 import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.geom._
 import xyz.cofe.jtfm.ui.table.DirectoryTable
 import xyz.cofe.term.common.Position
-import xyz.cofe.term.ui.VSplitPane
 import java.nio.file.Path
-import xyz.cofe.term.ui.MenuBar
-import xyz.cofe.term.ui.KeyStroke
 import xyz.cofe.term.common.KeyName
-import xyz.cofe.term.ui.Widget
-import xyz.cofe.term.ui.WidgetInput
 import xyz.cofe.jtfm.conf.UiConf
 import xyz.cofe.files.FilesLogger
 import org.slf4j.LoggerFactory
-import xyz.cofe.term.ui.Table
 import xyz.cofe.term.ui.table.Column
 import xyz.cofe.jtfm.ui.table.FilesTable
-import xyz.cofe.term.ui.Menu
 import xyz.cofe.term.ui.conf.MenuColorConfig
-import xyz.cofe.term.ui.MenuAction
 import xyz.cofe.jtfm.conf.MainMenu
-import xyz.cofe.term.ui.Dialog
-import xyz.cofe.term.ui.TextField
+import xyz.cofe.term.ui._
 import xyz.cofe.term.common.Size
 import xyz.cofe.jtfm.metric.MetricConf
 import org.slf4j.Logger
@@ -61,8 +51,8 @@ object Main:
       leftPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ rightPanel.focus.request })
       rightPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ leftPanel.focus.request })
 
-      leftPanel.focus.onAccept { _ => lasftFocusedDirectoryTable = Some(leftPanel) }
-      rightPanel.focus.onAccept { _ => lasftFocusedDirectoryTable = Some(rightPanel) }
+      leftPanel.focus.onAccept  >> { lasftFocusedDirectoryTable = Some(leftPanel) }
+      rightPanel.focus.onAccept >> { lasftFocusedDirectoryTable = Some(rightPanel) }
 
       val vsplitPanel = VSplitPane()
       ses.rootWidget.children.append(vsplitPanel)

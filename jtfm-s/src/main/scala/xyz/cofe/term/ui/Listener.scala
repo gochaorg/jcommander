@@ -23,3 +23,7 @@ extension (listener:Listener[Unit])
     listener.listen( _ => handler )
   def emit():Unit =
     listener.emit(())
+
+extension [A](listener:Listener[A])
+  def >>( handler: =>Any ):ReleaseListener =
+    listener.listen( _ => handler )
