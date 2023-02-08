@@ -18,6 +18,8 @@ import xyz.cofe.log._
 import xyz.cofe.term.ui.prop.color.colorProp2Color
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import TextField._
 class TextField 
 extends Widget 
 with LocationRWProp
@@ -68,46 +70,15 @@ with FillBackground:
   override def input(inputEvent: InputEvent): Boolean = 
     inputEvent match
       case ke : InputKeyEvent =>
-        ke.getKey() match
-          case KeyName.Left =>
-            if ke.isModifiers(false,false,false) 
-            then moveCursorLeft()
-            else if ke.isModifiers(altDown = false, controlDown = false, shiftDown = true)
-              then moveCursorLeft(true)
-              else false
-          case KeyName.Right =>
-            if ke.isModifiers(false,false,false) 
-            then moveCursorRight()
-            else if ke.isModifiers(altDown = false, controlDown = false, shiftDown = true)
-              then moveCursorRight(true)
-              else false
-          case KeyName.Home =>
-            if ke.isModifiers(false,false,false) 
-            then moveCursorHome()
-            else if ke.isModifiers(altDown = false, controlDown = false, shiftDown = true)
-              then moveCursorHome(true)
-              else false
-          case KeyName.End =>
-            if ke.isModifiers(false,false,false) 
-            then moveCursorEnd()
-            else if ke.isModifiers(altDown = false, controlDown = false, shiftDown = true)
-              then moveCursorEnd(true)
-              else false
-          case KeyName.Delete =>
-            if ke.isModifiers(false,false,false) 
-            then deleteRight()
-            else false
-          case KeyName.Backspace =>
-            if ke.isModifiers(false,false,false) 
-            then deleteLeft()
-            else false
-          case _ => false
+        val actions = inputParser.input(ke)
+        if actions.nonEmpty then
+          actions.map { a => a(this) }.foldLeft( false ){ case (r,i) => r || i }
+        else
+          false
       case ce:InputCharEvent =>
-        if ce.isControlDown() && ce.getChar()=='a' then          
-          selectAll()
-        else if ce.getChar()=='c' && ce.isModifiers(altDown = false, controlDown = true, shiftDown = false) then
-          copyToClipboard()
-          true
+        val actions = inputParser.input(ce)
+        if actions.nonEmpty then
+          actions.map { a => a(this) }.foldLeft( false ){ case (r,i) => r || i }
         else
           if ce.isAltDown()==false && ce.isControlDown()==false then
             insertString(""+ce.getChar())
@@ -222,11 +193,105 @@ with FillBackground:
       selection.get.select(text.get)
     )
 
-  val keyStrokeMap : KeyStrokeMap[TextField.Action] =
-    KeyStrokeMap(Map(
-      //KeyStroke.
-    ))
+  val keyStrokeMap : KeyStrokeMap[Action] =
+    KeyStrokeMap(Map
+      (KeyStroke.KeyEvent(KeyName.Left,     altDown=false,ctrlDown=false,shiftDown=false) -> Action.MoveCursor(Direction.Left, MoveSelection.Clear)
+      ,KeyStroke.KeyEvent(KeyName.Left,     altDown=false,ctrlDown=false,shiftDown=true ) -> Action.MoveCursor(Direction.Left, MoveSelection.Extend)
+      ,KeyStroke.KeyEvent(KeyName.Right,    altDown=false,ctrlDown=false,shiftDown=false) -> Action.MoveCursor(Direction.Right,MoveSelection.Clear)
+      ,KeyStroke.KeyEvent(KeyName.Right,    altDown=false,ctrlDown=false,shiftDown=true ) -> Action.MoveCursor(Direction.Right,MoveSelection.Extend)
+      ,KeyStroke.KeyEvent(KeyName.Home,     altDown=false,ctrlDown=false,shiftDown=false) -> Action.MoveCursor(Direction.Home, MoveSelection.Clear)
+      ,KeyStroke.KeyEvent(KeyName.Home,     altDown=false,ctrlDown=false,shiftDown=true ) -> Action.MoveCursor(Direction.Home, MoveSelection.Extend)
+      ,KeyStroke.KeyEvent(KeyName.End,      altDown=false,ctrlDown=false,shiftDown=false) -> Action.MoveCursor(Direction.End,  MoveSelection.Clear)
+      ,KeyStroke.KeyEvent(KeyName.End,      altDown=false,ctrlDown=false,shiftDown=true ) -> Action.MoveCursor(Direction.End,  MoveSelection.Extend)
+      ,KeyStroke.KeyEvent(KeyName.Delete,   altDown=false,ctrlDown=false,shiftDown=false) -> Action.Delete(DeleteWhere.Right)
+      ,KeyStroke.KeyEvent(KeyName.Backspace,altDown=false,ctrlDown=false,shiftDown=false) -> Action.Delete(DeleteWhere.Left)
+
+      ,KeyStroke.CharEvent('a',altDown=false,ctrlDown=true,shiftDown=false) -> Action.Selection(SelectionWhat.All)
+      ,KeyStroke.CharEvent('c',altDown=false,ctrlDown=true,shiftDown=false) -> Action.Clipboard(ClipboardAction.Copy)
+      )
+    )
+
+  val inputParser = KeyStrokeMap.InputParser[Action]( keyStrokeMap )
 
 object TextField:
-  enum Action:
-    case MoveCursor
+  enum Action extends ActionExec:
+    case MoveCursor(direction:Direction, selection:MoveSelection) extends Action with MoveCursorOps
+    case Delete(where:DeleteWhere) extends Action with DeleteOps
+    case Selection(what:SelectionWhat) extends Action with SelectionOps
+    case Clipboard(action:ClipboardAction) extends Action with ClipboardOps
+    case Custom(exec:TextField=>Any) extends Action with CustomOps
+
+  enum DeleteWhere:
+    case Left
+    case Right
+
+  enum Direction extends ComputeCursor:
+    case Left  extends Direction with ComputeCursorImpl( tf => Option.when(tf.cursor.get>0)(tf.cursor.get-1) )
+    case Right extends Direction with ComputeCursorImpl( tf => Option.when(tf.cursor.get<tf.text.get.length())(tf.cursor.get+1) )
+    case Home  extends Direction with ComputeCursorImpl( tf => Option.when(tf.cursor.get>0)(0) )
+    case End   extends Direction with ComputeCursorImpl( tf => Option.when(tf.cursor.get<tf.text.get.length())(tf.text.get.length()) )
+
+  enum MoveSelection:
+    case Clear
+    case Extend
+
+  enum SelectionWhat:
+    case All    
+
+  enum ClipboardAction:
+    case Copy
+
+  trait ActionExec:
+    def apply(textField: TextField):Boolean
+
+  trait ComputeCursor:
+    def compute(textField:TextField):Option[Int]
+
+  trait ComputeCursorImpl( calc:TextField=>Option[Int] ) extends ComputeCursor:
+    override def compute(textField: TextField): Option[Int] = 
+      calc(textField)
+
+  trait MoveCursorOps:
+    self: Action.MoveCursor =>
+    def apply(textField: TextField):Boolean =
+      self.direction.compute(textField).map { nextCur =>
+        textField.moveCursor( 
+          nextCur,
+          self.selection match
+            case MoveSelection.Clear => false
+            case MoveSelection.Extend => true   
+        )
+        true
+      }.getOrElse(false)
+
+  trait DeleteOps:
+    self: Action.Delete =>
+    def apply(textField: TextField):Boolean =
+      self.where match
+        case DeleteWhere.Left =>  textField.deleteLeft()
+        case DeleteWhere.Right => textField.deleteRight()
+
+  trait SelectionOps:
+    self: Action.Selection =>
+    def apply(textField: TextField):Boolean =
+      self.what match
+        case SelectionWhat.All => textField.selectAll()
+        
+  trait ClipboardOps:
+    self: Action.Clipboard =>
+    def apply(textField: TextField):Boolean =
+      self.action match
+        case ClipboardAction.Copy => 
+          textField.copyToClipboard()
+          true
+        
+  trait CustomOps:
+    self: Action.Custom =>
+    def apply(textField: TextField):Boolean =
+      val e = self.exec
+      if e!=null then 
+        e(textField)
+        true
+      else
+        false
+      

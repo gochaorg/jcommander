@@ -136,6 +136,9 @@ object Main:
               input.bind(panel) { b =>                 
                 Rect(0,1,b.width,1)
               }
+              input.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Enter,false,false,false), TextField.Action.Custom(tf => {
+                println(s"custom action ${tf.text.get}")
+              }))
 
               hdl.onOpen { 
                 debug"input.focus.request"
