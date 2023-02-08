@@ -7,6 +7,7 @@ trait DialogColorConf:
   def background: Color
   def contentBg: Color
   def titleFg: Color
+  def closeButton: ButtonColorConf
 
 object DialogColorConf:
   case class Conf(
@@ -14,6 +15,11 @@ object DialogColorConf:
     background: Color = Color.White,
     contentBg: Color  = Color.White,
     titleFg: Color = Color.Blue,
+    closeButton: ButtonColorConf = 
+      ButtonColorConf.defaultConf.copy(
+        foreground = Color.RedBright,
+        background = Color.White
+      )
   ) extends DialogColorConf
 
   implicit val defaultConf : Conf = Conf()

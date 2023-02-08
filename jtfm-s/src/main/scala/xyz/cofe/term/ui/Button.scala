@@ -26,8 +26,8 @@ class Button(using colors: ButtonColorConf) extends Label(using colors.toLabelCo
   val focusBgColor: ReadWriteProp[Color] = ReadWriteProp(Color.BlackBright)
   val focusFgColor: ReadWriteProp[Color] = ReadWriteProp(Color.YellowBright)
 
-  foregroundColor.set(Color.White)
-  backgroundColor.set(Color.Black)
+  foregroundColor.set(colors.foreground)
+  backgroundColor.set(colors.background)
 
   override def paintText(paint: PaintCtx): Unit = 
     val (fg,bg) =

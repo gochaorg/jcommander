@@ -74,7 +74,7 @@ with WidgetInput:
 
     paint.write(1,1,renderString)
 
-  val closeButton = Button(""+Symbols.Action.Close)
+  val closeButton = Button(""+Symbols.Action.Close)(using colors.closeButton)
   children.append(closeButton)
   closeButton.onAction.listen(close())
 

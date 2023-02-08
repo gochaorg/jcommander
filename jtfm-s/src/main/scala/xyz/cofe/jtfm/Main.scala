@@ -21,6 +21,7 @@ import xyz.cofe.jtfm.metric.MetricConf
 import org.slf4j.Logger
 import xyz.cofe.log._
 import xyz.cofe.term.ui.conf.DialogConf
+import xyz.cofe.term.common.Color
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -139,12 +140,21 @@ object Main:
               val input = TextField()
 
               panel.children.append(input)
-              input.bind(panel) { b =>                 
-                Rect(1,1,b.width-2,1)
-              }
+              input.bind(panel) { b => Rect(1,1,b.width-2,1) }
               input.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Enter,false,false,false), TextField.Action.Custom(tf => {
                 hdl.close()
               }))
+
+              var validName = true
+
+              val butOk = Button("Ok")
+              panel.children.append(butOk)
+              butOk.bind(panel) { b => Rect(b.width-3, b.height-1, 2, 1) }
+
+              input.text.onChange( (_,txt) => {
+                validName = txt.nonEmpty && !txt.contains("!")
+                butOk.foregroundColor = if validName then Color.White else Color.RedBright
+              })
 
               hdl.onOpen { 
                 debug"input.focus.request"
