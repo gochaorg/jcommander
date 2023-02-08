@@ -13,6 +13,7 @@ import xyz.cofe.term.buff._
 import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.ui.prop.color._
 import xyz.cofe.term.ui.paint._
+import conf.TextFieldColorConf
 import xyz.cofe.log._
 
 import xyz.cofe.term.ui.prop.color.colorProp2Color
@@ -20,7 +21,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import TextField._
-class TextField 
+
+class TextField(using colors:TextFieldColorConf)
 extends Widget 
 with LocationRWProp
 with SizeRWProp
@@ -36,11 +38,14 @@ with FillBackground:
   val selection = Prop.rw(TextSelectRange(0,0))
   selection.onChange( repaint )
 
-  val selectionFgColor = Prop.rw(Color.Black)
+  val selectionFgColor = Prop.rw(colors.selectionFg)
   selectionFgColor.onChange( repaint )
 
-  val selectionBgColor = Prop.rw(Color.White)
+  val selectionBgColor = Prop.rw(colors.selectionBg)
   selectionBgColor.onChange( repaint )
+
+  foregroundColor = colors.foreground
+  backgroundColor = colors.background
 
   paintStack.add { renderText }
 

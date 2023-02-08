@@ -5,10 +5,7 @@ import xyz.cofe.term.ui.conf.MenuBarColorConfig
 import xyz.cofe.term.ui.conf.MenuColorConfig
 import xyz.cofe.term.ui.table.conf.TableInputConf
 import xyz.cofe.term.ui.table.conf.TableColorsConf
-import xyz.cofe.term.ui.conf.DialogConf
-import xyz.cofe.term.ui.conf.DialogColorConf
-import xyz.cofe.term.ui.conf.LabelColorConf
-import xyz.cofe.term.ui.conf.ButtonColorConf
+import xyz.cofe.term.ui.conf._
 
 class UiConf(using appHome:AppHome):
   val colorsConf:Either[ConfError,ColorsConf] = ColorsConf.read
@@ -27,3 +24,4 @@ class UiConf(using appHome:AppHome):
 
   implicit val labelColorsConf: LabelColorConf = LabelColorConf.defaultConf
   implicit val buttonColorsConf: ButtonColorConf = ButtonColorConf.defaultConf
+  implicit val textFieldColorsConf: TextFieldColorConf = TextFieldColorConf.defaultConf
