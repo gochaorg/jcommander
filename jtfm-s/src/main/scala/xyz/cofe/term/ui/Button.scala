@@ -14,9 +14,10 @@ import xyz.cofe.lazyp.ReleaseListener
 import xyz.cofe.term.common.Size
 import xyz.cofe.term.ui.paint._
 import xyz.cofe.term.ui.prop.color._
+import xyz.cofe.term.ui.conf._
 
-class Button extends Label with WidgetInput:
-  def this(text:String) = {
+class Button(using colors: ButtonColorConf) extends Label(using colors.toLabelColorConf) with WidgetInput:
+  def this(text:String)(using colors: ButtonColorConf) = {
     this()
     this.text.set(text)
     this.size.set(Size(text.length(),1))

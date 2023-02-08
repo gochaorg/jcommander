@@ -20,6 +20,7 @@ import xyz.cofe.term.common.Size
 import xyz.cofe.jtfm.metric.MetricConf
 import org.slf4j.Logger
 import xyz.cofe.log._
+import xyz.cofe.term.ui.conf.DialogConf
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -36,7 +37,7 @@ object Main:
   private var mbarOpt : Option[WidgetInput] = None
   private var lasftFocusedDirectoryTable:Option[DirectoryTable] = None
   def startSession( console: Console ):Unit =
-    val conf : UiConf = new UiConf
+    implicit val conf : UiConf = new UiConf
     import conf.given
 
     Session.start(console) { implicit ses =>
@@ -120,7 +121,8 @@ object Main:
       }
     }
 
-  def executorOf(action:Action)(using ses:Session): ()=>Unit =
+  def executorOf(action:Action)(using ses:Session, conf:UiConf): ()=>Unit =
+    import conf.given
     action match
       case Action.Exit => ()=>{ ses.stop = true }
       case Action.ActivateMainMenu => ()=>{ mbarOpt.foreach { mbar => mbar.focus.request } }
@@ -129,15 +131,19 @@ object Main:
           Dialog
             .title("mk dir")
             .size(36,15)
-            .content { (panel,hdl) =>              
+            .content { (panel,hdl) =>
+              val label = Label("name:")
+              panel.children.append(label)
+              label.location = Position(1,0)
+              
               val input = TextField()
 
               panel.children.append(input)
               input.bind(panel) { b =>                 
-                Rect(0,1,b.width,1)
+                Rect(1,1,b.width-2,1)
               }
               input.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Enter,false,false,false), TextField.Action.Custom(tf => {
-                println(s"custom action ${tf.text.get}")
+                hdl.close()
               }))
 
               hdl.onOpen { 

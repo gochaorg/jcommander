@@ -11,13 +11,13 @@ import xyz.cofe.term.common.Size
 import xyz.cofe.term.ui.paint._
 import xyz.cofe.term.common.Color
 import conf._
-import xyz.cofe.term.ui.ses.conf.DialogConf
 import xyz.cofe.term.cs._
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import xyz.cofe.log._
+import xyz.cofe.lazyp.Prop
 
-class Dialog( using conf:DialogConf )
+class Dialog( using conf:DialogConf, colors:DialogColorConf )
 extends Widget 
 with LocationRWProp
 with SizeRWProp
@@ -28,13 +28,15 @@ with WidgetChildren[Widget]
 with PaintChildrenMethod
 with WidgetInput:
   private implicit val logger: Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.Dialog")
+  private implicit val buttonColorsConf: ButtonColorConf = ButtonColorConf.defaultConf
+  private implicit val labelColorsConf: LabelColorConf = LabelColorConf.defaultConf  
 
   paintStack.add(paintBorder)
   paintStack.add(paintTitle)
   paintStack.add(paintChildren)
 
-  backgroundColor = Color.White
-  foregroundColor = Color.Black
+  backgroundColor = colors.background
+  foregroundColor = colors.foreground
 
   def paintBorder(paint:PaintCtx):Unit = 
     val rect = size.get.leftUpRect(0,0)
@@ -51,22 +53,34 @@ with WidgetInput:
       Line(rt,rb,Symbols.Style.Single),
       Line(hlLeft,hlRight,Symbols.Style.Single),
     )
-    paint.foreground = Color.Black
-    paint.background = Color.White
+    paint.foreground = foregroundColor.get
+    paint.background = backgroundColor.get
     lines.draw(paint)
+
+  val titleFgColor = Prop.rw(colors.titleFg)
 
   def paintTitle(paint:PaintCtx):Unit =
     val title = text.get.take(size.get.width()-2)
-    paint.foreground = paintTextColor
-    paint.background = fillBackgroundColor
-    paint.write(1,1,title)
+    paint.foreground = titleFgColor.get
+    paint.background = backgroundColor.get
+
+    val maxSize = size.width() -2
+    val padSize = (maxSize - title.length()) max 0
+    val leftPadSize = padSize / 2
+    val rightPadSize = maxSize - padSize
+    val leftPad = " "*leftPadSize
+    val rightPad = " "*rightPadSize
+    val renderString = (leftPad + title + rightPad).take(maxSize)
+
+    paint.write(1,1,renderString)
 
   val closeButton = Button(""+Symbols.Action.Close)
   children.append(closeButton)
   closeButton.onAction.listen(close())
 
   val content = Panel()
-  content.backgroundColor = Color.Green
+  content.backgroundColor = colors.contentBg
+
   children.append(content)
   content.bind(this){ w =>     
     Rect(1,3, (w.width-1) max 0, (w.height-3) max 0)
@@ -233,7 +247,7 @@ object Dialog:
     def location( pos:Position ):Builder =
       copy( location = Some(pos) )
 
-    def open():Dialog =
+    def open()(using conf:DialogConf, colors:DialogColorConf):Dialog =
       val dlg = Dialog()
       handler.setDialog(dlg)
       configure.foreach(_(dlg))
