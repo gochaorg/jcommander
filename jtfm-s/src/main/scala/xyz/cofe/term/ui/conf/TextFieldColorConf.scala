@@ -15,4 +15,4 @@ object TextFieldColorConf:
     foreground: Color = Color.White,
     background: Color = Color.Black,
   ) extends TextFieldColorConf
-  val defaultConf:Conf = Conf()
+  implicit val defaultConf:Conf = Conf()
