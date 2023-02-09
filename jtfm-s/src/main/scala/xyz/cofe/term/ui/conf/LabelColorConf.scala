@@ -12,4 +12,4 @@ object LabelColorConf:
     background: Color = Color.White,
   ) extends LabelColorConf
   
-  val defaultConf: Conf = Conf()
+  implicit val defaultConf: Conf = Conf()

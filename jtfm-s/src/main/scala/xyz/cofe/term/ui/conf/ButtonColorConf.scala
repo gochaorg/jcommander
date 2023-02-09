@@ -13,4 +13,4 @@ object ButtonColorConf:
     background: Color = Color.Blue,
   ) extends ButtonColorConf
 
-  val defaultConf: Conf = Conf()
+  implicit val defaultConf: Conf = Conf()
