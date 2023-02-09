@@ -22,6 +22,7 @@ import org.slf4j.Logger
 import xyz.cofe.log._
 import xyz.cofe.term.ui.conf.DialogConf
 import xyz.cofe.term.common.Color
+import xyz.cofe.files._
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -141,11 +142,18 @@ object Main:
 
               panel.children.append(input)
               input.bind(panel) { b => Rect(1,1,b.width-2,1) }
-              input.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Enter,false,false,false), TextField.Action.Custom(tf => {
-                hdl.close()
-              }))
 
               var validName = true
+              def tryCreate =
+                if validName then
+                  dirTable.directory.get match
+                    case None => 
+                    case Some(parentDir) =>
+                      parentDir.resolve(input.text.get).createDirectories() match
+                        case Left(value) => 
+                        case Right(value) => 
+                          hdl.close()
+                          dirTable.refresh
 
               val butOk = Button("Ok")
               panel.children.append(butOk)
@@ -155,6 +163,16 @@ object Main:
                 validName = txt.nonEmpty && !txt.contains("!")
                 butOk.foregroundColor = if validName then Color.White else Color.RedBright
               })
+
+              val butCancel = Button("Cancel")
+              panel.children.append(butCancel)
+              butCancel.bind(panel){b => Rect(1,b.height-1,6,1)}
+              butCancel.action { hdl.close() }
+
+              butOk.action { tryCreate }
+              input.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Enter,false,false,false), TextField.Action.Custom(tf => {
+                tryCreate
+              }))
 
               hdl.onOpen { 
                 debug"input.focus.request"
