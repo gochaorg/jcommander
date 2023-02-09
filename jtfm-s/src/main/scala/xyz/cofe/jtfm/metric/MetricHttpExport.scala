@@ -32,11 +32,20 @@ class MetricHttpExport(using conf:MetricConf):
     exchange.getResponseSender().send(List(tracks,thInfo).mkString("<p/>"))
   }
 
-  val threadHandler : HttpHandler = exchange => {
-    // println(exchange.getRequestPath())
-    // println(exchange.getPathParameters())
-    // println(exchange.getQueryParameters())
+  val metricTextHandler : HttpHandler = exchange => {
+    val tracks = Metrics.trackers.all.map { case (name,t) =>         
+      val durNano = t.duration.value
+      val durMs = durNano / 1000000.0
+      val mname = name.replace(".","_")
 
+      s"${mname}{what=\"dur\",app=\"jtfm\"} ${durMs}\n${mname}{what=\"cnt\",app=\"jtfm\"} ${t.count.value}"
+    }.mkString("\n")
+
+    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain")
+    exchange.getResponseSender().send(List(tracks).mkString("\n"))
+  }
+
+  val threadHandler : HttpHandler = exchange => {
     val ti = threadInfo.getThreadInfo(
       exchange.getQueryParameters().get("id").getFirst().toLong
     )
@@ -70,6 +79,7 @@ class MetricHttpExport(using conf:MetricConf):
 
   val routing = Handlers.routing()
     .get("/metric/html", metricHtmlHandler)
+    .get("/metric/prom", metricTextHandler)
     .get("/thread/{id}", threadHandler)
     .get("/",defaultHandler)
 
