@@ -23,6 +23,8 @@ import xyz.cofe.log._
 import xyz.cofe.term.ui.conf.DialogConf
 import xyz.cofe.term.common.Color
 import xyz.cofe.files._
+import xyz.cofe.jtfm.ui.warn.WarnDialog
+import xyz.cofe.jtfm.ui.mkdir.MkDirDialog
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -42,20 +44,20 @@ object Main:
     implicit val conf : UiConf = new UiConf
     import conf.given
 
+    val leftPanel  = new DirectoryTable
+    val rightPanel = new DirectoryTable
+
+    leftPanel.directory.set(Some(Path.of(".")))
+    rightPanel.directory.set(Some(Path.of(".")))
+
+    leftPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ rightPanel.focus.request })
+    rightPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ leftPanel.focus.request })
+
+    leftPanel.focus.onAccept  >> { lasftFocusedDirectoryTable = Some(leftPanel) }
+    rightPanel.focus.onAccept >> { lasftFocusedDirectoryTable = Some(rightPanel) }
+
     Session.start(console) { implicit ses =>
       import xyz.cofe.term.ui.menuBuilder._
-
-      val leftPanel  = new DirectoryTable
-      val rightPanel = new DirectoryTable
-
-      leftPanel.directory.set(Some(Path.of(".")))
-      rightPanel.directory.set(Some(Path.of(".")))
-
-      leftPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ rightPanel.focus.request })
-      rightPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ leftPanel.focus.request })
-
-      leftPanel.focus.onAccept  >> { lasftFocusedDirectoryTable = Some(leftPanel) }
-      rightPanel.focus.onAccept >> { lasftFocusedDirectoryTable = Some(rightPanel) }
 
       val vsplitPanel = VSplitPane()
       ses.rootWidget.children.append(vsplitPanel)
@@ -130,56 +132,11 @@ object Main:
       case Action.ActivateMainMenu => ()=>{ mbarOpt.foreach { mbar => mbar.focus.request } }
       case Action.MkDir => ()=>{
         lasftFocusedDirectoryTable.foreach { dirTable =>
-          Dialog
-            .title("mk dir")
-            .size(36,15)
-            .content { (panel,hdl) =>
-              val label = Label("name:")
-              panel.children.append(label)
-              label.location = Position(1,0)
-              
-              val input = TextField()
-
-              panel.children.append(input)
-              input.bind(panel) { b => Rect(1,1,b.width-2,1) }
-
-              var validName = true
-              def tryCreate =
-                if validName then
-                  dirTable.directory.get match
-                    case None => 
-                    case Some(parentDir) =>
-                      parentDir.resolve(input.text.get).createDirectories() match
-                        case Left(value) => 
-                        case Right(value) => 
-                          hdl.close()
-                          dirTable.refresh
-
-              val butOk = Button("Ok")
-              panel.children.append(butOk)
-              butOk.bind(panel) { b => Rect(b.width-3, b.height-1, 2, 1) }
-
-              input.text.onChange( (_,txt) => {
-                validName = txt.nonEmpty && !txt.contains("!")
-                butOk.foregroundColor = if validName then Color.White else Color.RedBright
-              })
-
-              val butCancel = Button("Cancel")
-              panel.children.append(butCancel)
-              butCancel.bind(panel){b => Rect(1,b.height-1,6,1)}
-              butCancel.action { hdl.close() }
-
-              butOk.action { tryCreate }
-              input.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Enter,false,false,false), TextField.Action.Custom(tf => {
-                tryCreate
-              }))
-
-              hdl.onOpen { 
-                debug"input.focus.request"
-                input.focus.request 
-              }
+          dirTable.directory.get.foreach { dir =>
+            MkDirDialog.open( dir ).ok.listen { _ =>
+              dirTable.refresh
             }
-            .open()
+          }
         }
       }
 

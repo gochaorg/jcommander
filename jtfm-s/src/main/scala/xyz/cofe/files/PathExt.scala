@@ -82,6 +82,12 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(CreateDirectories(path,opts.copy)) {
       Files.createDirectories(path,opts.fileAttributes:_*)
     }
+
+  def createDirectory():Either[Throwable,Unit] =
+    log(CreateDirectory(path,opts.copy)) {
+      Files.createDirectory(path,opts.fileAttributes:_*)
+    }
+
   def createFile:Either[Throwable,Unit] =
     log(CreateFile(path,opts.copy)) {
       Files.createFile(path,opts.fileAttributes:_*)

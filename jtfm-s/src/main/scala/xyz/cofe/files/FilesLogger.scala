@@ -79,7 +79,8 @@ enum FilesOperation:
   case IsSameFile(path:Path,other:Path) 
   case IsSymbolicLink(path:Path)
 
-  case CreateDirectories(path:Path,opts:FilesOption.Opts) 
+  case CreateDirectory(path:Path,opts:FilesOption.Opts)
+  case CreateDirectories(path:Path,opts:FilesOption.Opts)
   case CreateFile(path:Path,opts:FilesOption.Opts) 
   case CreateLink(path:Path,target:Path) 
   case CreateSymbolicLink(path:Path,opts:FilesOption.Opts) 
