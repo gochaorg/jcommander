@@ -69,60 +69,15 @@ object Main:
       ses.requestFocus(leftPanel)
       leftPanel.selection.focusedIndex.set(Some(1))
 
-      menuBar {
-        def tableColumns( table:Table[Path], available:List[Column[Path,?]] )
-            ( using 
-              menuParent:WidgetChildren[Menu], 
-              config: MenuColorConfig
-            )
-        :Unit = {
-          available.zipWithIndex.foreach { case (column,colIdx) =>
-            def hasColumn:Boolean = table.columns.toList.map(_.id).contains(column.id)
-
-            var updateText:Option[()=>Any] = None
-
-            val actCol = action(column.id) {  
-              if hasColumn 
-              then
-                table.columns.items.find(_.id == column.id).foreach { col => table.columns.delete(col) }
-                updateText.foreach(_())
-              else                
-                table.columns.insert( colIdx, column )
-                table.autoResizeColumnsDeferred()
-                updateText.foreach(_())
-            }
-
-            updateText = Some { ()=>{
-              actCol.text.set( (if hasColumn then "+" else "-") + " " + column.id )
-            }}
-            updateText.foreach(_())
-          }
-        }
-
-        implicit val executorBuilder: Action=>()=>Unit = { act => 
-          executorOf(act) 
-        }
-
-        menu("Left") {
-          menu("Columns") {
-            tableColumns(leftPanel, FilesTable.columns)
-          }
-        }
-        menu("File") {
-          Action.MkDir.menuAction
-          Action.Exit.menuAction
-        }
-        
-        mbarOpt = Some(menu("View") {
-          Action.ActivateMainMenu.menuAction
-        })
-
-        menu("Right") {
-          menu("Columns") {
-            tableColumns(rightPanel, FilesTable.columns)
-          }
-        }
+      implicit val executorBuilder: Action=>()=>Unit = { act => executorOf(act) }
+      implicit val menuKs = conf.mainMenu.actionKeystrokeMap
+      implicit val dirMenuBuild: (MainMenu.DirTableName,WidgetChildren[Menu])=>Unit = (dn,menuParent) => {
+        implicit val mp = menuParent
+        dn match
+          case MainMenu.DirTableName.Left  => MainMenu.tableColumns(leftPanel,  FilesTable.columns)
+          case MainMenu.DirTableName.Right => MainMenu.tableColumns(rightPanel, FilesTable.columns)
       }
+      MainMenu.defaultMenu.buildMenuBar
     }
 
   def executorOf(action:Action)(using ses:Session, conf:UiConf): ()=>Unit =
@@ -144,19 +99,3 @@ object Main:
     case Exit extends Action("Exit")
     case ActivateMainMenu extends Action("Show menu")
     case MkDir extends Action("MkDir")
-
-    def menuAction
-        ( using 
-          menuParent:WidgetChildren[Menu], 
-          config: MenuColorConfig,
-          executor: Action=>()=>Unit,
-          mainMenu: MainMenu
-        ):MenuAction = 
-      import xyz.cofe.term.ui.menuBuilder._
-
-      val actConf = action(this.name)
-      val exec = executor(this)
-
-      mainMenu.actionKeystrokeMap.get(this.name)
-        .map { ks => actConf.keyStroke(ks).apply(exec()) }
-        .getOrElse( actConf.apply(exec()) )
