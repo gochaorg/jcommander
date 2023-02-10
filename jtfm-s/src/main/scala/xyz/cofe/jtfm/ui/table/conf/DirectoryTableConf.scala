@@ -2,6 +2,7 @@ package xyz.cofe.jtfm.ui.table
 package conf
 
 import java.nio.file.Path
+import xyz.cofe.json4s3.derv.ToJson
 
 case class DirectoryTableConf(
   moveParentNormalizePath:Boolean = true,

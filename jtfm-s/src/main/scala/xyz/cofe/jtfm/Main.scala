@@ -25,30 +25,45 @@ import xyz.cofe.term.common.Color
 import xyz.cofe.files._
 import xyz.cofe.jtfm.ui.warn.WarnDialog
 import xyz.cofe.jtfm.ui.mkdir.MkDirDialog
+import xyz.cofe.jtfm.conf.LeftRightDirs
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
   implicit val metricConf:MetricConf = MetricConf.read.getOrElse(MetricConf.defaultConf)
   private implicit lazy val logger : Logger = LoggerFactory.getLogger("xyz.cofe.jtfm.Main")
+  lazy implicit val conf : UiConf = new UiConf
 
   def main(args:Array[String]):Unit =
     LogPrepare.prepare
     HelloMessage.writeLog
+
     metricConf.run {
       ConsoleBuilder.useConsole(startSession)
+      
+      LeftRightDirs.write(
+        LeftRightDirs(
+          leftPanel.updateConf(conf.leftRightDirs.left),
+          rightPanel.updateConf(conf.leftRightDirs.right)
+        )
+      )
     }
 
   private var mbarOpt : Option[WidgetInput] = None
   private var lasftFocusedDirectoryTable:Option[DirectoryTable] = None
-  def startSession( console: Console ):Unit =
-    implicit val conf : UiConf = new UiConf
+
+  lazy val leftPanel  = { 
     import conf.given
+    implicit val dconf = conf.leftRightDirs.left
+    new DirectoryTable 
+  }
+  lazy val rightPanel = {
+    import conf.given
+    implicit val dconf = conf.leftRightDirs.right
+    new DirectoryTable
+  }
 
-    val leftPanel  = new DirectoryTable
-    val rightPanel = new DirectoryTable
-
-    leftPanel.directory.set(Some(Path.of(".")))
-    rightPanel.directory.set(Some(Path.of(".")))
+  def startSession( console: Console ):Unit =
+    import conf.given
 
     leftPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ rightPanel.focus.request })
     rightPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ leftPanel.focus.request })
@@ -65,6 +80,8 @@ object Main:
       
       vsplitPanel.leftWidget.set(Some(leftPanel))
       vsplitPanel.rightWidget.set(Some(rightPanel))
+
+      List(leftPanel,rightPanel).foreach(_.refresh)
 
       ses.requestFocus(leftPanel)
       leftPanel.selection.focusedIndex.set(Some(1))

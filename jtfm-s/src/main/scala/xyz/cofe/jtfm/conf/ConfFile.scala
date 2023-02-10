@@ -16,6 +16,7 @@ import java.nio.file.Path
 import xyz.cofe.files.readString
 import xyz.cofe.files.writeString
 import xyz.cofe.files.FilesLogger
+import xyz.cofe.json4s3.stream.ast.FormattingJson
 
 enum ConfError(val message:String):
   case Except(val error:Throwable) extends ConfError(error.getMessage())
@@ -44,6 +45,7 @@ object ConfFile:
         .flatMap { str => str.jsonAs[A].left.map(ConfError.JsonError.apply) }
 
     override def write(inst: A): Either[ConfError, Unit] = 
+      implicit val fmt = FormattingJson.pretty(true)
       path.writeString(inst.json, StandardCharsets.UTF_8)
         .left.map(ConfError.Except.apply)
 

@@ -27,7 +27,7 @@ libraryDependencies += "io.undertow" % "undertow-core" % "2.1.0.Final"
 ////////////////////////////////////////////////////////////////////////
 
 scalacOptions ++= Seq(
-  "-Xmax-inlines:64"
+  "-Xmax-inlines:128"
 )
 
 lazy val root = project

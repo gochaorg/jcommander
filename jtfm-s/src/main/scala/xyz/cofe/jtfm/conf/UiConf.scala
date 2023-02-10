@@ -36,3 +36,5 @@ class UiConf(using appHome:AppHome):
   implicit lazy val labelColorsConf: LabelColorConf = LabelColorConf.defaultConf
   implicit lazy val buttonColorsConf: ButtonColorConf = colorsConf.map(_.button).getOrElse(ButtonColorConf.defaultConf)
   implicit lazy val textFieldColorsConf: TextFieldColorConf = TextFieldColorConf.defaultConf
+
+  implicit lazy val leftRightDirs: LeftRightDirs = LeftRightDirs.read.getOrElse(LeftRightDirs.defaultConf)
