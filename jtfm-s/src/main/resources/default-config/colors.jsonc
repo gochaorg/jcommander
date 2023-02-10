@@ -45,5 +45,25 @@
       "focusOwnerBg":     "Black",
       "focusOwnerFg":     "YellowBright"
     }
+  },
+  "button": {
+    "Conf": {
+      "foreground": "White",
+      "background": "Blue"
+    }
+  },
+  "dialog": {
+    "Conf": {
+      "foreground": "Black",
+      "background": "White",
+      "contentBg": "White",
+      "titleFg": "Blue",
+      "closeButton": {
+        "Conf": {
+          "foreground": "RedBright",
+          "background": "White"
+        }
+      }
+    }
   }
 }

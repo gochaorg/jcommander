@@ -2,7 +2,7 @@ package xyz.cofe.term.ui.conf
 
 import xyz.cofe.term.common.Color
 
-trait ButtonColorConf:
+sealed trait ButtonColorConf:
   def foreground: Color
   def background: Color
   def toLabelColorConf: LabelColorConf = LabelColorConf.Conf(foreground, background)

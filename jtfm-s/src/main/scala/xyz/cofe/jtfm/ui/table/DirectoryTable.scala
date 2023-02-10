@@ -24,12 +24,18 @@ extends Table[Path]:
   private val logger : Logger = LoggerFactory.getLogger("xyz.cofe.jtfm.ui.table.DirectoryTable")
   implicit val filesLogger : FilesLogger = FilesLogger.slf(logger, FilesLogger.Level.Info, FilesLogger.Level.Warn)
 
-  val directory = Prop.rw(None:Option[Path])
+  val directory = Prop.rw(conf.directory)
   directory.onChange(refresh)
+  
   columns.append(FilesTable.defaultColumns)
 
   val order = Prop.rw(Some(FilesTable.sort.defaultSort):Option[Ordering[Path]])
   order.onChange(refresh)
+
+  def updateConf(conf:DirectoryTableConf):DirectoryTableConf =
+    conf.copy(
+      directory = directory.get
+    )
 
   def refresh:Unit =
     directory.get.map( d => readDirectory(d) ).getOrElse( clearEntries() )

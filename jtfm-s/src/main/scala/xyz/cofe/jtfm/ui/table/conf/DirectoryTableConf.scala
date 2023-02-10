@@ -1,13 +1,14 @@
 package xyz.cofe.jtfm.ui.table
 package conf
 
-trait DirectoryTableConf:
-  def moveParentNormalizePath:Boolean
-  def forceFirstRowFocused:Boolean
-  def clearSelectionOnCD:Boolean
+import java.nio.file.Path
+
+case class DirectoryTableConf(
+  moveParentNormalizePath:Boolean = true,
+  forceFirstRowFocused:Boolean = true,
+  clearSelectionOnCD:Boolean = true,
+  directory: Option[Path] = None,  
+)
 
 object DirectoryTableConf:
-  given DirectoryTableConf with
-    override def moveParentNormalizePath: Boolean = true
-    override def forceFirstRowFocused: Boolean = true
-    override def clearSelectionOnCD: Boolean = true
+  implicit val defaultConf: DirectoryTableConf = DirectoryTableConf()
