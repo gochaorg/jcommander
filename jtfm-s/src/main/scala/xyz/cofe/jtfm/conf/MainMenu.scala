@@ -18,6 +18,11 @@ import xyz.cofe.term.ui.conf.MenuColorConfig
 import xyz.cofe.term.ui.Table
 import java.nio.file.Path
 import xyz.cofe.term.ui.table.Column
+import xyz.cofe.json4s3.derv.ToJson
+import xyz.cofe.json4s3.stream.ast.AST
+import xyz.cofe.json4s3.derv.errors.DervError
+import xyz.cofe.json4s3.derv.errors.TypeCastFail
+import xyz.cofe.json4s3.derv.errors.FieldNotFound
 
 case class MainMenu(
   keyboard: List[KeyBinding]
@@ -26,7 +31,6 @@ case class MainMenu(
     keyboard.map { kb =>
       (kb.action.name, kb.keyStroke)
     }.toMap
-
 object MainMenu:
   case class KeyBinding( action:Main.Action, keyStroke:KeyStroke )
 
@@ -43,12 +47,35 @@ object MainMenu:
     case Root( items:List[MenuItem] ) extends MenuItem with RootOps
     case Menu( name:String, items:List[MenuItem]=List() ) extends MenuItem with MenuOps
     case MainAction( action:Main.Action ) extends MenuItem with MainActionOps
-    case DirTable( name:DirTableName ) extends MenuItem
+    case DirTable( name:DirTableName ) extends MenuItem 
 
   enum DirTableName:
     case Left,Right
 
   import MenuItem._
+
+  object MenuItem:    
+    given ToJson[MenuItem] with
+      override def toJson(mi: MenuItem): Option[AST] = mi match
+        case m:Root => summon[ToJson[Root]].toJson(m).map(js => AST.JsObj(List("Root" -> js)))
+        case m:Menu => summon[ToJson[Menu]].toJson(m).map(js => AST.JsObj(List("Menu" -> js)))
+        case m:MainAction => summon[ToJson[MainAction]].toJson(m).map(js => AST.JsObj(List("MainAction" -> js)))
+        case m:DirTable => summon[ToJson[DirTable]].toJson(m).map(js => AST.JsObj(List("DirTable" -> js)))
+
+    given FromJson[MenuItem] with
+      override def fromJson(j: AST): Either[DervError, MenuItem] = j match
+        case js : AST.JsObj =>
+          val root = js.get("Root").map { js => summon[FromJson[Root]].fromJson(js) }
+          val menu = js.get("Menu").map { js => summon[FromJson[Menu]].fromJson(js) }
+          val mainAct = js.get("MainAction").map { js => summon[FromJson[MainAction]].fromJson(js) }
+          val dirTable = js.get("DirTable").map { js => summon[FromJson[DirTable]].fromJson(js) }
+          root
+            .orElse(menu)
+            .orElse(mainAct)
+            .orElse(dirTable)
+            .getOrElse(Left(FieldNotFound(s"field (Root|Menu|MainAction|DirTable) not found in $js")))
+        case _ => Left(TypeCastFail(s"can't cast MenuItem from $j"))
+
   val defaultMenu:Root = Root(List(
     Menu("Left", List(
       Menu("Columns", List(

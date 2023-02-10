@@ -1,6 +1,77 @@
 {
   "keyboard": [
-    { "action": {"ActivateMainMenu":{}}, "keyStroke": "F12" },
-    { "action": { "MkDir":{} }, "keyStroke": "F7" }
+    {
+      "action": { "ActivateMainMenu": {} },
+      "keyStroke": "F12"
+    },
+    {
+      "action": { "MkDir": {} },
+      "keyStroke": "F7"
+    }
   ]
+
+  // main menu
+  /*
+  ,"menu": {
+    "items": [
+      {
+        "Menu": {
+          "name": "Left",
+          "items": [
+            {
+              "Menu": {
+                "name": "Columns",
+                "items": [
+                  {
+                    "DirTable": { "name": { "Left": {} } }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Menu": {
+          "name": "File",
+          "items": [
+            {
+              "MainAction": { "action": { "MkDir": {} } }
+            },
+            {
+              "MainAction": { "action": { "Exit": {} } }
+            }
+          ]
+        }
+      },
+      {
+        "Menu": {
+          "name": "View",
+          "items": [
+            {
+              "MainAction": { "action": { "ActivateMainMenu": {} } }
+            }
+          ]
+        }
+      },
+      {
+        "Menu": {
+          "name": "Right",
+          "items": [
+            {
+              "Menu": {
+                "name": "Columns",
+                "items": [
+                  {
+                    "DirTable": { "name": { "Right": {} } }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+  */
 }
