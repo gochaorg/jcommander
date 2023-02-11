@@ -108,7 +108,7 @@ trait SesInput(behavior:SesInputBehavior) extends SesPaint with SesJobs:
                 x
               }.getOrElse( true )
               then
-                if behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) && me.pressed() 
+                if wid.focus.acceptFocusOnMouseEvent && behavior.switchFocusOnMouseEvent && focusOwner != Some(wid) && me.pressed() 
                 then 
                   switchFocusTo(wid)
 

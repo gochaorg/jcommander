@@ -39,6 +39,7 @@ extends Table[Path]:
   directoryButton.location = Position(1,0)
   directoryButton.foregroundColor = Color.Black
   directoryButton.backgroundColor = Color.White
+  directoryButton.focus.acceptFocusOnMouseEvent = false
 
   private def computeHomeRelative(homeAbs:Path, dirAbs:Path):String =
     if homeAbs.toString() == dirAbs.toString() 

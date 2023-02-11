@@ -41,6 +41,8 @@ object WidgetInput:
     }.getOrElse(false)
 
 class FocusClient( widget:WidgetInput ):
+  var acceptFocusOnMouseEvent : Boolean = true
+
   def rootWidget:Option[RootWidget] = widget.toTreePath.listToLeaf.headOption.flatMap { w => 
     if w.isInstanceOf[RootWidget] 
     then Some(w.asInstanceOf[RootWidget])
