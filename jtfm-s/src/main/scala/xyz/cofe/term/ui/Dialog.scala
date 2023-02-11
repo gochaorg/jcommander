@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import xyz.cofe.log._
 import xyz.cofe.lazyp.Prop
+import xyz.cofe.term.ui.Session
 
 class Dialog( using conf:DialogConf, colors:DialogColorConf )
 extends Widget 
@@ -217,6 +218,23 @@ object Dialog:
       dialog.foreach(_.close())
     }
 
+  opaque type DlgRelocate = Rect
+  object DlgRelocate:
+    def apply(rootWid:RootWidget):DlgRelocate = Rect( rootWid.location.get.x, rootWid.location.get.y, rootWid.size.get.width(), rootWid.size.get.height() )
+
+  extension (rect:DlgRelocate)
+    def size:Size = rect.size
+    def location:Position = rect.leftTop
+    def center(newSize:Size):Rect =
+      val wRest = size.width  - newSize.width
+      val hRest = size.height - newSize.height
+      val top  = hRest / 2
+      val left = wRest / 2
+      Rect(
+        left, top,
+        newSize.width, newSize.height
+      )
+
   case class Builder(
     configure:List[Dialog=>Unit]=List.empty,
     location:Option[Position]=None,
@@ -246,6 +264,19 @@ object Dialog:
 
     def location( pos:Position ):Builder =
       copy( location = Some(pos) )
+
+    def relocateWhenOpen( relocate:DlgRelocate => Rect ):Builder =
+      copy(
+        configure = configure :+ ( dlg => {
+          dlg.onOpenned.listen { _ =>
+            dlg.toTreePath.listToLeaf.find(_.isInstanceOf[RootWidget]).map(_.asInstanceOf[RootWidget]).foreach { rootWid => 
+              val rect = relocate(DlgRelocate(rootWid))
+              dlg.location = rect.leftTop
+              dlg.size = rect.size
+            }
+          }
+        })
+      )
 
     def open()(using conf:DialogConf, colors:DialogColorConf):Dialog =
       val dlg = Dialog()

@@ -16,6 +16,7 @@ import xyz.cofe.term.common.KeyName
 import xyz.cofe.term.ui.conf.DialogConf
 import xyz.cofe.term.ui.conf.DialogColorConf
 import xyz.cofe.term.ui._
+import xyz.cofe.term.common.Size
 
 object MkDirDialog:
   class Promise():
@@ -26,7 +27,7 @@ object MkDirDialog:
     val prom = Promise()
     Dialog
       .title("mk dir")
-      .size(36,15)
+      .relocateWhenOpen { rootw => rootw.center(Size(rootw.size.width-6,10)) }
       .content { (panel,hdl) =>
         val label = Label("name:")
         panel.children.append(label)
