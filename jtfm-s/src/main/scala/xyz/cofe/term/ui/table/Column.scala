@@ -1,6 +1,7 @@
 package xyz.cofe.term.ui.table
 
 import xyz.cofe.lazyp.Prop
+import conf._
 
 enum PreferredWidth:
   case Auto

@@ -8,15 +8,20 @@ import java.time.Instant
 import timeRender.shortCellEitherValue
 
 object FilesTable:
-  def columns:List[Column[Path,_]] =
+  def allColumns:List[Column[Path,_]] =
     val cols = new FilesColumns()
     List(
       cols.fileTypeLetterColumn,
       cols.nameColumn,
       cols.rwxColumn,
-      cols.lastModify,
+      cols.ownerColumn,
+      cols.groupColumn,
+      cols.lastModifyColumn,
       cols.sizeHumanReadableColumn,
     )
+
+  def allColumnsMap:Map[String,Column[Path,_]] =
+    allColumns.map( c => c.id -> c ).toMap
 
   def defaultColumns:List[Column[Path,_]] =
     val cols = new FilesColumns()
@@ -71,13 +76,27 @@ object FilesTable:
       .width(9)
       .build
 
-    val lastModify = Column
+    val lastModifyColumn = Column
       .id("file.lastModify")
-      .extract { (path:Path) => 
-        path.lastModified
-      }
+      .extract { (path:Path) => path.lastModified }
       .title("last mod")
       .width(10)
+      .build
+
+    val ownerColumn = Column
+      .id("file.owner")
+      .reader { (path:Path) => path.posixAttributes.map(_.owner).getOrElse("?") }
+      .text( txt => txt )
+      .title("owner")
+      .width(8)
+      .build
+
+    val groupColumn = Column
+      .id("file.group")
+      .reader { (path:Path) => path.posixAttributes.map(_.group).getOrElse("?") }
+      .text( txt => txt )
+      .title("group")
+      .width(8)
       .build
 
   object sort:

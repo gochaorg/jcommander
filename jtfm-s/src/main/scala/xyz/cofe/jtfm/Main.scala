@@ -42,8 +42,8 @@ object Main:
       
       LeftRightDirs.write(
         LeftRightDirs(
-          leftPanel.updateConf(conf.leftRightDirs.left),
-          rightPanel.updateConf(conf.leftRightDirs.right)
+          conf.leftRightDirs.left.merge( leftPanel ),
+          conf.leftRightDirs.right.merge( rightPanel ),
         )
       )
     }
@@ -91,8 +91,8 @@ object Main:
       implicit val dirMenuBuild: (MainMenu.DirTableName,WidgetChildren[Menu])=>Unit = (dn,menuParent) => {
         implicit val mp = menuParent
         dn match
-          case MainMenu.DirTableName.Left  => MainMenu.tableColumns(leftPanel,  FilesTable.columns)
-          case MainMenu.DirTableName.Right => MainMenu.tableColumns(rightPanel, FilesTable.columns)
+          case MainMenu.DirTableName.Left  => MainMenu.tableColumns(leftPanel,  FilesTable.allColumns)
+          case MainMenu.DirTableName.Right => MainMenu.tableColumns(rightPanel, FilesTable.allColumns)
       }
       MainMenu.defaultMenu.buildMenuBar
     }

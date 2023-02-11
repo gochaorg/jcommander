@@ -14,6 +14,7 @@ import conf._
 import xyz.cofe.term.ui.table.conf.TableColorsConf
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.cofe.term.ui.table.Column
 
 class DirectoryTable( using 
   conf:DirectoryTableConf, 
@@ -27,15 +28,16 @@ extends Table[Path]:
   val directory = Prop.rw(conf.directory)
   directory.onChange(refresh)
   
-  columns.append(FilesTable.defaultColumns)
+  private val columns4add : List[Column[Path,?]] = { 
+    val colIdMap = FilesTable.allColumnsMap
+    val configuredColumns = conf.columns.flatMap { ccfg => colIdMap.get(ccfg.id).map{ c => ccfg.applyTo(c); c} }
+    if configuredColumns.isEmpty then FilesTable.defaultColumns else configuredColumns
+  }
+
+  columns.append( columns4add )
 
   val order = Prop.rw(Some(FilesTable.sort.defaultSort):Option[Ordering[Path]])
   order.onChange(refresh)
-
-  def updateConf(conf:DirectoryTableConf):DirectoryTableConf =
-    conf.copy(
-      directory = directory.get
-    )
 
   def refresh:Unit =
     directory.get.map( d => readDirectory(d) ).getOrElse( clearEntries() )
