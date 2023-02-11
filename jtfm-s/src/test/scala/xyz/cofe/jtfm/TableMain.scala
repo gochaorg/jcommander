@@ -123,7 +123,7 @@ object TableMain:
       table.size = Size(60,25)
       table.location = Position(1,1)
 
-      table.columns.append(FilesTable.columns)
+      table.columns.append(FilesTable.allColumns)
 
       Path.of(".").readDir.foreach { files => 
         table.rows.append(

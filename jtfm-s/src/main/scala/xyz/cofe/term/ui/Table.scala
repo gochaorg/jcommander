@@ -29,3 +29,4 @@ class Table[A]( using tableInputConf:TableInputConf, tableColors:TableColorsConf
   with TableInput[A]
   with TableAutoResize
   with TableScrollPaint[A]
+  with PaintChildren

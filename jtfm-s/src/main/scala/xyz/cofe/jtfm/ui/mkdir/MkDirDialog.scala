@@ -54,7 +54,7 @@ object MkDirDialog:
         butOk.bind(panel) { b => Rect(b.width-3, b.height-1, 2, 1) }
 
         input.text.onChange( (_,txt) => {
-          validName = txt.nonEmpty && !txt.contains("!")
+          validName = txt.nonEmpty
           butOk.foregroundColor = if validName then Color.White else Color.RedBright
         })
 
