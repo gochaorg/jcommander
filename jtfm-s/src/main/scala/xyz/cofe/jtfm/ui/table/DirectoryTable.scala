@@ -28,7 +28,7 @@ class DirectoryTable( using
   tableInputConf:TableInputConf,
   tableColorsConf:TableColorsConf,
 )
-extends Table[Path] with DirectoryTableBase with DirectoryTableLabel:
+extends Table[Path] with DirectoryTableBase with DirectoryTableLabel with DirectoryTableSelectLabel:
   private implicit lazy val logger : Logger = LoggerFactory.getLogger("xyz.cofe.jtfm.ui.table.DirectoryTable")
   implicit val filesLogger : FilesLogger = FilesLogger.slf(logger, FilesLogger.Level.Info, FilesLogger.Level.Warn)
 

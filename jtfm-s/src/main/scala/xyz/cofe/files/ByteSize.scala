@@ -33,6 +33,19 @@ extension (size:ByteSize)
     else if kbytes>0 then HumanReadable( kbytePart.toDouble + (bytePart.toDouble / 1024.0), "k" )
     else HumanReadable( value.toDouble, "" )
 
+  def parts:List[SizeSuff] =
+    List(
+        SizeSuff.PByte(pbytePart)
+      , SizeSuff.TByte(tbytePart)
+      , SizeSuff.GByte(gbytePart)
+      , SizeSuff.MByte(mbytePart)
+      , SizeSuff.MByte(kbytePart)
+      , SizeSuff.Byte(bytePart)
+    )
+
+  def precisionReadable:String =
+    parts.filter(_.count > 0).map(p => s"${p.count}${p.name.head}").mkString(" ")
+
 case class HumanReadable(value:Double, suff:String):
   override def toString(): String = 
     val str = value.toString()
@@ -44,13 +57,14 @@ case class HumanReadable(value:Double, suff:String):
     else
       str + suff
 
-enum SizeSuff(multiplier:Long, name:List[String]):
+enum SizeSuff(val multiplier:Long, val name:List[String]):
   case Byte(count:Long)  extends SizeSuff(1,List("b"))
   case KByte(count:Long) extends SizeSuff(1024,List("k","kb"))
   case MByte(count:Long) extends SizeSuff(1024L*1024L,List("m","mb"))
   case GByte(count:Long) extends SizeSuff(1024L*1024L*1024L,List("g","gb"))
   case TByte(count:Long) extends SizeSuff(1024L*1024L*1024L*1024L,List("t","tb"))
   case PByte(count:Long) extends SizeSuff(1024L*1024L*1024L*1024L*1024L,List("p","pb"))
+  def count:Long
 
 object SizeSuff:
   private def digitOf(c:Char):Option[Int] =
