@@ -7,6 +7,10 @@
     {
       "action": { "MkDir": {} },
       "keyStroke": "F7"
+    },
+    {
+      "action": { "ChDir": {} },
+      "keyStroke": "g+C"
     }
   ]
 

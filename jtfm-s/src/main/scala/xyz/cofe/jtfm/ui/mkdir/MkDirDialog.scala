@@ -17,14 +17,11 @@ import xyz.cofe.term.ui.conf.DialogConf
 import xyz.cofe.term.ui.conf.DialogColorConf
 import xyz.cofe.term.ui._
 import xyz.cofe.term.common.Size
+import xyz.cofe.jtfm.ui.Promise
 
 object MkDirDialog:
-  class Promise():
-    val ok: Listener[Unit] = Listener.unit
-    val closed: Listener[Unit] = Listener.unit
-
-  def open( parentDirectory:Path )(using conf:DialogConf, colors:DialogColorConf):Promise =
-    val prom = Promise()
+  def open( parentDirectory:Path )(using conf:DialogConf, colors:DialogColorConf):Promise[Unit] =
+    val prom = Promise[Unit]()
     Dialog
       .title("mk dir")
       .relocateWhenOpen { rootw => rootw.center(Size(rootw.size.width-6,10)) }

@@ -5,6 +5,7 @@ import xyz.cofe.term.common.Position
 import xyz.cofe.term.common.Color
 import java.nio.file.Path
 import xyz.cofe.term.common.Size
+import xyz.cofe.jtfm.ui.cd.ChangeDirDialog
 
 trait DirectoryTableLabel extends DirectoryTableBase:
   val directoryButton = Button()
@@ -13,6 +14,14 @@ trait DirectoryTableLabel extends DirectoryTableBase:
   directoryButton.foregroundColor = Color.Black
   directoryButton.backgroundColor = Color.White
   directoryButton.focus.acceptFocusOnMouseEvent = false
+
+  directoryButton.action {
+    ChangeDirDialog.open( directory.get ).ok.listen { chDir =>
+      directory.set(Some(chDir))
+      selection.focusedIndex.set(Some(0))
+      focus.request
+    }
+  }
 
   private def computeHomeRelative(homeAbs:Path, dirAbs:Path):String =
     if homeAbs.toString() == dirAbs.toString() 

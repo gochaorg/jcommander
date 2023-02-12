@@ -26,6 +26,7 @@ import xyz.cofe.files._
 import xyz.cofe.jtfm.ui.warn.WarnDialog
 import xyz.cofe.jtfm.ui.mkdir.MkDirDialog
 import xyz.cofe.jtfm.conf.LeftRightDirs
+import xyz.cofe.jtfm.ui.cd.ChangeDirDialog
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -111,8 +112,18 @@ object Main:
           }
         }
       }
+      case Action.ChDir => ()=>{
+        lasftFocusedDirectoryTable.foreach { dirTable =>
+          ChangeDirDialog.open( dirTable.directory.get ).ok.listen { chDir =>
+            dirTable.directory.set(Some(chDir))
+            dirTable.selection.focusedIndex.set(Some(0))
+            dirTable.focus.request
+          }
+        }
+      }
 
   enum Action(val name:String):
     case Exit extends Action("Exit")
     case ActivateMainMenu extends Action("Show menu")
-    case MkDir extends Action("MkDir")
+    case MkDir extends Action("Make dir")
+    case ChDir extends Action("Change dir")
