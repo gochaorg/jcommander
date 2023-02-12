@@ -65,5 +65,13 @@
         }
       }
     }
+  },
+  "directoryTable": {
+    "directoryLabel": {
+      "Conf": {
+        "foreground": "Black",
+        "background": "White"
+      }
+    }
   }
 }

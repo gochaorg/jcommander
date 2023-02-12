@@ -24,6 +24,7 @@ import xyz.cofe.term.common.Color
 
 class DirectoryTable( using 
   conf:DirectoryTableConf, 
+  colors:DirectoryTableColorConf,
   tableInputConf:TableInputConf,
   tableColorsConf:TableColorsConf,
 )

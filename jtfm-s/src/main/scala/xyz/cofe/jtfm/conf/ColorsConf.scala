@@ -8,12 +8,14 @@ import xyz.cofe.files.AppHome
 import xyz.cofe.term.ui.conf.given
 import xyz.cofe.term.ui.table.conf.TableColorsConf
 import xyz.cofe.term.ui.conf._
+import xyz.cofe.jtfm.ui.table.conf.DirectoryTableColorConf
 
 case class ColorsConf(
   menu:  MenuColors,
   table: TableColorsConf,
   button: ButtonColorConf,
   dialog: DialogColorConf,
+  directoryTable: DirectoryTableColorConf,
 )
 
 object ColorsConf:

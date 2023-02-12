@@ -6,13 +6,14 @@ import xyz.cofe.term.common.Color
 import java.nio.file.Path
 import xyz.cofe.term.common.Size
 import xyz.cofe.jtfm.ui.cd.ChangeDirDialog
+import xyz.cofe.jtfm.ui.table.conf.DirectoryTableColorConf
 
-trait DirectoryTableLabel extends DirectoryTableBase:
+trait DirectoryTableLabel(using colors:DirectoryTableColorConf) extends DirectoryTableBase:
   val directoryButton = Button()
   children.append(directoryButton)
   directoryButton.location = Position(1,0)
-  directoryButton.foregroundColor = Color.Black
-  directoryButton.backgroundColor = Color.White
+  directoryButton.foregroundColor = colors.directoryLabel.foreground
+  directoryButton.backgroundColor = colors.directoryLabel.background
   directoryButton.focus.acceptFocusOnMouseEvent = false
 
   directoryButton.action {

@@ -9,6 +9,7 @@ import xyz.cofe.term.ui.conf._
 import xyz.cofe.log._
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.cofe.jtfm.ui.table.conf.DirectoryTableColorConf
 
 class UiConf(using appHome:AppHome):
   private implicit val logger : Logger = LoggerFactory.getLogger("xyz.cofe.jtfm.conf.UiConf")
@@ -38,3 +39,4 @@ class UiConf(using appHome:AppHome):
   implicit lazy val textFieldColorsConf: TextFieldColorConf = TextFieldColorConf.defaultConf
 
   implicit lazy val leftRightDirs: LeftRightDirs = LeftRightDirs.read.getOrElse(LeftRightDirs.defaultConf)
+  implicit lazy val dirTableColors: DirectoryTableColorConf = colorsConf.map(_.directoryTable).getOrElse(DirectoryTableColorConf.defaultConf)
