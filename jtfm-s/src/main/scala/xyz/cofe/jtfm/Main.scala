@@ -50,7 +50,7 @@ object Main:
     }
 
   private var mbarOpt : Option[WidgetInput] = None
-  private var lasftFocusedDirectoryTable:Option[DirectoryTable] = None
+  private var focusedDirTableHistory:List[DirectoryTable] = List.empty
 
   lazy val leftPanel  = { 
     import conf.given
@@ -69,8 +69,8 @@ object Main:
     leftPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ rightPanel.focus.request })
     rightPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ leftPanel.focus.request })
 
-    leftPanel.focus.onAccept  >> { lasftFocusedDirectoryTable = Some(leftPanel) }
-    rightPanel.focus.onAccept >> { lasftFocusedDirectoryTable = Some(rightPanel) }
+    leftPanel.focus.onAccept  >> { focusedDirTableHistory = (leftPanel  :: focusedDirTableHistory).take(2) }
+    rightPanel.focus.onAccept >> { focusedDirTableHistory = (rightPanel :: focusedDirTableHistory).take(2) }
 
     Session.start(console) { implicit ses =>
       import xyz.cofe.term.ui.menuBuilder._
@@ -104,7 +104,7 @@ object Main:
       case Action.Exit => ()=>{ ses.stop = true }
       case Action.ActivateMainMenu => ()=>{ mbarOpt.foreach { mbar => mbar.focus.request } }
       case Action.MkDir => ()=>{
-        lasftFocusedDirectoryTable.foreach { dirTable =>
+        focusedDirTableHistory.headOption.foreach { dirTable =>
           dirTable.directory.get.foreach { dir =>
             MkDirDialog.open( dir ).ok.listen { _ =>
               dirTable.refresh
@@ -113,7 +113,7 @@ object Main:
         }
       }
       case Action.ChDir => ()=>{
-        lasftFocusedDirectoryTable.foreach { dirTable =>
+        focusedDirTableHistory.headOption.foreach { dirTable =>
           ChangeDirDialog.open( dirTable.directory.get ).ok.listen { chDir =>
             dirTable.directory.set(Some(chDir))
             dirTable.selection.focusedIndex.set(Some(0))
