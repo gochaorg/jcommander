@@ -83,6 +83,7 @@ object MainMenu:
       ))
     )),
     Menu("File",List(
+      MainAction(Main.Action.Copy),
       MainAction(Main.Action.ChDir),
       MainAction(Main.Action.MkDir),
       MainAction(Main.Action.Exit)

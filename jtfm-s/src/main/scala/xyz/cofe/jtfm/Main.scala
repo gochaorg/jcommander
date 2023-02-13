@@ -27,6 +27,7 @@ import xyz.cofe.jtfm.ui.warn.WarnDialog
 import xyz.cofe.jtfm.ui.mkdir.MkDirDialog
 import xyz.cofe.jtfm.conf.LeftRightDirs
 import xyz.cofe.jtfm.ui.cd.ChangeDirDialog
+import xyz.cofe.jtfm.ui.copy.CopyDialog
 
 object Main:
   implicit object appHome extends AppHome("jtfm")
@@ -50,7 +51,6 @@ object Main:
     }
 
   private var mbarOpt : Option[WidgetInput] = None
-  private var focusedDirTableHistory:List[DirectoryTable] = List.empty
 
   lazy val leftPanel  = { 
     import conf.given
@@ -63,8 +63,12 @@ object Main:
     new DirectoryTable
   }
 
+  private var focusedDirTableHistory:List[DirectoryTable] = List.empty
+
   def startSession( console: Console ):Unit =
     import conf.given
+
+    focusedDirTableHistory = List(leftPanel, rightPanel)
 
     leftPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ rightPanel.focus.request })
     rightPanel.keyStrokeMap.bind(KeyStroke.KeyEvent(KeyName.Tab,false,false,false), ()=>{ leftPanel.focus.request })
@@ -121,9 +125,24 @@ object Main:
           }
         }
       }
+      case Action.Copy => ()=>{
+        focusedDirTableHistory.headOption.foreach { fromDir => 
+          focusedDirTableHistory.drop(1).headOption.foreach { toDir =>
+            val files = {
+              if fromDir.selection.rows.get.nonEmpty 
+              then fromDir.selection.rows.get
+              else fromDir.selection.focusedItem.get.map(p => List(p)).getOrElse(List.empty)
+            }
+            if files.nonEmpty && toDir.directory.get.nonEmpty
+            then
+              toDir.directory.get.foreach( dirTarget => CopyDialog.open(files, dirTarget) )
+          }
+        }
+      }
 
   enum Action(val name:String):
     case Exit extends Action("Exit")
     case ActivateMainMenu extends Action("Show menu")
     case MkDir extends Action("Make dir")
     case ChDir extends Action("Change dir")
+    case Copy extends Action("Copy")
