@@ -64,6 +64,8 @@ sealed trait Menu
 class MenuContainer(using config: MenuColorConfig)
   extends Menu
   with WidgetChildren[Menu]:
+    private implicit lazy val logger : Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.MenuContainer")
+
     def this(text:String)(using config: MenuColorConfig) = {
       this()
       this.text = text
@@ -185,10 +187,21 @@ class MenuContainer(using config: MenuColorConfig)
 
     var keyMap:Map[KeyName,()=>Unit] = Map.empty
 
-    focus.onAccept >> showSubMenu
-    focus.onLost >> checkHideSubMenu
+    focus.onAccept >> { 
+      debug"focus.onAccept"
+      showSubMenu 
+    }
+    focus.acceptChild.listen { _ =>
+      debug"focus.onAccept"
+      showSubMenu 
+    }
+    focus.onLost >> {
+      debug"focus.onLost"
+      checkHideSubMenu
+    }
 
     def checkHideSubMenu:Unit =
+      log"checkHideSubMenu"
       parent.get.foreach {
         case mc:MenuContainer => mc.checkHideSubMenu
         case _ =>
@@ -196,13 +209,17 @@ class MenuContainer(using config: MenuColorConfig)
 
       if !focus.contains 
       then 
+        debug"checkHideSubMenu !focus.contains"
         hideSubMenu 
 
     def selectMenu: Unit = 
+      log"selectMenu"
       children.headOption.foreach { _.focus.request }
 
     def hideSubMenu:Unit =
+      log"hideSubMenu"
       children.foreach { mi => 
+        debug"mi[${mi.renderText}].visible=false"
         mi.visible = false
       } 
 
@@ -213,6 +230,7 @@ class MenuContainer(using config: MenuColorConfig)
     private lazy val parentMenu = Prop.eval(parent) { wOpt => wOpt.filter(_.isInstanceOf[MenuContainer]).map(_.asInstanceOf[MenuContainer]) }
 
     def showSubMenu:Unit =
+      log"showSubMenu"
       menuLevel.get match
         case 0 => childsLeftUpPos.set(Position(0,1))
         case _ => 
@@ -270,17 +288,26 @@ class MenuContainer(using config: MenuColorConfig)
     private lazy val childsLeftUpPos = Prop.rw(Position(0,1))
 
     def upDownLayout: Unit =
+      log"upDownLayout"
+      
       val off = childsVisibleOffset.get
       val cmax = childsVisibleCountMax.get
       val off2 = off + cmax
       val lt = childsLeftUpPos.get
+
+      debug"childsVisibleOffset off=$off off2=$off2"
+      debug"childsVisibleCountMax $cmax"
+      debug"childsLeftUpPos $lt"
+
       children.zipWithIndex.foreach { case (mi,idx) => 
         mi.location = Position( lt.x+1, lt.y+1+idx-childsVisibleOffset.get )
         mi.size = Size( contentWidth, 1 )
         mi.visible = idx>=off && idx<off2
+        debug"mi[${mi.renderText}]: visible=${mi.visible.value.get} location=${mi.location.get} size=${mi.size.get}"
       }
 
-    def bindUpDown:Unit =      
+    def bindUpDown:Unit =     
+      log"bindUpDown" 
       children.zip(children.drop(1)).foreach { case (prevMi,nextMi) => 
         prevMi.keyMap = prevMi.keyMap + ( KeyName.Down -> ( ()=>{focusChildNext(nextMi)} ) )
         prevMi.keyMap = prevMi.keyMap + ( KeyName.Tab ->  ( ()=>{focusChildNext(nextMi)} ) )
