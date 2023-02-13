@@ -19,6 +19,7 @@ import xyz.cofe.term.ui.conf.MenuBarColorConfig
 import xyz.cofe.term.ui.prop._
 import xyz.cofe.term.ui.prop.color._
 import xyz.cofe.term.ui.paint._
+import xyz.cofe.term.buff._
 
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
@@ -65,6 +66,8 @@ class MenuContainer(using config: MenuColorConfig)
   extends Menu
   with WidgetChildren[Menu]:
     private implicit lazy val logger : Logger = LoggerFactory.getLogger("xyz.cofe.term.ui.MenuContainer")
+
+    paintStack.add { _ => contentWidthComputed.set(false) }
 
     def this(text:String)(using config: MenuColorConfig) = {
       this()
@@ -131,7 +134,7 @@ class MenuContainer(using config: MenuColorConfig)
 
     def renderBorder(paint:PaintCtx):Unit = {
       val lt = childsLeftUpPos.get
-      val rb = Position(lt.x+1+contentWidth, lt.y+1+contentHeight)
+      val rb = Position(lt.x+1+contentWidth.get, lt.y+1+contentHeight)
       val rt = Position(rb.x, lt.y)
       val lb = Position(lt.x, rb.y)
       val xCenter = ((lt.x - rt.x).abs / 2) + lt.x
@@ -235,7 +238,7 @@ class MenuContainer(using config: MenuColorConfig)
         case 0 => childsLeftUpPos.set(Position(0,1))
         case _ => 
           parentMenu.get.foreach { mc => 
-            childsLeftUpPos.set(Position(mc.contentWidth,0))
+            childsLeftUpPos.set(Position(mc.contentWidth.get,0))
           }
       
       upDownLayout
@@ -244,7 +247,12 @@ class MenuContainer(using config: MenuColorConfig)
     private def childsMaxWidth = { 
       children.map(_.renderText.length()).maxOption.getOrElse(5) 
     }
-    private def contentWidth = childsMaxWidth
+
+    val contentWidthComputed = Prop.rw(false)
+    val contentWidth = Prop.eval(contentWidthComputed,children){ case (_,_) => 
+      //childsMaxWidth 
+      children.map(_.renderText.length()).maxOption.getOrElse(5)
+    }
     private def contentHeight = childsVisibleItems.get.size
 
     private lazy val childsVisibleOffset = Prop.rw(0)
@@ -301,7 +309,7 @@ class MenuContainer(using config: MenuColorConfig)
 
       children.zipWithIndex.foreach { case (mi,idx) => 
         mi.location = Position( lt.x+1, lt.y+1+idx-childsVisibleOffset.get )
-        mi.size = Size( contentWidth, 1 )
+        mi.size = Size( contentWidth.get, 1 )
         mi.visible = idx>=off && idx<off2
         debug"mi[${mi.renderText}]: visible=${mi.visible.value.get} location=${mi.location.get} size=${mi.size.get}"
       }
@@ -403,16 +411,23 @@ class MenuAction(using config: MenuColorConfig)
         paint.background = 
           this.asInstanceOf[FillBackground].fillBackgroundColor
 
-      val str = 
-        (text.get.map { chr => ScreenChar(chr,paintTextColor,fillBackgroundColor) }).toList
-        ++ { keyStroke.get match
+      // this.parent.get
+      //   .flatMap { w => if w.isInstanceOf[MenuContainer] then Some(w.asInstanceOf[MenuContainer]) else None }
+      //   .map { mc => mc.contentWidth.get }.getOrElse( )
+
+      val strName = (text.get.map { chr => ScreenChar(chr,paintTextColor,fillBackgroundColor) }).toList
+      val strKs = keyStroke.get match
           case None => List()
           case Some(ks) => 
             List(ScreenChar(' ',paintTextColor,fillBackgroundColor)) ++
             ks.toString().map {
               chr => ScreenChar(chr,keyStrokeFgColor.get,fillBackgroundColor)
             }
-        }
+
+      val remaind = (size.width() - strName.size - strKs.size) max 0
+      val strRem = (" "*remaind).colors(paintTextColor,fillBackgroundColor)
+
+      val str = strName ++ strRem ++ strKs
          
       paint.write(0,0,str)
     

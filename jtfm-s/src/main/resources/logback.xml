@@ -7,12 +7,15 @@
   <logger name="xyz.cofe.term.ui.table" level="info" />
   <logger name="xyz.cofe.term.ui.Session" level="info" />
   <logger name="xyz.cofe.term.buff.ScreenBufSync" level="info" />
+  <logger name="xyz.cofe.term.ui.MenuContainer" level="warn" />
+  <logger name="xyz.cofe.term.ui.SesInput" level="warn" />
+  <logger name="xyz.cofe.term.ui.table.TableGridPaint" level="warn" />
   
   <appender name="FILE_APPEND" class="ch.qos.logback.core.FileAppender">
     <file>${LOG_DIR}/jtfm.log</file>
     <append>true</append>
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} -%kvp- %msg%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{45} -%kvp- %msg%n</pattern>
     </encoder>
   </appender>  
 
