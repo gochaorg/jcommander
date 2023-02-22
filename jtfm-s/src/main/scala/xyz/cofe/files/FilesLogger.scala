@@ -81,9 +81,7 @@ enum FilesOperation:
   case CreateDirectories(path:Path,opts:FilesOption.Opts)
   case CreateFile(path:Path,opts:FilesOption.Opts) 
   case CreateLink(path:Path,target:Path) 
-  case CreateSymbolicLink(path:Path,opts:FilesOption.Opts) 
-  case CreateTempDirectory(path:Path,opts:FilesOption.Opts) 
-  case CreateTempFile(path:Path,opts:FilesOption.Opts)
+  case CreateSymbolicLink(path:Path,target:Path,opts:FilesOption.Opts) 
   case Delete(path:Path)
   case DeleteIfExists(path:Path)
   case Move(path:Path,target:Path,opts:FilesOption.Opts)
@@ -97,7 +95,8 @@ enum FilesOperation:
   case ReadPosixAttib(path:Path,optsz:FilesOption.Opts)
   case SetPosixPerm(path:Path, perm:PosixPerm)
   case ReadSymbolicLink(path:Path)
-  case ReadFileTime(path:Path,opts:FilesOption.Opts)
+  case GetFileTime(path:Path,opts:FilesOption.Opts)
+  case SetFileTime(path:Path,time:FileTime,opts:FilesOption.Opts)
 
   def toJson:String = FilesOperation.toJson(this)
 

@@ -22,6 +22,7 @@ import java.nio.file.attribute.PosixFileAttributeView
 import java.nio.file.attribute.PosixFilePermission
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.BasicFileAttributeView
+import java.nio.file.FileSystems
 
 extension (path:Path)(using log:FilesLogger, opts:FilesOption)
   def name: String = path.getFileName.toString
@@ -60,7 +61,7 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(IsRegularFile(path,opts.copy)) { Files.isRegularFile(path,opts.linkOptions:_*) }
 
   def fileTime:Either[Throwable,FileTime] = {
-    log(ReadFileTime(path,opts.copy)){
+    log(GetFileTime(path,opts.copy)){
       val attr = Files.readAttributes(path,classOf[BasicFileAttributes],opts.linkOptions:_*)
       FileTime(
         attr.creationTime().toInstant(),
@@ -71,12 +72,14 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
   }
 
   def setFileTime( fileTime:FileTime ) =
-    val attrView = Files.getFileAttributeView(path, classOf[BasicFileAttributeView], opts.linkOptions:_*)
-    attrView.setTimes(
-      JFileTime.from(fileTime.lastModified),
-      JFileTime.from(fileTime.lastAccess),
-      JFileTime.from(fileTime.creation)
-    )
+    log(SetFileTime(path,fileTime,opts.copy)){
+      val attrView = Files.getFileAttributeView(path, classOf[BasicFileAttributeView], opts.linkOptions:_*)
+      attrView.setTimes(
+        JFileTime.from(fileTime.lastModified),
+        JFileTime.from(fileTime.lastAccess),
+        JFileTime.from(fileTime.creation)
+      )
+    }
 
   def size:Either[Throwable,Long] = 
     log(Size(path)) { Files.size(path) }
@@ -114,7 +117,23 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(CreateLink(path,target)) {
       Files.createLink(path,target)
     }
-  // def createSymbolicLink(target:Path):Either[Throwable,Unit]
+  def createSymbolicLink(target:Path):Either[Throwable,Path] =
+    log(CreateSymbolicLink(path,target,opts.copy)){
+      Files.createSymbolicLink(path,target,opts.fileAttributes:_*)
+    }
+  def setOwner(ownerName:String) =
+    val lookupService = FileSystems.getDefault().getUserPrincipalLookupService()
+    val usr = lookupService.lookupPrincipalByName(ownerName)
+    val attrView = Files.getFileAttributeView(
+      path, classOf[PosixFileAttributeView], opts.linkOptions:_*)
+    attrView.setOwner(usr)
+  def setGroup(groupName:String) =
+    val lookupService = FileSystems.getDefault().getUserPrincipalLookupService()
+    val grp = lookupService.lookupPrincipalByGroupName(groupName)
+    val attrView = Files.getFileAttributeView(
+      path, classOf[PosixFileAttributeView], opts.linkOptions:_*)
+    attrView.setGroup(grp)
+
   // def createTempDirectory(prefix:String):Either[Throwable,Path]
   // def createTempFile(prefix:String,suffix:String):Either[Throwable,Path]
   def delete():Either[Throwable,Unit] =
