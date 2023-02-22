@@ -121,18 +121,22 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(CreateSymbolicLink(path,target,opts.copy)){
       Files.createSymbolicLink(path,target,opts.fileAttributes:_*)
     }
-  def setOwner(ownerName:String) =
-    val lookupService = FileSystems.getDefault().getUserPrincipalLookupService()
-    val usr = lookupService.lookupPrincipalByName(ownerName)
-    val attrView = Files.getFileAttributeView(
-      path, classOf[PosixFileAttributeView], opts.linkOptions:_*)
-    attrView.setOwner(usr)
-  def setGroup(groupName:String) =
-    val lookupService = FileSystems.getDefault().getUserPrincipalLookupService()
-    val grp = lookupService.lookupPrincipalByGroupName(groupName)
-    val attrView = Files.getFileAttributeView(
-      path, classOf[PosixFileAttributeView], opts.linkOptions:_*)
-    attrView.setGroup(grp)
+  def setOwner(ownerName:String):Either[Throwable,Unit] =
+    log(SetOwner(path,ownerName,opts.copy)){
+      val lookupService = FileSystems.getDefault().getUserPrincipalLookupService()
+      val usr = lookupService.lookupPrincipalByName(ownerName)
+      val attrView = Files.getFileAttributeView(
+        path, classOf[PosixFileAttributeView], opts.linkOptions:_*)
+      attrView.setOwner(usr)
+    }
+  def setGroup(groupName:String):Either[Throwable,Unit] =
+    log(SetGroup(path,groupName,opts.copy)){
+      val lookupService = FileSystems.getDefault().getUserPrincipalLookupService()
+      val grp = lookupService.lookupPrincipalByGroupName(groupName)
+      val attrView = Files.getFileAttributeView(
+        path, classOf[PosixFileAttributeView], opts.linkOptions:_*)
+      attrView.setGroup(grp)
+    }
 
   // def createTempDirectory(prefix:String):Either[Throwable,Path]
   // def createTempFile(prefix:String,suffix:String):Either[Throwable,Path]

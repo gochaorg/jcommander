@@ -97,6 +97,8 @@ enum FilesOperation:
   case ReadSymbolicLink(path:Path)
   case GetFileTime(path:Path,opts:FilesOption.Opts)
   case SetFileTime(path:Path,time:FileTime,opts:FilesOption.Opts)
+  case SetOwner(path:Path,owner:String,opts:FilesOption.Opts)
+  case SetGroup(path:Path,owner:String,opts:FilesOption.Opts)
 
   def toJson:String = FilesOperation.toJson(this)
 
