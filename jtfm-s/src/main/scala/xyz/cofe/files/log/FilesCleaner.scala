@@ -14,7 +14,7 @@ object FilesCleaner {
     require(limitSize>=0)
 
     val files = path.walk
-      .map(f => (f,f.lastModified))
+      .map(f => (f,f.fileTime.map(_.lastModified)))
       .filter { case (f,t) => t.isRight }
       .map { case(f,t) => (f,t.map(_.toEpochMilli()).getOrElse(0L)) }
       .toList
@@ -45,7 +45,7 @@ object FilesCleaner {
     trace: FilesLogger
   ): List[SubFile] = {
     root.walk
-      .map(f => (f,f.lastModified))
+      .map(f => (f,f.fileTime.map(_.lastModified)))
       .filter { case (f,t) => t.isRight }
       .map { case(f,t) => (f,t.map(_.toEpochMilli()).getOrElse(0L)) }
       .toList

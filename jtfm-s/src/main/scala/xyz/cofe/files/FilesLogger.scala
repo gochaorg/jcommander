@@ -71,8 +71,6 @@ enum FilesOperation:
   case ReaderOp(path:Path, charset:Charset)
   case IsDirectory(path:Path, opts:FilesOption.Opts)
   case IsRegularFile(path:Path, opts:FilesOption.Opts)
-  case LastModified(path:Path, opts:FilesOption.Opts)
-  case SetLastModified(path:Path, time:Instant ) 
   case Size(path:Path)
   case Exists(path:Path, opts:FilesOption.Opts) 
   case ReadDir(path:Path) 

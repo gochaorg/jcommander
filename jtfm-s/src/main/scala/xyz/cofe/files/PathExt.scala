@@ -59,10 +59,6 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
   def isRegularFile:Either[Throwable,Boolean] = 
     log(IsRegularFile(path,opts.copy)) { Files.isRegularFile(path,opts.linkOptions:_*) }
 
-  // TODO delete -> fileTime
-  def lastModified:Either[Throwable,Instant] =
-    log(LastModified(path,opts.copy)) { Files.getLastModifiedTime(path,opts.linkOptions:_*).toInstant() }
-
   def fileTime:Either[Throwable,FileTime] = {
     log(ReadFileTime(path,opts.copy)){
       val attr = Files.readAttributes(path,classOf[BasicFileAttributes],opts.linkOptions:_*)
@@ -81,10 +77,6 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
       JFileTime.from(fileTime.lastAccess),
       JFileTime.from(fileTime.creation)
     )
-
-  // TODO delete -> fileTime
-  def setLastModified(time:Instant):Either[Throwable,Unit] =
-    log(SetLastModified(path,time)) { Files.setLastModifiedTime(path,JFileTime.from(time)) }
 
   def size:Either[Throwable,Long] = 
     log(Size(path)) { Files.size(path) }

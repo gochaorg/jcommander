@@ -78,7 +78,7 @@ object FilesTable:
 
     val lastModifyColumn = Column
       .id("file.lastModify")
-      .extract { (path:Path) => path.lastModified }
+      .extract { (path:Path) => path.fileTime.map(_.lastModified) }
       .title("last mod")
       .width(10)
       .build

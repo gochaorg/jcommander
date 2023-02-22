@@ -1,11 +1,6 @@
 package xyz.cofe.jtfm
 
-import xyz.cofe.files.AppHome
-import xyz.cofe.files.exists
-import xyz.cofe.files.createDirectories
-import xyz.cofe.files.readDir
-import xyz.cofe.files.isRegularFile
-import xyz.cofe.files.lastModified
+import xyz.cofe.files._
 import java.time.temporal.ChronoUnit
 import java.time.format.DateTimeFormatter
 import java.time.ZoneId
@@ -35,7 +30,7 @@ object LogPrepare:
 
     logDir.readDir.foreach { files =>      
       files.filter(_.isRegularFile.getOrElse(true)).foreach { file =>
-        file.lastModified.foreach { lastMod => 
+        file.fileTime.map(_.lastModified).foreach { lastMod => 
           val timeStr = lastMod.atZone(ZoneOffset.UTC).format(df)
           val ext = file.`extension`.getOrElse("")
           val target = archDir.resolve(s"arc-${timeStr}.${ext}")
@@ -51,7 +46,7 @@ object LogPrepare:
     val keepAfter = Instant.now().plusSeconds( 0 - keepDuration.toSeconds() )
     archDir.readDir.foreach { files =>
       files
-        .sortBy(_.lastModified.getOrElse(Instant.now()))
-        .filter(_.lastModified.map(t => t.compareTo(keepAfter)<0 ).getOrElse(false))
+        .sortBy(_.fileTime.map(_.lastModified).getOrElse(Instant.now()))
+        .filter(_.fileTime.map(_.lastModified).map(t => t.compareTo(keepAfter)<0 ).getOrElse(false))
         .foreach(_.deleteIfExists())
     }
