@@ -27,15 +27,16 @@ class SenderTest extends munit.FunSuite:
         case _ => ()
     })
 
-    val reciverThread = new Thread(){
+    val recieverThread = new Thread(){
       override def run(): Unit = {
         while ! stopFlag.get() do
           reciver.poll
           Thread.sleep(25)
       }
     }
-    reciverThread.setDaemon(true)
-    reciverThread.start()
+    recieverThread.setDaemon(true)
+    recieverThread.setName("reciever")
+    recieverThread.start()
 
     val senderThread = new Thread(){
       def send(msg:String):Unit = {
@@ -52,8 +53,9 @@ class SenderTest extends munit.FunSuite:
       }
     }
     senderThread.setDaemon(true)
+    senderThread.setName("sender")
     senderThread.start()
 
-    reciverThread.join()
+    recieverThread.join()
     senderThread.join()
   }
