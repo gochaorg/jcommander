@@ -97,6 +97,9 @@ enum FilesOperation:
   case WriteString(path:Path,charset:Charset,string:String,opts:FilesOption.Opts) 
   case ReadBytes(path:Path)
   case ReadPosixAttib(path:Path,optsz:FilesOption.Opts)
+  case SetPosixPerm(path:Path, perm:PosixPerm)
+  case ReadSymbolicLink(path:Path)
+  case ReadFileTime(path:Path,opts:FilesOption.Opts)
 
   def toJson:String = FilesOperation.toJson(this)
 

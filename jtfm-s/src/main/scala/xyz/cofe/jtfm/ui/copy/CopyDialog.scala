@@ -15,21 +15,14 @@ import xyz.cofe.term.geom.Rect
 import xyz.cofe.term.ui.conf.DialogConf
 import xyz.cofe.term.ui.conf.DialogColorConf
 import xyz.cofe.term.common.Color
+import xyz.cofe.files.PathFilter
 
 object CopyDialog:
-  opaque type FileFilter = String
-
-  object FileFilter:
-    def apply(string:String):FileFilter = string
-
-  extension (ff:FileFilter)
-    def apply(file:Path):Boolean = true
-
   case class CopyOption(
     resolveSymLinks:ResolveSymLink,
     saveAttribs:Boolean,
     sourceFiles:List[Path],
-    filter:FileFilter,
+    filter:PathFilter,
     target:Path,
     copyIntoFolder:Boolean
   )
@@ -155,7 +148,7 @@ object CopyDialog:
             resolveSymLinks = resolvSymLink,
             saveAttribs = saveAttrib,
             sourceFiles = files,
-            filter = inputFileFilter.text.get,
+            filter = PathFilter.Wildcard(inputFileFilter.text.get),
             target = Path.of(outputDir.text.get),
             copyIntoFolder = intoFolder
           ))

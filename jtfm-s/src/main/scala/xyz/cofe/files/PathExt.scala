@@ -5,7 +5,7 @@ import java.nio.file.Files
 import java.time.Instant
 
 import FilesOperation._
-import java.nio.file.attribute.FileTime
+import java.nio.file.attribute.{FileTime => JFileTime}
 import java.nio.channels.SeekableByteChannel
 import java.io.InputStream
 import java.io.OutputStream
@@ -20,6 +20,8 @@ import xyz.cofe.json4s3.derv.errors.TypeCastFail.apply
 import xyz.cofe.json4s3.derv.errors.TypeCastFail
 import java.nio.file.attribute.PosixFileAttributeView
 import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.BasicFileAttributeView
 
 extension (path:Path)(using log:FilesLogger, opts:FilesOption)
   def name: String = path.getFileName.toString
@@ -56,10 +58,34 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(IsDirectory(path,opts.copy)) { Files.isDirectory(path,opts.linkOptions:_*) }
   def isRegularFile:Either[Throwable,Boolean] = 
     log(IsRegularFile(path,opts.copy)) { Files.isRegularFile(path,opts.linkOptions:_*) }
+
+  // TODO delete -> fileTime
   def lastModified:Either[Throwable,Instant] =
     log(LastModified(path,opts.copy)) { Files.getLastModifiedTime(path,opts.linkOptions:_*).toInstant() }
+
+  def fileTime:Either[Throwable,FileTime] = {
+    log(ReadFileTime(path,opts.copy)){
+      val attr = Files.readAttributes(path,classOf[BasicFileAttributes],opts.linkOptions:_*)
+      FileTime(
+        attr.creationTime().toInstant(),
+        attr.lastAccessTime().toInstant(),
+        attr.lastModifiedTime().toInstant()
+      )
+    }
+  }
+
+  def setFileTime( fileTime:FileTime ) =
+    val attrView = Files.getFileAttributeView(path, classOf[BasicFileAttributeView], opts.linkOptions:_*)
+    attrView.setTimes(
+      JFileTime.from(fileTime.lastModified),
+      JFileTime.from(fileTime.lastAccess),
+      JFileTime.from(fileTime.creation)
+    )
+
+  // TODO delete -> fileTime
   def setLastModified(time:Instant):Either[Throwable,Unit] =
-    log(SetLastModified(path,time)) { Files.setLastModifiedTime(path,FileTime.from(time)) }
+    log(SetLastModified(path,time)) { Files.setLastModifiedTime(path,JFileTime.from(time)) }
+
   def size:Either[Throwable,Long] = 
     log(Size(path)) { Files.size(path) }
   def exists:Either[Throwable,Boolean] = 
@@ -111,7 +137,11 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     log(Move(path,target,opts.copy)) {
       Files.move(path,target,opts.copyOptions:_*)
     }
-  // def readSymbolicLink​:Either[Throwable,Path]
+  def readSymbolicLink:Either[Throwable,Path] = {
+    log(ReadSymbolicLink(path)){ 
+      Files.readSymbolicLink(path)
+    }
+  }
   // def channel:Either[Throwable,SeekableByteChannel]
   def inputStream:Either[Throwable,InputStream] =
     log(InputStreamOp(path,opts.copy)) {
@@ -140,10 +170,10 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
       Files.newBufferedReader(path,cs)
     }
 
-  // def readBytes:Either[Throwable,Array[Byte]]
-  // def writeBytes(bytes:Array[Byte]):Either[Throwable,Unit]
-  // def posixPerm:Either[Throwable,PosixPerm]
-  // def setPosixPerm(perm:PosixPerm):Either[Throwable,Unit]
+  def setPosixPerm(perm:PosixPerm):Either[Throwable,Path] =
+    log(SetPosixPerm(path,perm)){
+      Files.setPosixFilePermissions(path,perm.posixPerm)
+    }
 
   def posixAttributes:Either[Throwable,PosixAttib] =
     log(ReadPosixAttib(path,opts.copy)){
@@ -174,7 +204,11 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
   def isRoot:Boolean =
     path.isAbsolute() && path.getParent()==null
 
-    
+case class FileTime(
+  creation: Instant,
+  lastAccess: Instant,
+  lastModified: Instant
+)
 case class PosixAttib(
   owner: String,
   group: String,
@@ -206,6 +240,19 @@ case class PosixPerm(
       if othersWrite   then "w" else "-",
       if othersExecute then "x" else "-",
     ).mkString
+  lazy val posixPerm = {
+    val set = new java.util.HashSet[PosixFilePermission]()
+    if ownerRead     then set.add(PosixFilePermission.OWNER_READ)
+    if ownerWrite    then set.add(PosixFilePermission.OWNER_WRITE)
+    if ownerExecute  then set.add(PosixFilePermission.OWNER_EXECUTE)
+    if groupRead     then set.add(PosixFilePermission.GROUP_READ)
+    if groupWrite    then set.add(PosixFilePermission.GROUP_WRITE)
+    if groupExecute  then set.add(PosixFilePermission.GROUP_EXECUTE)
+    if othersRead    then set.add(PosixFilePermission.OTHERS_READ)
+    if othersWrite   then set.add(PosixFilePermission.OTHERS_WRITE)
+    if othersExecute then set.add(PosixFilePermission.OTHERS_EXECUTE)
+    set
+  }
 
 given pathToJson:ToJson[Path] with
   def toJson(path: Path): Option[AST] = 
