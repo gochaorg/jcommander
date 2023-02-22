@@ -187,7 +187,7 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
     }
 
   def posixAttributes:Either[Throwable,PosixAttib] =
-    log(ReadPosixAttib(path,opts.copy)){
+    log(GetPosixAttib(path,opts.copy)){
       val cls:Class[PosixFileAttributeView] = classOf[PosixFileAttributeView]
       val attr = Files.getFileAttributeView(path,cls,opts.linkOptions:_*)
       val posixAttr = attr.readAttributes()

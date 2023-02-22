@@ -92,7 +92,7 @@ enum FilesOperation:
   case ReadString(path:Path,charset:Charset) 
   case WriteString(path:Path,charset:Charset,string:String,opts:FilesOption.Opts) 
   case ReadBytes(path:Path)
-  case ReadPosixAttib(path:Path,optsz:FilesOption.Opts)
+  case GetPosixAttib(path:Path,optsz:FilesOption.Opts)
   case SetPosixPerm(path:Path, perm:PosixPerm)
   case ReadSymbolicLink(path:Path)
   case GetFileTime(path:Path,opts:FilesOption.Opts)
