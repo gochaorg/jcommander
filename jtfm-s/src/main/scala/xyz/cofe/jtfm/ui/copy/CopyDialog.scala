@@ -16,6 +16,7 @@ import xyz.cofe.term.ui.conf.DialogConf
 import xyz.cofe.term.ui.conf.DialogColorConf
 import xyz.cofe.term.common.Color
 import xyz.cofe.files.PathFilter
+import xyz.cofe.jtfm.bg.copy.ResolveSymLink
 
 object CopyDialog:
   case class CopyOption(
@@ -26,11 +27,6 @@ object CopyDialog:
     target:Path,
     copyIntoFolder:Boolean
   )
-
-  enum ResolveSymLink:
-    case None
-    case ResolveAbsolute
-
 
   private val saveAttribSelected   = "[ ] save attrib"
   private val saveAttribUnSelected = "[x] save attrib"
