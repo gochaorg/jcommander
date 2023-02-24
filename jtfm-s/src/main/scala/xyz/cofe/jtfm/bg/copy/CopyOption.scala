@@ -5,7 +5,6 @@ import xyz.cofe.jtfm.ui.copy.CopyDialog.{CopyOption => DlgCopyOption}
 case class CopyOption(
   saveAttrib:Boolean, 
   resolveSymLinks:ResolveSymLink,
-  blockSize:Int = 1024*64,
   overwrite:Overwrite = Overwrite.Ask
 )
 object CopyOption:

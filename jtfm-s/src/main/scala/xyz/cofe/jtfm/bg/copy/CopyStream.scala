@@ -5,12 +5,13 @@ import xyz.cofe.files._
 import java.util.concurrent.atomic.AtomicBoolean
 
 class CopyStream( using 
-  log:      FilesLogger, 
-  opts:     FilesOption,
-  cancel:   CancelSignal,
-  listener: CopyStreamListener
+  log:        FilesLogger, 
+  opts:       FilesOption,
+  cancel:     CancelSignal,
+  listener:   CopyStreamListener,
+  bufferSize: Int
 ):
-  def copy( from:Path, to:Path, bufferSize:Int )(using log:FilesLogger, opts:FilesOption ) =
+  def copy( from:Path, to:Path ) =
     from.inputStream.flatMap { inputStream => 
       try
         to.outputStream.map { outputStream => 

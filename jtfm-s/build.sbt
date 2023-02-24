@@ -23,7 +23,7 @@ libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.5"
 
 libraryDependencies += "io.undertow" % "undertow-core" % "2.1.0.Final"
 //libraryDependencies += "com.sparkjava" % "spark-core" % "2.9.4"
-//libraryDependencies += "io.monix" %% "monix" % "3.4.0"
+libraryDependencies += "io.monix" %% "monix" % "3.4.0"
 
 
 ////////////////////////////////////////////////////////////////////////
