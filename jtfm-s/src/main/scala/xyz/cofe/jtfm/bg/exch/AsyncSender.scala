@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm.bg
+package xyz.cofe.jtfm.bg.exch
 
 class AsnycSender[E,R,ID]( 
   output:Queue[(ID,E)], 

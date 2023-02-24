@@ -1,4 +1,4 @@
-package xyz.cofe.jtfm.bg
+package xyz.cofe.jtfm.bg.exch
 
 import xyz.cofe.log._
 import org.slf4j.Logger
