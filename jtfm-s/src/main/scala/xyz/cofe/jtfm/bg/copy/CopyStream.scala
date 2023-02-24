@@ -12,6 +12,7 @@ class CopyStream( using
   bufferSize: Int
 ):
   def copy( from:Path, to:Path ) =
+    listener.started()
     from.inputStream.flatMap { inputStream => 
       try
         to.outputStream.map { outputStream => 
@@ -20,7 +21,6 @@ class CopyStream( using
             val stop = new AtomicBoolean(false)
             var count = 0L
             cancel.listen { stop.set(true) }
-            listener.started()
             while ! stop.get do
               val readed = inputStream.read(buff)
               if readed<0 then
@@ -29,10 +29,10 @@ class CopyStream( using
                 outputStream.write(buff,0,readed)
                 count += readed
                 listener.progress(count)
-            listener.stopped()
           finally
             outputStream.close()
         }
       finally
         inputStream.close()
+        listener.stopped()
     }

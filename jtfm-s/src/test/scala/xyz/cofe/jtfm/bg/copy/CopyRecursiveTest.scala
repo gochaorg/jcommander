@@ -13,18 +13,16 @@ class CopyRecursiveTest extends munit.FunSuite:
   //  a
   //
   test("recusive test") {
+    given Nested[String] with
+      override def hasNested(a: String): Boolean = a.startsWith("d")
+      override def nestedOf(a: String): List[String] = a match
+        case "d0" => List("d1","d2","a")
+        case "d1" => List("b","d3","c")
+        case "d2" => List("_d","e")
+        case "d3" => List("f")
+        case _ => List.empty        
+
     CopyRecursive[String,Int](
-      (item,state) => 
-        item.startsWith("d")
-        ,
-      (item,state) => 
-        item match
-          case "d0" => List("d1","d2","a")
-          case "d1" => List("b","d3","c")
-          case "d2" => List("_d","e")
-          case "d3" => List("f")
-          case _ => List.empty        
-        ,
       (item,state) => 
         println(s"copy $item $state")
         Some(state+1),

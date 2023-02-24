@@ -2,9 +2,7 @@ package xyz.cofe.jtfm.bg.copy
 
 import scala.annotation.tailrec
 
-class CopyRecursive[What,S](
-  isNested:(What,S)=>Boolean,
-  nestedOf:(What,S)=>List[What],
+class CopyRecursive[What: Nested,S](
   copyLeaf:(What,S)=>Option[S],
   createDir:(What,S)=>Option[S],
 ):
@@ -13,12 +11,13 @@ class CopyRecursive[What,S](
 
   @tailrec
   private def copy(ws:List[What],state:S):Option[S] =
+    val nestedItf = summon[Nested[What]]
     if ws.isEmpty then Some(state)
     else
       val v = ws.head
-      if isNested(v,state)
+      if nestedItf.hasNested(v)
       then 
-        val ws1 = nestedOf(v,state) ++ ws.tail
+        val ws1 = nestedItf.nestedOf(v) ++ ws.tail
         createDir(v,state) match
           case None => None
           case Some(s) => copy(ws1,s)

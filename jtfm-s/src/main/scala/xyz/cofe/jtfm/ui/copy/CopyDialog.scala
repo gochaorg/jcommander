@@ -16,7 +16,7 @@ import xyz.cofe.term.ui.conf.DialogConf
 import xyz.cofe.term.ui.conf.DialogColorConf
 import xyz.cofe.term.common.Color
 import xyz.cofe.files.PathFilter
-import xyz.cofe.jtfm.bg.copy.ResolveSymLink
+import xyz.cofe.jtfm.ui.copy.ResolveSymLink
 
 object CopyDialog:
   case class CopyOption(
