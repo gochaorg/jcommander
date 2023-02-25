@@ -47,6 +47,26 @@ object FilesLogger:
             fail.write(logger,op.toJson,err)
             Left(err)
     }
+  def output(
+    out:Appendable, 
+    succ:String=>String = msg => s"success ${msg}\n",
+    fail:(String,Throwable)=>String = (msg,err) => s"fail ${msg}, err: $err\n"
+  ):FilesLogger = 
+    new FilesLogger {
+      override def apply[R](op: FilesOperation)(code: => R): Either[Throwable, R] = 
+        try
+          val res = code
+          out.append(succ(op.toJson))
+          Right(res)
+        catch
+          case err:IOError => 
+            out.append(fail(op.toJson,err))
+            Left(err)
+          case err:IOException => 
+            out.append(fail(op.toJson,err))
+            Left(err)
+    }
+
 
   enum Level:
     case Warn,Info,Debug,Trace,Error

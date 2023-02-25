@@ -14,6 +14,9 @@ import xyz.cofe.json4s3.derv.errors.DervError
 import xyz.cofe.json4s3.derv.errors.TypeCastFail
 import xyz.cofe.json4s3.derv.errors.FieldNotFound
 
+/**
+  * Задает опции при работе с файловыми операциями
+  */
 trait FilesOption:
   def copy:FilesOption.Opts = FilesOption.Opts(
     linkOptions = linkOptions,

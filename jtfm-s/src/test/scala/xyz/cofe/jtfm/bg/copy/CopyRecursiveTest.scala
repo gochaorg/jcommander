@@ -27,9 +27,9 @@ class CopyRecursiveTest extends munit.FunSuite:
     CopyRecursive[String,Int](
       (item,state) => 
         println(s"copy $item $state")
-        Some(state+1),
+        Right(state+1),
       (item,state) => 
         println(s"mkdir $item $state")
-        Some(state+1),
+        Right(state+1),
     ).copy("d0",0)
   }

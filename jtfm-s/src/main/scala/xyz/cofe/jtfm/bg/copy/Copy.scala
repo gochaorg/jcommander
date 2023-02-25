@@ -9,8 +9,10 @@ import xyz.cofe.files.isRegularFile
 import xyz.cofe.files.isSymbolicLink
 import xyz.cofe.files.SymLink
 import xyz.cofe.files.isDirectory
+import xyz.cofe.files.readDir
+import xyz.cofe.files.name
 
-class Copy[S:MkDirS]( using
+class Copy[S:MkDirS:FileTypeS:CopyFileS:CopySymLinkS]( using
   log:        FilesLogger, 
   opts:       FilesOption,
   cancel:     CancelSignal,
@@ -20,30 +22,53 @@ class Copy[S:MkDirS]( using
   private val stopFlag = AtomicBoolean(false)
   cancel.listen { stopFlag.set(true) }
 
-  def copy( from:Path, to:Path ):Unit = ???
+  def copy( state:S, from:Path, to:Path ):Either[S,S] = 
+    copyRecusive.copy( (from,to), state )
 
-  implicit lazy val nested:Nested[(Path,Path)] = ???
+  private given nested:Nested[(Path,Path)] with
+    override def hasNested(fromTo: (Path, Path)): Boolean = 
+      val (from,to) = fromTo
+      from.isDirectory.getOrElse(false)
 
-  lazy val copyFileStream: CopyStream = new CopyStream()
-  def copyFile( fromTo:(Path,Path), state:S ):Option[S] = 
+    override def nestedOf(fromTo: (Path, Path)): List[(Path, Path)] = 
+      val (from,to) = fromTo
+      from.readDir.map { fromList =>  
+        fromList.map { from =>
+          (from, to.resolve(from.name))
+        }
+      }.getOrElse(List.empty)
+
+  private lazy val copyFileStream: CopyStream = new CopyStream()
+  private def copyFile( fromTo:(Path,Path), state:S ):Either[S,S] = 
     val (from,to) = fromTo
-    from.isRegularFile.flatMap { isFile =>
-      if isFile 
-      then copyFileStream.copy(from,to).map( _ => Option(state))
-      else SymLink.from(from) match
-        case Left(err) => 
-          from.isDirectory.flatMap{ isDir =>
-            if isDir then
-              Right(())
-            else
-              Right(())
-          }
-        case Right(symLink) =>
-          CopyLink.copyAsLinkAbsolute(symLink,to).map( _ => Option(state))
-    }
-    ???
+    from.isRegularFile match
+      case Left(err) => 
+        summon[FileTypeS[S]].isRegularFileFail(state,from)
+      case Right(isFile) =>
+        if isFile 
+        then copyFileStream.copy(from,to) match
+          case Left(err) => 
+            summon[CopyFileS[S]].copyFail(state,from,to,err)
+          case Right(_) =>
+            summon[CopyFileS[S]].copySucc(state,from,to)
+        else SymLink.from(from) match
+          case Right(symLink) =>
+            CopyLink.copyAsLinkAbsolute(symLink,to) match
+              case Left(err) => 
+                summon[CopySymLinkS[S]].copyFail(state,from,to,err)
+              case Right(_) =>
+                summon[CopySymLinkS[S]].copySucc(state,from,to)
+          case Left(_readSymLinkErr) => 
+            from.isDirectory match
+              case Left(err) => 
+                summon[FileTypeS[S]].isDirFail(state,from)
+              case Right(isDir) =>
+                if isDir then
+                  summon[FileTypeS[S]].unexpectDirFileType(state,from)
+                else
+                  summon[FileTypeS[S]].undefinedFileType(state,from)
 
-  def mkdir( fromTo:(Path,Path), state:S ):Option[S] = 
+  private def mkdir( fromTo:(Path,Path), state:S ):Either[S,S] = 
     val (from,to) = fromTo
     to.createDirectories() match
       case Left(err) => 
@@ -51,7 +76,7 @@ class Copy[S:MkDirS]( using
       case Right(value) =>
         summon[MkDirS[S]].mkdirSucc(state,to)
 
-  lazy val copyRecusive: CopyRecursive[(Path,Path),S] = CopyRecursive(
+  private lazy val copyRecusive: CopyRecursive[(Path,Path),S] = CopyRecursive(
     copyFile,
     mkdir
   )
