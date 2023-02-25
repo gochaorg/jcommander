@@ -57,6 +57,7 @@ extension (path:Path)(using log:FilesLogger, opts:FilesOption)
 
   def isDirectory:Either[Throwable,Boolean] = 
     log(IsDirectory(path,opts.copy)) { Files.isDirectory(path,opts.linkOptions:_*) }
+
   def isRegularFile:Either[Throwable,Boolean] = 
     log(IsRegularFile(path,opts.copy)) { Files.isRegularFile(path,opts.linkOptions:_*) }
 

@@ -9,18 +9,20 @@ class CopyStream( using
   opts:       FilesOption,
   cancel:     CancelSignal,
   listener:   CopyStreamListener,
-  bufferSize: Int
+  bufferSize: BufferSize
 ):
-  def copy( from:Path, to:Path ) =
+  val stop = new AtomicBoolean(false)
+  cancel.listen { stop.set(true) }
+
+  def copy( from:Path, to:Path ):Either[Throwable,Unit] =
+    stop.set(false)
     listener.started()
     from.inputStream.flatMap { inputStream => 
       try
         to.outputStream.map { outputStream => 
           try
-            val buff = new Array[Byte](bufferSize)
-            val stop = new AtomicBoolean(false)
+            val buff = new Array[Byte](bufferSize.intValue)
             var count = 0L
-            cancel.listen { stop.set(true) }
             while ! stop.get do
               val readed = inputStream.read(buff)
               if readed<0 then

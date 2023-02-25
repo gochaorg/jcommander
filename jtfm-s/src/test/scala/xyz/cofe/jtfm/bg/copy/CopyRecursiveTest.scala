@@ -20,7 +20,9 @@ class CopyRecursiveTest extends munit.FunSuite:
         case "d1" => List("b","d3","c")
         case "d2" => List("_d","e")
         case "d3" => List("f")
-        case _ => List.empty        
+        case _ => List.empty
+        
+    given sign : CancelSignal = CancelSignal.CancelSignalImpl()
 
     CopyRecursive[String,Int](
       (item,state) => 
