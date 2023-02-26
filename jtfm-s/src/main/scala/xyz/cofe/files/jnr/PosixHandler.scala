@@ -7,15 +7,25 @@ import java.io.PrintStream
 import jnr.constants.platform.Errno
 import java.io.File
 import jnr.posix.POSIXHandler.WARNING_ID
+import jnr.posix.POSIXFactory
 
-class PosixHandler( out:Appendable, err:Appendable, verbose:Boolean ) extends POSIXHandler:
-  private lazy val outPrint = new AppendPrintStream(out)
-  private lazy val errPrint = new AppendPrintStream(err)
-  
-  override def getInputStream(): InputStream = System.in
-  override def getOutputStream(): PrintStream = outPrint
-  override def getErrorStream(): PrintStream = errPrint
+object PosixHandler:
+  def create( out:Appendable, err:Appendable, verbose:Boolean ):PosixHandlerBase = new PosixHandlerBase(out,err,verbose)
 
+  def use[R]( code:PosixHandler => R ):PosixResult[R] =     
+    val handler = new PosixHandlerCatcher(true)
+    val result = code(handler)
+    val outStr = handler.outputBuffer.toString()
+    val errStr = handler.errputBuffer.toString()
+    PosixResult( 
+      result, 
+      handler.errors, 
+      Option.when(outStr.nonEmpty)(outStr),
+      Option.when(errStr.nonEmpty)(errStr)
+    )
+
+
+trait PosixHandler( verbose:Boolean ) extends POSIXHandler:
   private lazy val pid = { ProcessHandle.current().pid() }
   override def getPID(): Int = pid.toInt
 
@@ -31,14 +41,4 @@ class PosixHandler( out:Appendable, err:Appendable, verbose:Boolean ) extends PO
 
   override def isVerbose(): Boolean = verbose
 
-  override def error(error: Errno, extraData: String): Unit =
-    errPrint.println(s"error $error extraData $extraData")
-
-  override def error(error: Errno, methodName: String, extraData: String): Unit =
-    errPrint.println(s"error $error method $methodName extraData $extraData")
-
-  override def unimplementedError(methodName: String): Unit = 
-    errPrint.println(s"unimplementedError $methodName")
-
-  override def warn(id: WARNING_ID, message: String, data: Object*): Unit =
-    errPrint.println(s"warn id=$id message=$message data=$data")
+  lazy val posix = POSIXFactory.getPOSIX(this,true)
