@@ -28,6 +28,17 @@ trait FilesOption:
   def fileAttributes:Seq[FileAttribute[_]]
   def copyOptions:Seq[CopyOption]
   def openOptions:Seq[OpenOption]
+
+  def followLink:Boolean = 
+    ! linkOptions.contains(LinkOption.NOFOLLOW_LINKS)
+
+  def followLink(follow:Boolean):FilesOption =
+    copy.copy(
+      linkOptions = 
+        if follow 
+        then linkOptions.filterNot(_ == LinkOption.NOFOLLOW_LINKS) 
+        else linkOptions :+ LinkOption.NOFOLLOW_LINKS
+    )
   
 object FilesOption:
   given defaultOption:FilesOption = new FilesOption {
