@@ -1,5 +1,5 @@
 package xyz.cofe.files.jnr
 
-enum FileType:
+enum JnrFileType:
   case NamedPipe,Character,Directory,Block,Regular,SymLink,Socket
 

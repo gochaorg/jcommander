@@ -6,6 +6,7 @@ import java.nio.file.Path
 import xyz.cofe.term.ui.Table
 import java.time.Instant
 import timeRender.shortCellEitherValue
+import xyz.cofe.files.jnr._
 
 object FilesTable:
   def allColumns:List[Column[Path,_]] =
@@ -14,8 +15,11 @@ object FilesTable:
       cols.fileTypeLetterColumn,
       cols.nameColumn,
       cols.rwxColumn,
+      cols.trwxColumn,
       cols.ownerColumn,
+      cols.ownerIdColumn,
       cols.groupColumn,
+      cols.groupIdColumn,
       cols.lastModifyColumn,
       cols.sizeHumanReadableColumn,
     )
@@ -76,6 +80,17 @@ object FilesTable:
       .width(9)
       .build
 
+    val trwxColumn = Column
+      .id("file.trwx")
+      .reader { (path:Path) => 
+        val t = FileType.from(path).map { ft => ft.shortName }.getOrElse('?')
+        path.posixAttributes.map(attrs=> t + attrs.perm.rwxString).getOrElse("?")
+      }
+      .text( text => text )
+      .title("perm")
+      .width(10)
+      .build
+
     val lastModifyColumn = Column
       .id("file.lastModify")
       .extract { (path:Path) => path.fileTime.map(_.lastModified) }
@@ -91,9 +106,25 @@ object FilesTable:
       .width(8)
       .build
 
+    val ownerIdColumn = Column
+      .id("file.owner.id")
+      .reader{ (path:Path) => Posix.stat(path,false).map(_.user.usrValue.toString).getOrElse("?") }
+      .text( txt => txt )
+      .title("owner")
+      .width(8)
+      .build
+
     val groupColumn = Column
       .id("file.group")
       .reader { (path:Path) => path.posixAttributes.map(_.group).getOrElse("?") }
+      .text( txt => txt )
+      .title("group")
+      .width(8)
+      .build
+
+    val groupIdColumn = Column
+      .id("file.group.id")
+      .reader{ (path:Path) => Posix.stat(path,false).map(_.group.grpValue.toString).getOrElse("?") }
       .text( txt => txt )
       .title("group")
       .width(8)

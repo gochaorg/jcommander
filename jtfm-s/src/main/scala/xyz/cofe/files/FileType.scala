@@ -9,14 +9,14 @@ import _root_.jnr.ffi.Platform.OS
 /**
   * Определяет тип файла/каталога
   */
-enum FileType:
-  case RegularFile
-  case Directory
-  case SymbolicLink
-  case NamedPipe
-  case Character
-  case Block
-  case Socket
+enum FileType( val shortName:Char ):
+  case RegularFile   extends FileType('-')
+  case Directory     extends FileType('d')
+  case SymbolicLink  extends FileType('l')
+  case NamedPipe     extends FileType('p')
+  case Character     extends FileType('c')
+  case Block         extends FileType('b')
+  case Socket        extends FileType('s')
 
 object FileType:  
   object UndefinedType extends Error
@@ -49,13 +49,13 @@ object FileType:
         stat.fileTypeSafe
           .left.map { e => new PosixIOTypeError(e) }
           .map {            
-              case xyz.cofe.files.jnr.FileType.NamedPipe => FileType.NamedPipe
-              case xyz.cofe.files.jnr.FileType.Character => FileType.Character
-              case xyz.cofe.files.jnr.FileType.Directory => FileType.Directory
-              case xyz.cofe.files.jnr.FileType.Block     => FileType.Block
-              case xyz.cofe.files.jnr.FileType.Regular   => FileType.RegularFile
-              case xyz.cofe.files.jnr.FileType.SymLink   => FileType.SymbolicLink
-              case xyz.cofe.files.jnr.FileType.Socket    => FileType.Socket
+              case xyz.cofe.files.jnr.JnrFileType.NamedPipe => FileType.NamedPipe
+              case xyz.cofe.files.jnr.JnrFileType.Character => FileType.Character
+              case xyz.cofe.files.jnr.JnrFileType.Directory => FileType.Directory
+              case xyz.cofe.files.jnr.JnrFileType.Block     => FileType.Block
+              case xyz.cofe.files.jnr.JnrFileType.Regular   => FileType.RegularFile
+              case xyz.cofe.files.jnr.JnrFileType.SymLink   => FileType.SymbolicLink
+              case xyz.cofe.files.jnr.JnrFileType.Socket    => FileType.Socket
           }
       }
 

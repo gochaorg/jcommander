@@ -14,20 +14,20 @@ case class FileStat(
   modifyTime: Instant, // точность до секунды
   createTime: Instant, // точность до секунды
 ):
-  lazy val fileType : FileType = {
+  lazy val fileType : JnrFileType = {
     fileTypeSafe match
       case Left(err) => throw err
       case Right(value) => value    
   }
 
-  lazy val fileTypeSafe: Either[FileStatError,FileType] = {
-    if      flags.contains(ModeFlag.NamedPipe) then Right(FileType.NamedPipe)
-    else if flags.contains(ModeFlag.Character) then Right(FileType.Character)
-    else if flags.contains(ModeFlag.Directory) then Right(FileType.Directory)
-    else if flags.contains(ModeFlag.Block)     then Right(FileType.Block)
-    else if flags.contains(ModeFlag.Regular)   then Right(FileType.Regular)
-    else if flags.contains(ModeFlag.SymLink)   then Right(FileType.SymLink)
-    else if flags.contains(ModeFlag.Socket)    then Right(FileType.Socket)
+  lazy val fileTypeSafe: Either[FileStatError,JnrFileType] = {
+    if      flags.contains(ModeFlag.NamedPipe) then Right(JnrFileType.NamedPipe)
+    else if flags.contains(ModeFlag.Character) then Right(JnrFileType.Character)
+    else if flags.contains(ModeFlag.Directory) then Right(JnrFileType.Directory)
+    else if flags.contains(ModeFlag.Block)     then Right(JnrFileType.Block)
+    else if flags.contains(ModeFlag.Regular)   then Right(JnrFileType.Regular)
+    else if flags.contains(ModeFlag.SymLink)   then Right(JnrFileType.SymLink)
+    else if flags.contains(ModeFlag.Socket)    then Right(JnrFileType.Socket)
     else Left(FileStatError(flags))
   }
 
